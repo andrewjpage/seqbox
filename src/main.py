@@ -1,5 +1,4 @@
 from app import app, db
-# .app.models is the relative path to that module
 from app.models import User, Sample, Post, Batch, Location, Result1, Result2, Study, Sample_study
 
 
@@ -9,5 +8,6 @@ def make_shell_context():
 
 if __name__ == "__main__":
     # this db.create_all() might just be needed for sqlite
-    db.create_all()
+    # i think it's a one time thing, only needs to be done first time
+    # db.create_all()
     app.run(debug=True)

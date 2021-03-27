@@ -66,7 +66,7 @@ class Post(db.Model):
     """[summary]
     
     Arguments:
-        db {[type]} -- [description]
+        db {[type]} -- [description]ll
     
     Returns:
         [type] -- [description]
