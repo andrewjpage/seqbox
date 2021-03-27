@@ -18,7 +18,7 @@ def index():
     posts = [
         {
             'author': {'username': 'Oucru'},
-            'body': 'Welcome to Seqbox Plateform!'
+            'body': 'Welcome to Seqbox Platform!'
         }
         
     ]

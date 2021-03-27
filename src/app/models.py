@@ -4,8 +4,8 @@ SQLAlchemy : Using ORM(Oject Relational Mapper)
 from datetime import datetime
 from app import db, login
 from flask_login import UserMixin
-from sqlalchemy.orm import relationship,backref
-from sqlalchemy import ForeignKey
+from sqlalchemy.orm import backref # relationship
+#from sqlalchemy import ForeignKey
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -19,9 +19,15 @@ class User(UserMixin, db.Model):
     """
     # These class variables define the column properties
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True)
-    email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    username = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(120), index=True, unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    # establishes a relationship between User and Post
+    # backref adds a new property to the Post class, Post.author will point to a User
+    # lazy defines when sqlalchemy will load data from the database
+    # dynamic returns a query object which you can apply further selects to
+    # dynamic is an unusual choice according to here
+    # https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
@@ -68,6 +74,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    # user.id here refers to user table, id column
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
