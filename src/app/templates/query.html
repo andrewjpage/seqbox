@@ -16,9 +16,9 @@
                 <th>Organism</th>
                 <th>Location</th>
                 <th>Path of result1</th>
-                <th>Path2 of result2</th>
+                <th>Path2 of mykrobe</th>
                 <th>Result1</th>
-                <th>Result2</th>
+                <th>Mykrobe</th>
             </tr>
         {% for sample in samples  %}
                 <tr>
@@ -32,7 +32,7 @@
                     <th>{{sample.path_r1}}</th>
                     <th>{{sample.path_r2}}</th>
                     <th>{{sample.result1}}</th>
-                    <th>{{sample.result2}}</th>
+                    <th>{{sample.mykrobe}}</th>
                 </form>
                 <form method="POST" action="./list_sample" style="display: inline">    
                     <th>

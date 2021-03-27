@@ -37,7 +37,7 @@ def home():
     books = Book.query.all()
     return render_template("home.html", books=books)
 
-sample = Sample(id_sample=form.id_sample.data, num_seq=form.num_seq.data, date_time=form.date_time.data, organism=form.organism.data, location=form.location.data, batch=form.batch.data, path_r1=form.path_r1.data, path_r2=form.path_r2,result1=form.path_r2.data,result2=form.result2.data)
+sample = Sample(id_sample=form.id_sample.data, num_seq=form.num_seq.data, date_time=form.date_time.data, organism=form.organism.data, location=form.location.data, batch=form.batch.data, path_r1=form.path_r1.data, path_r2=form.path_r2,result1=form.path_r2.data,mykrobe=form.mykrobe.data)
 @app.route("/update", methods=["POST"])
 def update():
     try:
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 </html>
 form = SampleForm()
     if form.validate_on_submit():
-        sample = Sample(id_sample=form.id_sample.data, num_seq=form.num_seq.data, date_time=form.date_time.data, organism=form.organism.data, location=form.location.data, batch=form.batch.data, path_r1=form.path_r1.data, path_r2=form.path_r2,result1=form.result1.data,result2=form.result2.data)
+        sample = Sample(id_sample=form.id_sample.data, num_seq=form.num_seq.data, date_time=form.date_time.data, organism=form.organism.data, location=form.location.data, batch=form.batch.data, path_r1=form.path_r1.data, path_r2=form.path_r2,result1=form.result1.data,mykrobe=form.mykrobe.data)
         
         #save the model to the database
         db.session.add(sample)
@@ -142,7 +142,7 @@ form = SampleForm()
                 <input type="hidden" value="{{sample.result1}}" name="result1">
                 <input type="submit" value="Delete">
         
-                <input type="hidden" value="{{sample.result2}}" name="result2">
+                <input type="hidden" value="{{sample.mykrobe}}" name="mykrobe">
                 <input type="submit" value="Delete">
             </form>
         

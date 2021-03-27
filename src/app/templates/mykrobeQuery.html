@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang = "en">
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block content %}
+
+    
+    <h1>{{ ('List mykrobe') }}</h1>
+
+        <table> 
+            <tr>
+                <th>Mykrobe ID</th>
+                <th>Mykrobe version</th>
+                <th>Phylo group</th>
+                <th>Phylo group coverage</th>
+                <th>Phylo group depth</th>
+                <th>Species</th>
+                <th>Species coverage</th>
+                <th>Species depth</th>
+                <th>Lineage</th>
+                <th>Lineage coverage</th>
+                <th>Lineage coverage depth</th>
+                <th>Susceptibility</th>
+                <th>Variants</th>
+                <th>Genes</th>
+                <th>Drug</th>
+            </tr>
+        {% for mykrobe in mykrobes  %}
+                <tr>
+                <form method="GET" action="./list_mykrobe" style="display: inline">
+                    <th>{{mykrobe.id_mykrobe}}</th>
+                    <th>{{mykrobe.mykrobe_version}}</th>
+                    <th>{{mykrobe.phylo_grp}}</th>
+                    <th>{{mykrobe.phylo_grp_covg}}</th>
+                    <th>{{mykrobe.phylo_grp_depth}}</th>
+                    <th>{{mykrobe.species}}</th>
+                    <th>{{mykrobe.species_covg}}</th>
+                    <th>{{mykrobe.species_depth}}</th>
+                    <th>{{mykrobe.lineage}}</th>
+                    <th>{{mykrobe.lineage_covg}}</th>
+                    <th>{{mykrobe.lineage_depth}}</th>
+                    <th>{{mykrobe.susceptibility}}</th>
+                    <th>{{mykrobe.variants}}</th>
+                    <th>{{mykrobe.genes}}</th>
+                    <th>{{mykrobe.drug}}</th>
+                </form>
+                <form method="POST" action="./list_mykrobe" style="display: inline">
+                    <th>
+                        <button type="submit" name="modify" value="{{  mykrobe.id_mykrobe }}">Modify</button>
+                    </th>
+                    <th>
+     
+                        <button type="submit" name="delete" value="{{  mykrobe.id_mykrobe  }}">Delete</button>
+                    </th>
+                </form>
+                </tr>
+        {% endfor %}
+        </table>
+{% endblock %}        
+</html> 

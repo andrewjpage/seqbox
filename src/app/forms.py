@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from app.models import User, Sample, Batch, Location, Result1, Result2, Study,Sample_study
+from app.models import User, Sample, Batch, Location, Result1, Mykrobe, Study,Sample_study
 
 class LoginForm(FlaskForm):
    
@@ -43,7 +43,7 @@ class SampleForm(FlaskForm):
     batch =  StringField('batch')
     location = StringField('location')
     result1 = StringField('result1')
-    result2 = StringField('result2')
+    mykrobe = StringField('mykrobe')
 
     submit = SubmitField('Validate')
     
@@ -119,9 +119,9 @@ class Result1Form(FlaskForm):
             raise ValidationError('Please use a different id_result1.')
 
     
-class Result2Form(FlaskForm):
+class MykrobeForm(FlaskForm):
 
-    id_result2= StringField('id_result2', validators=[DataRequired()])
+    id_mykrobe= StringField('id_mykrobe', validators=[DataRequired()])
     mykrobe_version = StringField('mykrobe_version')
     phylo_grp = StringField('phylo_grp')
     phylo_grp_covg = StringField('phylo_grp_covg')
@@ -139,10 +139,10 @@ class Result2Form(FlaskForm):
 
     submit = SubmitField('Validate')
 
-    def validate_id_result2(self, id_result2):
-        result2 = Result2.query.filter_by(id_result2=id_result2.data).first()
-        if result2 is not None:
-            raise ValidationError('Please use a different id_result2.')
+    def validate_id_mykrobe(self, id_mykrobe):
+        mykrobe_result = Mykrobe.query.filter_by(id_mykrobe=id_mykrobe.data).first()
+        if mykrobe_result is not None:
+            raise ValidationError('Please use a different id_mykrobe.')
 
 class StudyForm(FlaskForm) :
 

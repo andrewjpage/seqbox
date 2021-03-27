@@ -108,13 +108,13 @@ class Sample(db.Model):
     path_r2 = db.Column(db.VARCHAR(40))
     result1 = db.Column(db.Integer, db.ForeignKey("result1.id_result1",onupdate="cascade",ondelete="set null"),nullable=True) 
     results1 = db.relationship("Result1", backref=backref("sample",passive_updates=True,passive_deletes=True))
-    result2 = db.Column(db.Integer, db.ForeignKey("result2.id_result2",onupdate="cascade",ondelete="set null"),nullable=True)
-    results2 = db.relationship("Result2", backref=backref("sample",passive_updates=True,passive_deletes=True))
+    mykrobe = db.Column(db.Integer, db.ForeignKey("mykrobe.id_mykrobe",onupdate="cascade",ondelete="set null"),nullable=True)
+    mykrobes = db.relationship("Mykrobe", backref=backref("sample",passive_updates=True,passive_deletes=True))
 
     
 
     def __repr__(self):
-        return "<Sample(id_sample='%s', num_seq='%s', organism='%s', batch='%s', date_time='%s', location='%s', path_r1='%s', path_r2='%s', result1='%s', result2='%s')>" % (self.id_sample,self.num_seq,self.organism,self.batch,self.date_time,self.location,self.path_r1,self.path_r2,self.result1,self.result2)
+        return "<Sample(id_sample='%s', num_seq='%s', organism='%s', batch='%s', date_time='%s', location='%s', path_r1='%s', path_r2='%s', result1='%s', mykrobe='%s')>" % (self.id_sample,self.num_seq,self.organism,self.batch,self.date_time,self.location,self.path_r1,self.path_r2,self.result1,self.mykrobe)
 
 class Batch(db.Model):
     """[Define model 'Batch' mapped to table 'batch']
@@ -175,15 +175,15 @@ class Result1(db.Model):
     def __repr__(self):
         return '<Result1 {}>'.format(self.qc)
 
-class Result2(db.Model):
+class Mykrobe(db.Model):
 
-    """[Define model 'Result2' mapped to table 'result2']
+    """[Define model 'Mykrobe' mapped to table 'mykrobe']
     
     Returns:
         [type] -- [description]
     """
     
-    id_result2 = db.Column(db.Integer, primary_key=True)
+    id_mykrobe = db.Column(db.Integer, primary_key=True)
     mykrobe_version = db.Column(db.VARCHAR(50))
     phylo_grp = db.Column(db.VARCHAR(60))
     phylo_grp_covg = db.Column(db.CHAR)
@@ -200,7 +200,7 @@ class Result2(db.Model):
     drug = db.Column(db.VARCHAR(90))
   
     def __repr__(self):
-        return '<Result2 {}>'.format(self.mykrobe_version)
+        return '<Mykrobe {}>'.format(self.mykrobe_version)
     
 class Study(db.Model):
 

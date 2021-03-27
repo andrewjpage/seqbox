@@ -95,11 +95,11 @@ INSERT INTO `result1` (`id_result1`, `qc`, `ql`, `description`, `snapper_variant
 -- --------------------------------------------------------
 
 --
--- Structure de la table `result2`
+-- Structure de la table `mykrobe`
 --
 
-CREATE TABLE IF NOT EXISTS `result2` (
-  `id_result2` int(10) NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `mykrobe` (
+  `id_mykrobe` int(10) NOT NULL AUTO_INCREMENT,
   `mykrobe_version` varchar(50) NOT NULL,
   `phylo_grp` varchar(60) NOT NULL,
   `phylo_grp_covg` double DEFAULT NULL,
@@ -114,14 +114,14 @@ CREATE TABLE IF NOT EXISTS `result2` (
   `variants` varchar(80) NOT NULL,
   `genes` varchar(100) NOT NULL,
   `drug` varchar(90) NOT NULL,
-  PRIMARY KEY (`id_result2`)
+  PRIMARY KEY (`id_mykrobe`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
 --
--- Contenu de la table `result2`
+-- Contenu de la table `mykrobe`
 --
 
-INSERT INTO `result2` (`id_result2`, `mykrobe_version`, `phylo_grp`, `phylo_grp_covg`, `phylo_grp_depth`, `species`, `species_covg`, `species_depth`, `lineage`, `lineage_covg`, `lineage_depth`, `susceptibility`, `variants`, `genes`, `drug`) VALUES
+INSERT INTO `mykrobe` (`id_mykrobe`, `mykrobe_version`, `phylo_grp`, `phylo_grp_covg`, `phylo_grp_depth`, `species`, `species_covg`, `species_depth`, `lineage`, `lineage_covg`, `lineage_depth`, `susceptibility`, `variants`, `genes`, `drug`) VALUES
 (2, 'tuberculosis', 'Escherichia coli', 0, 0, '80', 0, 0, '', 0, 0, '', '', '', '');
 
 -- --------------------------------------------------------
@@ -140,10 +140,10 @@ CREATE TABLE IF NOT EXISTS `sample` (
   `path_r1` varchar(40) NOT NULL,
   `path_r2` varchar(40) NOT NULL,
   `result1` int(11) DEFAULT NULL,
-  `result2` int(11) DEFAULT NULL,
+  `mykrobe` int(11) DEFAULT NULL,
   PRIMARY KEY (`id_sample`),
   KEY `result1` (`result1`),
-  KEY `sample_ibfk_1` (`result2`),
+  KEY `sample_ibfk_1` (`mykrobe`),
   KEY `batch` (`batch`),
   KEY `location` (`location`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `sample` (
 -- Contenu de la table `sample`
 --
 
-INSERT INTO `sample` (`id_sample`, `num_seq`, `date_time`, `organism`, `batch`, `location`, `path_r1`, `path_r2`, `result1`, `result2`) VALUES
+INSERT INTO `sample` (`id_sample`, `num_seq`, `date_time`, `organism`, `batch`, `location`, `path_r1`, `path_r2`, `result1`, `mykrobe`) VALUES
 ('05', 'ok', '2019-08-15 00:00:00', 'kkk', NULL, NULL, 'jj', '', NULL, NULL),
 ('45p', 'ii', '0000-00-00 00:00:00', '', NULL, NULL, '', '', NULL, NULL),
 ('as', 'gg', '0000-00-00 00:00:00', '', '555558', '34 NGO AU CO', '', '', NULL, 2),
@@ -231,7 +231,7 @@ INSERT INTO `user` (`id`, `username`, `email`, `password_hash`) VALUES
 -- Contraintes pour la table `sample`
 --
 ALTER TABLE `sample`
-  ADD CONSTRAINT `sample_ibfk_4` FOREIGN KEY (`result2`) REFERENCES `result2` (`id_result2`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `sample_ibfk_4` FOREIGN KEY (`mykrobe`) REFERENCES `mykrobe` (`id_mykrobe`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `sample_ibfk_1` FOREIGN KEY (`location`) REFERENCES `location` (`id_location`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `sample_ibfk_2` FOREIGN KEY (`batch`) REFERENCES `batch` (`id_batch`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `sample_ibfk_3` FOREIGN KEY (`result1`) REFERENCES `result1` (`id_result1`) ON DELETE SET NULL ON UPDATE CASCADE;

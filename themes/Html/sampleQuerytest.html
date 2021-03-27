@@ -19,7 +19,7 @@
             <th>path_r1</th>
             <th>path_r2</th>
             <th>result1</th>
-            <th>result2</th>
+            <th>mykrobe</th>
          </tr> 
          <tr>
             <td>{{sample.id_sample}}</td>
@@ -31,7 +31,7 @@
             <td>{{sample.path_r1}}</td>    
             <td>{{sample.path_r2}}</td>   
             <td>{{sample.result1}}</td>    
-            <td>{{sample.result2}}</td>    
+            <td>{{sample.mykrobe}}</td>
          </tr>
          
               <form method="POST" action="./sample_edit" style="display: inline">
@@ -72,7 +72,7 @@
                
 
                 
-                <input type="text" value="{{sample.result2}}" name="newresult2">
+                <input type="text" value="{{sample.mykrobe}}" name="newmykrobe">
                 <input type="submit" value="Update">
                 
             </form>

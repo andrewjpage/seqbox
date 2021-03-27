@@ -4,7 +4,7 @@ app.debug = True
 
 @app.route('/', methods=['GET'])
 def dropdown():
-    colours = ['Sample', 'Batch', 'Study', 'Location', 'Result1', 'Result2' ]
+    colours = ['Sample', 'Batch', 'Study', 'Location', 'Result1', 'Mykrobe' ]
     return render_template('test.html', colours=colours)
 
 if __name__=="__main__":
@@ -37,7 +37,7 @@ if __name__=="__main__":
             "Batch",
             "Location",
             "Result1",
-            "Result2",
+            "Mykrobe",
             "Study",
             "Sample_study"      
         }
