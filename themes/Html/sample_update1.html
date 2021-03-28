@@ -5,7 +5,7 @@
         {% for sample in sample %}
          
             {{sample.id_sample}}
-            {{sample.num_seq }}
+            {{sample.num_reads }}
             {{sample.date_time }}
             {{sample.organism}}
             {{sample.location}}
@@ -22,8 +22,8 @@
             <input type="text" value="{{sample.id_sample}}" name="newid_sample">
             <input type="submit" value="Update">
 
-            <input type="hidden" value="{{sample.num_seq}}" name="num_seq">
-            <input type="text" value="{{sample.num_seq}}" name="newnum_seq">
+            <input type="hidden" value="{{sample.num_reads}}" name="num_reads">
+            <input type="text" value="{{sample.num_reads}}" name="newnum_reads">
             <input type="submit" value="Update">
 
             <input type="hidden" value="{{sample.date_time}}" name="date_time">

@@ -11,7 +11,7 @@
         {% for sample in samples %}
          <tr>
             <th>id_sample</th>
-            <th>num_seq</th>
+            <th>num_reads</th>
             <th>date_time</th>
             <th>organism</th>
             <th>location</th>
@@ -23,7 +23,7 @@
          </tr> 
          <tr>
             <td>{{sample.id_sample}}</td>
-            <td>{{sample.num_seq }}</td>
+            <td>{{sample.num_reads }}</td>
             <td>{{sample.date_time }}</td>
             <td>{{sample.organism}}</td>   
             <td>{{sample.location}}</td>
@@ -40,7 +40,7 @@
                 
 
                 
-                <input type="text" value="{{sample.num_seq}}" name="newnum_seq">
+                <input type="text" value="{{sample.num_reads}}" name="newnum_reads">
                
 
                 

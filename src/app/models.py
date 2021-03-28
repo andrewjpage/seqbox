@@ -85,7 +85,7 @@ class Post(db.Model):
         """
         return '<Post {}>'.format(self.body)
 
-class Sample(db.Model):
+class IlluminaReadSet(db.Model):
 
     """[Define model 'Sample' mapped to table 'sample']
     
@@ -95,26 +95,40 @@ class Sample(db.Model):
     Returns:
         [type] -- [description]
     """
+    # are they using the actual read set id as the primary key?
+    id_illumina_read_set = db.Column(db.Integer, primary_key=True)
 
-    id_sample = db.Column(db.VARCHAR(20),primary_key=True)
-    num_seq = db.Column(db.VARCHAR(60))
-    date_time =db.Column(db.DATETIME)
-    organism = db.Column(db.VARCHAR(30)) 
-    batch = db.Column(db.VARCHAR(50),db.ForeignKey("batch.id_batch",onupdate="cascade",ondelete="set null"),nullable=True)
-    batchs = db.relationship("Batch", backref=backref("sample",passive_updates=True,passive_deletes=True))
-    location = db.Column(db.VARCHAR(50), db.ForeignKey("location.id_location",onupdate="cascade",ondelete="set null"),nullable=True)
-    locations = db.relationship("Location", backref=backref("sample",passive_updates=True,passive_deletes=True))
-    path_r1 = db.Column(db.VARCHAR(40))
-    path_r2 = db.Column(db.VARCHAR(40))
+    num_reads = db.Column(db.VARCHAR(60), comment="the number of sequencing reads")
+    added_at = db.Column(db.DATETIME)
+    # organism = db.Column(db.VARCHAR(30))
+    batch = db.Column(db.VARCHAR(50), db.ForeignKey("batch.id_batch",onupdate="cascade",ondelete="set null"),nullable=True)
+    batches = db.relationship("Batch", backref=backref("illumina_read_set",passive_updates=True,passive_deletes=True))
+
+    path_r1 = db.Column(db.VARCHAR(60))
+    path_r2 = db.Column(db.VARCHAR(60))
     result1 = db.Column(db.Integer, db.ForeignKey("result1.id_result1",onupdate="cascade",ondelete="set null"),nullable=True) 
-    results1 = db.relationship("Result1", backref=backref("sample",passive_updates=True,passive_deletes=True))
+    results1 = db.relationship("Result1", backref=backref("illumina_read_set",passive_updates=True,passive_deletes=True))
     mykrobe = db.Column(db.Integer, db.ForeignKey("mykrobe.id_mykrobe",onupdate="cascade",ondelete="set null"),nullable=True)
-    mykrobes = db.relationship("Mykrobe", backref=backref("sample",passive_updates=True,passive_deletes=True))
-
-    
+    mykrobes = db.relationship("Mykrobe", backref=backref("illumina_read_set",passive_updates=True,passive_deletes=True))
 
     def __repr__(self):
-        return "<Sample(id_sample='%s', num_seq='%s', organism='%s', batch='%s', date_time='%s', location='%s', path_r1='%s', path_r2='%s', result1='%s', mykrobe='%s')>" % (self.id_sample,self.num_seq,self.organism,self.batch,self.date_time,self.location,self.path_r1,self.path_r2,self.result1,self.mykrobe)
+        return "<Sample(id_sample='%s', num_reads='%s', organism='%s', batch='%s', date_time='%s', location='%s', path_r1='%s', path_r2='%s', result1='%s', mykrobe='%s')>" % (self.id_sample, self.num_reads, self.organism, self.batch, self.added_at, self.location, self.path_r1, self.path_r2, self.result1, self.mykrobe)
+
+
+class Isolate(db.Model):
+    id_isolate = db.Column(db.Integer, primary_key=True)
+    isolate_identifier = db.Column(db.VARCHAR(30))
+    species = db.Column(db.VARCHAR(120))
+    sample_type = db.Column(db.VARCHAR(60))
+    patient_identifier = db.Column(db.VARCHAR(30))
+    date_collected = db.Column(db.DATETIME)
+    date_added = db.Column(db.DATETIME)
+    location = db.Column(db.VARCHAR(50), db.ForeignKey("location.id_location", onupdate="cascade", ondelete="set null"),
+                         nullable=True)
+    locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
+
+    def __repr__(self):
+        return f"Sample({self.isolate_identifier}, {self.species})"
 
 class Batch(db.Model):
     """[Define model 'Batch' mapped to table 'batch']

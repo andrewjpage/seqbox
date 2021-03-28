@@ -15,7 +15,7 @@
         {% for sample in samples %}
             option value={{sample.id_sample}}>{{sample.text}}</option>  
             <input type="hidden" value="{{form.id_sample}}" name="id_sample">           
-            <input type="hidden" value="{{form.num_seq}}" name="num_seq">            
+            <input type="hidden" value="{{form.num_reads}}" name="num_reads">
             <input type="hidden" value="{{form.date_time}}" name="date_time">            
             <input type="hidden" value="{{form.organism}}" name="organism">
             <input type="hidden" value="{{form.location}}" name="location">           
@@ -35,7 +35,7 @@
      <form method="POST" action="./add_sample">
      {% for sample in samples %}
      <input type="text" name="id_sample">
-     <input type="text" name="num_seq">
+     <input type="text" name="num_reads">
      <input type="text" name="date_time">
      <input type="text" name="organism">
      <input type="text" name="location">
@@ -58,7 +58,7 @@
         <input type="hidden" value="{{sample.id_sample}}" name="id_sample">
         <input type="submit" value="Delete">
         
-        <input type="hidden" value="{{sample.num_seq}}" name="num_seq">
+        <input type="hidden" value="{{sample.num_reads}}" name="num_reads">
         <input type="submit" value="Delete">
         
         <input type="hidden" value="{{sample.date_time}}" name="date_time">

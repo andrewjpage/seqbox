@@ -35,7 +35,7 @@ class RegistrationForm(FlaskForm):
 class SampleForm(FlaskForm):
     
     id_sample = StringField('id_sample', validators=[DataRequired()])
-    num_seq = StringField('num_seq', validators=[DataRequired()])
+    num_reads = StringField('num_reads', validators=[DataRequired()])
     date_time = DateField('date_time')
     organism = StringField('organism')
     path_r1 = StringField('path_r1')
@@ -52,10 +52,10 @@ class SampleForm(FlaskForm):
         if sample is not None:
             raise ValidationError('Please use a different id_sample.')
     
-    def validate_num_seq(self,num_seq):
-        sample =Sample.query.filter_by(num_seq=num_seq.data).first()
+    def validate_num_reads(self,num_reads):
+        sample =Sample.query.filter_by(num_reads=num_reads.data).first()
         if sample is not None:
-            raise ValidationError('Please use a different num_seq.')
+            raise ValidationError('Please use a different num_reads.')
 
 
     

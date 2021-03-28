@@ -111,7 +111,7 @@ def sample():
         batch= None if batch =='' else batch
         location= None if location =='' else location
 
-        sample = Sample(id_sample=form.id_sample.data, num_seq=form.num_seq.data,
+        sample = Sample(id_sample=form.id_sample.data, num_reads=form.num_reads.data,
                         date_time=form.date_time.data, organism=form.organism.data,
                         location=location, batch=batch,
                         path_r1=form.path_r1.data, path_r2=form.path_r2.data,
@@ -137,7 +137,7 @@ def list_sample():
         # return render_template('query.html', samples=samples, title='list sample')
         # for sample in samples:
         #     print(sample)
-        #     print (sample.id_sample,sample.num_seq,sample.date_time,sample.batch,sample.organism,sample.location,sample.path_r1,sample.path_r2,sample.result1,sample.mykrobe)
+        #     print (sample.id_sample,sample.num_reads,sample.date_time,sample.batch,sample.organism,sample.location,sample.path_r1,sample.path_r2,sample.result1,sample.mykrobe)
         #     flash('Sample selected successfully!')
         return render_template('query.html', samples=samples, title='list sample')
     if request.method == 'POST':
@@ -162,7 +162,7 @@ def edit(id):
 
     if request.method == 'POST':
         id_sample = request.form.get('id_sample')
-        num_seq = request.form.get('num_seq')
+        num_reads = request.form.get('num_reads')
         date_time = request.form.get('date_time')
         batch = request.form.get('batch')
         organism = request.form.get('organism')
@@ -171,7 +171,7 @@ def edit(id):
         path_r2= request.form.get('path_r2')
         result1 = request.form.get('result1')
         mykrobe = request.form.get('mykrobe')
-        Sample.query.filter_by(id_sample=id_sample).update({"num_seq": num_seq,
+        Sample.query.filter_by(id_sample=id_sample).update({"num_reads": num_reads,
             "date_time":date_time, "batch": batch,"organism": organism,
             "location": location,"path_r1":path_r1,"path_r2": path_r2,"result1":result1,"mykrobe":mykrobe})
         
@@ -209,10 +209,10 @@ def list_batch():
     List all batch
     """
     if request.method == 'GET':
-        batchs=db.session.query(Batch).all()
+        batches=db.session.query(Batch).all()
         db.session.commit()
-        return render_template('batchQuery.html', batchs=batchs, title='list batch')
-    # for batch in batchs:
+        return render_template('batchQuery.html', batches=batches, title='list batch')
+    # for batch in batches:
     #     print(batch)
     #     print (batch.id_batch,batch.name_batch,batch.date_batch,batch.instrument,batch.primer)
     #     flash('Batch selected successfully!')

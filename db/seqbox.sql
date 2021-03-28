@@ -132,7 +132,7 @@ INSERT INTO `mykrobe` (`id_mykrobe`, `mykrobe_version`, `phylo_grp`, `phylo_grp_
 
 CREATE TABLE IF NOT EXISTS `sample` (
   `id_sample` varchar(20) NOT NULL,
-  `num_seq` varchar(60) NOT NULL,
+  `num_reads` varchar(60) NOT NULL,
   `date_time` datetime NOT NULL,
   `organism` varchar(30) NOT NULL,
   `batch` varchar(50) DEFAULT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `sample` (
 -- Contenu de la table `sample`
 --
 
-INSERT INTO `sample` (`id_sample`, `num_seq`, `date_time`, `organism`, `batch`, `location`, `path_r1`, `path_r2`, `result1`, `mykrobe`) VALUES
+INSERT INTO `sample` (`id_sample`, `num_reads`, `date_time`, `organism`, `batch`, `location`, `path_r1`, `path_r2`, `result1`, `mykrobe`) VALUES
 ('05', 'ok', '2019-08-15 00:00:00', 'kkk', NULL, NULL, 'jj', '', NULL, NULL),
 ('45p', 'ii', '0000-00-00 00:00:00', '', NULL, NULL, '', '', NULL, NULL),
 ('as', 'gg', '0000-00-00 00:00:00', '', '555558', '34 NGO AU CO', '', '', NULL, 2),
