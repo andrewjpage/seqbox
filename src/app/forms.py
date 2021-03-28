@@ -1,6 +1,6 @@
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User, Sample, Batch, Location, Result1, Mykrobe, Study,Sample_study
@@ -36,7 +36,7 @@ class SampleForm(FlaskForm):
     
     id_sample = StringField('id_sample', validators=[DataRequired()])
     num_seq = StringField('num_seq', validators=[DataRequired()])
-    date_time = StringField('date_time')
+    date_time = DateField('date_time')
     organism = StringField('organism')
     path_r1 = StringField('path_r1')
     path_r2 = StringField('path_r2')
