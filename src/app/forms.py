@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from app.models import User, Sample, Batch, Location, Result1, Mykrobe, Study,Sample_study
+from app.models import User, Location, Result1, Mykrobe, Study,Sample_study #Sample, Batch,
 
 class LoginForm(FlaskForm):
    

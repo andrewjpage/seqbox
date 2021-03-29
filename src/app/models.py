@@ -5,7 +5,7 @@ from datetime import datetime
 from app import db, login
 from flask_login import UserMixin
 from sqlalchemy.orm import backref # relationship
-#from sqlalchemy import ForeignKey
+from sqlalchemy.schema import Sequence
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -85,6 +85,7 @@ class Post(db.Model):
         """
         return '<Post {}>'.format(self.body)
 
+
 class IlluminaReadSet(db.Model):
 
     """[Define model 'Sample' mapped to table 'sample']
@@ -96,41 +97,63 @@ class IlluminaReadSet(db.Model):
         [type] -- [description]
     """
     # are they using the actual read set id as the primary key?
-    id_illumina_read_set = db.Column(db.Integer, primary_key=True)
-
-    num_reads = db.Column(db.VARCHAR(60), comment="the number of sequencing reads")
-    added_at = db.Column(db.DATETIME)
+    id = db.Column(db.Integer, primary_key=True)
+    read_set_id = db.Column(db.Integer, Sequence("read_set_id"), comment="Read set id")
+    read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
+                                                          "Illumina data)")
+    read_set_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
+                                                      "{read_set_id}-{isolate.isolate_identifier}")
+    # num_reads = db.Column(db.VARCHAR(60), comment="the number of sequencing reads")
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     # organism = db.Column(db.VARCHAR(30))
-    batch = db.Column(db.VARCHAR(50), db.ForeignKey("batch.id_batch",onupdate="cascade",ondelete="set null"),nullable=True)
-    batches = db.relationship("Batch", backref=backref("illumina_read_set",passive_updates=True,passive_deletes=True))
+    illumina_batch = db.Column(db.VARCHAR(50), db.ForeignKey("illumina_batch.id", onupdate="cascade", ondelete="set null"), nullable=True)
+    illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_read_set", passive_updates=True, passive_deletes=True))
 
     path_r1 = db.Column(db.VARCHAR(60))
     path_r2 = db.Column(db.VARCHAR(60))
-    result1 = db.Column(db.Integer, db.ForeignKey("result1.id_result1",onupdate="cascade",ondelete="set null"),nullable=True) 
-    results1 = db.relationship("Result1", backref=backref("illumina_read_set",passive_updates=True,passive_deletes=True))
-    mykrobe = db.Column(db.Integer, db.ForeignKey("mykrobe.id_mykrobe",onupdate="cascade",ondelete="set null"),nullable=True)
-    mykrobes = db.relationship("Mykrobe", backref=backref("illumina_read_set",passive_updates=True,passive_deletes=True))
+    result1 = db.Column(db.Integer, db.ForeignKey("result1.id_result1", onupdate="cascade", ondelete="set null"), nullable=True)
+    results1 = db.relationship("Result1", backref=backref("illumina_read_set", passive_updates=True, passive_deletes=True))
+    mykrobe = db.Column(db.Integer, db.ForeignKey("mykrobe.id_mykrobe", onupdate="cascade", ondelete="set null"), nullable=True)
+    mykrobes = db.relationship("Mykrobe", backref=backref("illumina_read_set", passive_updates=True, passive_deletes=True))
 
+    isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"), nullable=True)
+    # isolates = db.relationship("Isolate", back_populates="illumina_read_sets")
     def __repr__(self):
-        return "<Sample(id_sample='%s', num_reads='%s', organism='%s', batch='%s', date_time='%s', location='%s', path_r1='%s', path_r2='%s', result1='%s', mykrobe='%s')>" % (self.id_sample, self.num_reads, self.organism, self.batch, self.added_at, self.location, self.path_r1, self.path_r2, self.result1, self.mykrobe)
+        # return "<Sample(id_sample='%s', num_reads='%s', organism='%s', batch='%s', date_time='%s', location='%s', path_r1='%s', path_r2='%s', result1='%s', mykrobe='%s')>" % (self.id_sample, self.num_reads, self.organism, self.batch, self.added_at, self.location, self.path_r1, self.path_r2, self.result1, self.mykrobe)
+        return f"IlluminaReadSet({self.id})"
 
+class NanoporeReadSet(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    path_fast5 = db.Column(db.VARCHAR(60))
+    path_fastq = db.Column(db.VARCHAR(60))
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade", ondelete="set null"), nullable=True)
+    # num_reads = db.Column()
 
 class Isolate(db.Model):
-    id_isolate = db.Column(db.Integer, primary_key=True)
-    isolate_identifier = db.Column(db.VARCHAR(30))
-    species = db.Column(db.VARCHAR(120))
-    sample_type = db.Column(db.VARCHAR(60))
-    patient_identifier = db.Column(db.VARCHAR(30))
+    id = db.Column(db.Integer, primary_key=True)
+    isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate", )
+    species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
+    sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? ")
+    patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
     date_collected = db.Column(db.DATETIME)
-    date_added = db.Column(db.DATETIME)
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     location = db.Column(db.VARCHAR(50), db.ForeignKey("location.id_location", onupdate="cascade", ondelete="set null"),
                          nullable=True)
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
 
-    def __repr__(self):
-        return f"Sample({self.isolate_identifier}, {self.species})"
+    # illumina_read_set = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
+    #                                                         ondelete="set null"), nullable=True)
+    illumina_read_sets = db.relationship("IlluminaReadSet", backref="isolate")
 
-class Batch(db.Model):
+    nanopore_read_set = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
+                                                            ondelete="set null"), nullable=True)
+    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
+
+    def __repr__(self):
+        return f"Sample({self.id}, {self.isolate_identifier}, {self.species})"
+
+class IlluminaBatch(db.Model):
     """[Define model 'Batch' mapped to table 'batch']
     
     Arguments:
@@ -139,14 +162,28 @@ class Batch(db.Model):
     Returns:
         [type] -- [description]
     """
-    id_batch = db.Column(db.VARCHAR(30),primary_key=True)
-    name_batch = db.Column(db.VARCHAR(50))
-    date_batch = db.Column(db.DATE)
+    id = db.Column(db.VARCHAR(30), primary_key=True)
+    name = db.Column(db.VARCHAR(50))
+    date_run = db.Column(db.DATE)
     instrument = db.Column(db.VARCHAR(250))
-    primer = db.Column(db.VARCHAR(100))
+    # primer = db.Column(db.VARCHAR(100))
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    library_prep_method = db.Column(db.VARCHAR(250))
+    dna_extraction_method = db.Column(db.VARCHAR(250))
     
     def __repr__(self):
-        return '<Batch {}>'.format(self.name_batch)
+        return '<Batch {}>'.format(self.name)
+
+class NanoporeBatch(db.Model):
+    id = db.Column(db.VARCHAR(30), primary_key=True)
+    name = db.Column(db.VARCHAR(50))
+    date_run = db.Column(db.DATE)
+    instrument = db.Column(db.VARCHAR(250))
+    library_prep_method = db.Column(db.VARCHAR(250))
+    dna_extraction_method = db.Column(db.VARCHAR(250))
+
+    def __repr__(self):
+        return '<Batch {}>'.format(self.name)
 
 class Location(db.Model):
     """[Define model 'Location' mapped to table 'location']
