@@ -142,8 +142,6 @@ class Isolate(db.Model):
                          nullable=True)
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
 
-    # illumina_read_set = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
-    #                                                         ondelete="set null"), nullable=True)
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="isolate")
 
     nanopore_read_set = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",

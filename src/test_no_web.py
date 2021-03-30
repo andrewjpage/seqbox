@@ -36,8 +36,6 @@ def add_illumina_read_set():
     db.session.commit()
     return illumina_read_set
 
-def add_and_link_irs():
-    irs = add_illumina_read_set()
 
 
 def query_isolates():
