@@ -143,9 +143,9 @@ class Location(db.Model):
     Returns:
         [type] -- [description]
     """
-    id_location = db.Column(db.VARCHAR(25),primary_key=True)
+    id_location = db.Column(db.VARCHAR(25), primary_key=True)
     continent = db.Column(db.VARCHAR(80))
-    country  = db.Column(db.VARCHAR(60))
+    country = db.Column(db.VARCHAR(60))
     province = db.Column(db.VARCHAR(40))
     city = db.Column(db.VARCHAR(50))
    
