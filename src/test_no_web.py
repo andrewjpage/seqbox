@@ -13,6 +13,7 @@ def add_isolate():
     db.session.add(isolate)
     db.session.commit()
 
+
 def add_isolate_and_irs():
     irs1 = IlluminaReadSet(read_set_filename='PMQ124_sequencing',
                                         path_r1="/path/to/PMQ124_sequencing_R1.fastq",
@@ -37,13 +38,13 @@ def add_illumina_read_set():
     return illumina_read_set
 
 
-
 def query_isolates():
     # or can use db.session.query(Isolate)
     i = Isolate.query.all()
     for x in i:
         # pprint.pprint(x.__dict__)
         print(x.illumina_read_sets)
+
 
 def query_irs():
     # or can use db.session.query(Isolate)
@@ -52,8 +53,13 @@ def query_irs():
     # for x in i:
     #     print(x.__dict__)
 
+
 def create_it():
     db.create_all()
+
+
+def add_isolate_and_study():
+
 
 # create_it()
 # add_isolate()
