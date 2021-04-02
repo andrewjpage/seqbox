@@ -6,6 +6,7 @@ from app import db, login
 from flask_login import UserMixin
 from sqlalchemy.orm import backref # relationship
 from sqlalchemy.schema import Sequence
+from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -145,9 +146,9 @@ class Isolate(db.Model):
                          nullable=True)
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="isolate")
-    nanopore_read_set = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
-                                                            ondelete="set null"), nullable=True)
-    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
+    # nanopore_read_set = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
+    #                                                         ondelete="set null"), nullable=True)
+    # nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
     academic_group = db.Column(db.VARCHAR(60), comment="The name of the academic group this isolate belongs to")
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
@@ -198,7 +199,7 @@ class Location(db.Model):
     """
     id_location = db.Column(db.VARCHAR(25),primary_key=True)
     continent = db.Column(db.VARCHAR(80))
-    country  = db.Column(db.VARCHAR(60))
+    country = db.Column(db.VARCHAR(60))
     province = db.Column(db.VARCHAR(40))
     city = db.Column(db.VARCHAR(50))
    
@@ -235,10 +236,13 @@ class Mykrobe(db.Model):
     Returns:
         [type] -- [description]
     """
-    
+    illumina_read_set_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
+                                                               ondelete="set null"), nullable=True)
+    nanopore_read_set_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
+                                                               ondelete="set null"), nullable=True)
     id_mykrobe = db.Column(db.Integer, primary_key=True)
-    seqbox_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.seq_box_id", onupdate="cascade", ondelete="set null"),
-                          nullable=True)
+    seqbox_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.seq_box_id", onupdate="cascade",
+                                                    ondelete="set null"), nullable=True)
     mykrobe_version = db.Column(db.VARCHAR(50))
     phylo_grp = db.Column(db.VARCHAR(60))
     phylo_grp_covg = db.Column(db.CHAR)
@@ -256,7 +260,13 @@ class Mykrobe(db.Model):
   
     def __repr__(self):
         return '<Mykrobe {}>'.format(self.mykrobe_version)
-    
+
+    # from here https://stackoverflow.com/questions/57040784/sqlalchemy-foreign-key-to-multiple-tables
+    @hybrid_property
+    def read_set_id(self):
+        return self.illumina_read_set_id or self.nanopore_read_set_id
+
+
 class Study(db.Model):
 
     """[Define model 'Study' mapped to table 'study']
