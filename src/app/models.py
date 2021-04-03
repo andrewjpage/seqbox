@@ -87,6 +87,28 @@ class Post(db.Model):
         return '<Post {}>'.format(self.body)
 
 
+class ReadSet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.VARCHAR(32), comment="read set type i.e. is it Illumina, nanopore, etc.")
+    seqbox_id = db.Column(db.Integer, Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to uniquely "
+                                                                     "identify this read set")
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
+                                                          "Illumina data)")
+    read_set_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
+                                                      "{read_set_id}-{isolate.isolate_identifier}")
+    mykrobes = db.relationship("Mykrobe", backref=backref("read_set", passive_updates=True,
+                                                          passive_deletes=True))
+    isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
+                           nullable=True)
+    illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset")
+    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset")
+    # @hybrid_property
+    # def read_set_id(self):
+    #     return self.illumina_read_set_id or self.nanopore_read_set_id
+
+    def __repr__(self):
+        return f"ReadSet(id: {self.id}, seqbox_id: {self.seqbox_id}, type: {self.type})"
 
 
 class IlluminaReadSet(db.Model):
@@ -98,27 +120,14 @@ class IlluminaReadSet(db.Model):
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
-    seqbox_id = db.Column(db.Integer, Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to uniquely "
-                                                                     "identify this read set")
-    read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
-                                                          "Illumina data)")
-    read_set_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
-                                                      "{read_set_id}-{isolate.isolate_identifier}")
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    illumina_batch = db.Column(db.VARCHAR(50), db.ForeignKey("illumina_batch.id", onupdate="cascade",
-                                                             ondelete="set null"), nullable=True, comment="")
-    illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_read_set", passive_updates=True,
-                                                                        passive_deletes=True))
+    read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
+    # illumina_batch = db.Column(db.VARCHAR(50), db.ForeignKey("illumina_batch.id", onupdate="cascade",
+    #                                                          ondelete="set null"), nullable=True, comment="")
+    # illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_read_set", passive_updates=True,
+    #                                                                     passive_deletes=True))
     path_r1 = db.Column(db.VARCHAR(60))
     path_r2 = db.Column(db.VARCHAR(60))
-    # result1 = db.Column(db.Integer, db.ForeignKey("result1.id_result1", onupdate="cascade", ondelete="set null"),
-    #                     nullable=True)
-    # results1 = db.relationship("Result1", backref=backref("illumina_read_set", passive_updates=True,
-    #                                                       passive_deletes=True))
-    mykrobes = db.relationship("Mykrobe", backref=backref("illumina_read_set", passive_updates=True,
-                                                          passive_deletes=True))
-    isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
-                           nullable=True)
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
 
     def __repr__(self):
         return f"IlluminaReadSet({self.id}, {self.path_r1})"
@@ -126,17 +135,13 @@ class IlluminaReadSet(db.Model):
 
 class NanoporeReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without extension")
-    isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
-                           nullable=True)
+    read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
     path_fast5 = db.Column(db.VARCHAR(60))
     path_fastq = db.Column(db.VARCHAR(60))
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     # nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade",
     # ondelete="set null"), nullable=True)
     # num_reads = db.Column()
-    mykrobes = db.relationship("Mykrobe", backref=backref("nanopore_read_set", passive_updates=True,
-                                                          passive_deletes=True))
 
     def __repr__(self):
         return f"NanoporeReadSet({self.id}, {self.path_fastq})"
@@ -148,9 +153,7 @@ class Mykrobe(db.Model):
     Returns:
         [type] -- [description]
     """
-    illumina_read_set_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
-                                                               ondelete="set null"), nullable=True)
-    nanopore_read_set_id = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
+    read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id", onupdate="cascade",
                                                                ondelete="set null"), nullable=True)
     id = db.Column(db.Integer, primary_key=True)
     # seqbox_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.seqbox_id", onupdate="cascade",
@@ -175,9 +178,7 @@ class Mykrobe(db.Model):
 
     # from here https://stackoverflow.com/questions/57040784/sqlalchemy-foreign-key-to-multiple-tables
     # alternative ways of doing it https://stackoverflow.com/questions/7844460/foreign-key-to-multiple-tables
-    @hybrid_property
-    def read_set_id(self):
-        return self.illumina_read_set_id or self.nanopore_read_set_id
+
 
 
 class Isolate(db.Model):
@@ -191,8 +192,9 @@ class Isolate(db.Model):
     location = db.Column(db.VARCHAR(50), db.ForeignKey("location.id_location", onupdate="cascade", ondelete="set null"),
                          nullable=True)
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
-    illumina_read_sets = db.relationship("IlluminaReadSet", backref="isolate")
-    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
+    read_sets = db.relationship("ReadSet", backref="isolate")
+    # illumina_read_sets = db.relationship("IlluminaReadSet", backref="isolate")
+    # nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
     # nanopore_read_set = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
     #                                                         ondelete="set null"), nullable=True)
     # nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
