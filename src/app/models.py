@@ -111,28 +111,74 @@ class IlluminaReadSet(db.Model):
                                                                         passive_deletes=True))
     path_r1 = db.Column(db.VARCHAR(60))
     path_r2 = db.Column(db.VARCHAR(60))
-    result1 = db.Column(db.Integer, db.ForeignKey("result1.id_result1", onupdate="cascade", ondelete="set null"),
-                        nullable=True)
-    results1 = db.relationship("Result1", backref=backref("illumina_read_set", passive_updates=True,
-                                                          passive_deletes=True))
-    # mykrobe = db.Column(db.Integer, db.ForeignKey("mykrobe.id_mykrobe", onupdate="cascade", ondelete="set null"),
-                        # nullable=True)
+    # result1 = db.Column(db.Integer, db.ForeignKey("result1.id_result1", onupdate="cascade", ondelete="set null"),
+    #                     nullable=True)
+    # results1 = db.relationship("Result1", backref=backref("illumina_read_set", passive_updates=True,
+    #                                                       passive_deletes=True))
     mykrobes = db.relationship("Mykrobe", backref=backref("illumina_read_set", passive_updates=True,
                                                           passive_deletes=True))
     isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
                            nullable=True)
 
     def __repr__(self):
-        return f"IlluminaReadSet({self.id})"
+        return f"IlluminaReadSet({self.id}, {self.path_r1})"
 
 
 class NanoporeReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without extension")
+    isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
+                           nullable=True)
     path_fast5 = db.Column(db.VARCHAR(60))
     path_fastq = db.Column(db.VARCHAR(60))
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade", ondelete="set null"), nullable=True)
+    # nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade",
+    # ondelete="set null"), nullable=True)
     # num_reads = db.Column()
+    mykrobes = db.relationship("Mykrobe", backref=backref("nanopore_read_set", passive_updates=True,
+                                                          passive_deletes=True))
+
+    def __repr__(self):
+        return f"NanoporeReadSet({self.id}, {self.path_fastq})"
+
+
+class Mykrobe(db.Model):
+    """[Define model 'Mykrobe' mapped to table 'mykrobe']
+
+    Returns:
+        [type] -- [description]
+    """
+    illumina_read_set_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
+                                                               ondelete="set null"), nullable=True)
+    nanopore_read_set_id = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
+                                                               ondelete="set null"), nullable=True)
+    id = db.Column(db.Integer, primary_key=True)
+    # seqbox_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.seqbox_id", onupdate="cascade",
+    # ondelete="set null"), nullable=True)
+    mykrobe_version = db.Column(db.VARCHAR(50))
+    phylo_grp = db.Column(db.VARCHAR(60))
+    phylo_grp_covg = db.Column(db.CHAR)
+    phylo_grp_depth = db.Column(db.CHAR)
+    species = db.Column(db.VARCHAR(50))
+    species_covg = db.Column(db.CHAR)
+    species_depth = db.Column(db.CHAR)
+    lineage = db.Column(db.VARCHAR(50))
+    lineage_covg = db.Column(db.CHAR)
+    lineage_depth = db.Column(db.CHAR)
+    susceptibility = db.Column(db.VARCHAR(50))
+    variants = db.Column(db.VARCHAR(80))
+    genes = db.Column(db.VARCHAR(100))
+    drug = db.Column(db.VARCHAR(90))
+
+    def __repr__(self):
+        return f'<Mykrobe {self.id}, {self.read_set_id}, {self.mykrobe_version}, {self.species})'
+
+    # from here https://stackoverflow.com/questions/57040784/sqlalchemy-foreign-key-to-multiple-tables
+    # alternative ways of doing it https://stackoverflow.com/questions/7844460/foreign-key-to-multiple-tables
+    @hybrid_property
+    def read_set_id(self):
+        return self.illumina_read_set_id or self.nanopore_read_set_id
+
 
 class Isolate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -146,6 +192,7 @@ class Isolate(db.Model):
                          nullable=True)
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="isolate")
+    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
     # nanopore_read_set = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
     #                                                         ondelete="set null"), nullable=True)
     # nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
@@ -229,42 +276,6 @@ class Result1(db.Model):
     def __repr__(self):
         return '<Result1 {}>'.format(self.qc)
 
-class Mykrobe(db.Model):
-
-    """[Define model 'Mykrobe' mapped to table 'mykrobe']
-    
-    Returns:
-        [type] -- [description]
-    """
-    illumina_read_set_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
-                                                               ondelete="set null"), nullable=True)
-    nanopore_read_set_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.id", onupdate="cascade",
-                                                               ondelete="set null"), nullable=True)
-    id_mykrobe = db.Column(db.Integer, primary_key=True)
-    seqbox_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.seq_box_id", onupdate="cascade",
-                                                    ondelete="set null"), nullable=True)
-    mykrobe_version = db.Column(db.VARCHAR(50))
-    phylo_grp = db.Column(db.VARCHAR(60))
-    phylo_grp_covg = db.Column(db.CHAR)
-    phylo_grp_depth = db.Column(db.CHAR)
-    species = db.Column(db.VARCHAR(50))
-    species_covg = db.Column(db.CHAR)
-    species_depth = db.Column(db.CHAR)
-    lineage = db.Column(db.VARCHAR(50))
-    lineage_covg = db.Column(db.CHAR)
-    lineage_depth = db.Column(db.CHAR)
-    susceptibility = db.Column(db.VARCHAR(50))
-    variants = db.Column(db.VARCHAR(80))
-    genes = db.Column(db.VARCHAR(100))
-    drug = db.Column(db.VARCHAR(90))
-  
-    def __repr__(self):
-        return '<Mykrobe {}>'.format(self.mykrobe_version)
-
-    # from here https://stackoverflow.com/questions/57040784/sqlalchemy-foreign-key-to-multiple-tables
-    @hybrid_property
-    def read_set_id(self):
-        return self.illumina_read_set_id or self.nanopore_read_set_id
 
 
 class Study(db.Model):
