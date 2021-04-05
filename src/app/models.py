@@ -292,19 +292,6 @@ class Study(db.Model):
         return f"Study(id: {self.id}, details: {self.study_details})"
 
 
-# class IsolateStudy(db.Model):
-#     """[Define model 'Sample_study' mapped to table 'sample_study']
-#
-#     Returns:
-#         [type] -- [description]
-#     """
-#     # id = db.Column(db.Integer, primary_key=True)
-#     isolate_id = db.Column(db.VARCHAR(40), db.ForeignKey("isolate.id"), primary_key=True)
-#     study_id = db.Column(db.VARCHAR(50), db.ForeignKey("study.id"), primary_key=True)
-#
-#     def __repr__(self):
-#         return '<Sample_study {}>'.format(self.id_sample)
-
 isolate_study = db.Table("isolate_study", db.Column("isolate_id", db.Integer, db.ForeignKey("isolate.id"),
                                                     primary_key=True),
                          db.Column("study_id", db.Integer, db.ForeignKey("study.id"), primary_key=True))
