@@ -193,7 +193,8 @@ class Isolate(db.Model):
                          nullable=True)
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
-    studies = db.relationship("Study", secondary="isolate_study")
+
+    studies = db.relationship("Study", secondary="isolate_study", backref=db.backref("isolate"))
     academic_group = db.Column(db.VARCHAR(60), comment="The name of the academic group this isolate belongs to")
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
@@ -285,22 +286,25 @@ class Study(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     study_details = db.Column(db.VARCHAR(80))
-    isolates = db.relationship("Isolate", secondary="isolate_study")
+    # isolates = db.relationship("Isolate", secondary="isolate_study")
     
     def __repr__(self):
-        return '<Study {}>'.format(self.result_study)
+        return f"Study(id: {self.id}, details: {self.study_details})"
 
 
-class IsolateStudy(db.Model):
-    """[Define model 'Sample_study' mapped to table 'sample_study']
-    
-    Returns:
-        [type] -- [description]
-    """
-    # id = db.Column(db.Integer, primary_key=True)
-    isolate_id = db.Column(db.VARCHAR(40), db.ForeignKey("isolate.id"), primary_key=True)
-    study_id = db.Column(db.VARCHAR(50), db.ForeignKey("study.id"), primary_key=True)
-    
-    def __repr__(self):
-        return '<Sample_study {}>'.format(self.id_sample)
+# class IsolateStudy(db.Model):
+#     """[Define model 'Sample_study' mapped to table 'sample_study']
+#
+#     Returns:
+#         [type] -- [description]
+#     """
+#     # id = db.Column(db.Integer, primary_key=True)
+#     isolate_id = db.Column(db.VARCHAR(40), db.ForeignKey("isolate.id"), primary_key=True)
+#     study_id = db.Column(db.VARCHAR(50), db.ForeignKey("study.id"), primary_key=True)
+#
+#     def __repr__(self):
+#         return '<Sample_study {}>'.format(self.id_sample)
 
+isolate_study = db.Table("isolate_study", db.Column("isolate_id", db.Integer, db.ForeignKey("isolate.id"),
+                                                    primary_key=True),
+                         db.Column("study_id", db.Integer, db.ForeignKey("study.id"), primary_key=True))

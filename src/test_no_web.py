@@ -1,7 +1,7 @@
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Study, IsolateStudy
+from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Study, isolate_study#, IsolateStudy
 
 
 def add_isolate():
@@ -15,7 +15,16 @@ def add_isolate():
 
 
 def add_study():
-    pass
+    study1 = Study(study_details="a made up study")
+    study2 = Study(study_details="a made up study")
+    db.session.add_all([study1, study2])
+
+def add_isolate_study():
+    # isolate_study.insert().values(isolate_id=1, study_id=1)
+    db.session.execute(isolate_study.insert(), params={"isolate_id": 1, "study_id": 1})
+    db.session.execute(isolate_study.insert(), params={"isolate_id": 2, "study_id": 1})
+    db.session.execute(isolate_study.insert(), params={"isolate_id": 1, "study_id": 2})
+    db.session.commit()
 
 
 def add_isolate_and_rs():
@@ -115,16 +124,19 @@ def join_nrs():
     pprint.pprint(a)
 
 
+def query_study():
+    s = Study.query.all()
+    for x in s:
+        print(x.isolate)
+
 def create_it():
     db.create_all()
 
 
-def add_isolate_and_study():
-    pass
-
-
-create_it()
-add_isolate()
+# create_it()
+# add_isolate()
+# add_study()
+# add_isolate_study()
 # add_isolate_and_rs()
 # add_nanopore_read_set()
 # add_mykrobe()
@@ -134,3 +146,4 @@ add_isolate()
 # query_mykrobe()
 # query_isolate_reads_myk()
 # join_nrs()
+query_study()
