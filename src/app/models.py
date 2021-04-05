@@ -193,11 +193,7 @@ class Isolate(db.Model):
                          nullable=True)
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
-    # illumina_read_sets = db.relationship("IlluminaReadSet", backref="isolate")
-    # nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
-    # nanopore_read_set = db.Column(db.Integer, db.ForeignKey("nanopore_read_set.id", onupdate="cascade",
-    #                                                         ondelete="set null"), nullable=True)
-    # nanopore_read_sets = db.relationship("NanoporeReadSet", backref="isolate")
+    studies = db.relationship("Study", secondary="isolate_study")
     academic_group = db.Column(db.VARCHAR(60), comment="The name of the academic group this isolate belongs to")
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
@@ -279,7 +275,6 @@ class Result1(db.Model):
         return '<Result1 {}>'.format(self.qc)
 
 
-
 class Study(db.Model):
 
     """[Define model 'Study' mapped to table 'study']
@@ -287,12 +282,14 @@ class Study(db.Model):
     Returns:
         [type] -- [description]
     """
-    id_study = db.Column(db.VARCHAR(50),primary_key=True)
-    date_study = db.Column(db.DATE)
-    result_study = db.Column(db.VARCHAR(80))
+    id = db.Column(db.Integer, primary_key=True)
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    study_details = db.Column(db.VARCHAR(80))
+    isolates = db.relationship("Isolate", secondary="isolate_study")
     
     def __repr__(self):
         return '<Study {}>'.format(self.result_study)
+
 
 class IsolateStudy(db.Model):
     """[Define model 'Sample_study' mapped to table 'sample_study']
@@ -300,8 +297,9 @@ class IsolateStudy(db.Model):
     Returns:
         [type] -- [description]
     """
-    id_isolate = db.Column(db.VARCHAR(40), primary_key=True)
-    id_study = db.Column(db.VARCHAR(50), primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
+    isolate_id = db.Column(db.VARCHAR(40), db.ForeignKey("isolate.id"), primary_key=True)
+    study_id = db.Column(db.VARCHAR(50), db.ForeignKey("study.id"), primary_key=True)
     
     def __repr__(self):
         return '<Sample_study {}>'.format(self.id_sample)

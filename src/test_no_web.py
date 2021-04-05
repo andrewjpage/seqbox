@@ -1,17 +1,21 @@
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet
+from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Study, IsolateStudy
 
 
 def add_isolate():
-    isolate = Isolate(date_collected=datetime.datetime.utcnow(), species='Salmonella',
-                            location='blah', isolate_identifier='PMQ124')
-    print(isolate)
+    isolate1 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH001')
+    isolate2 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH002')
+    # print(isolate)
     #save the model to the database
     # use add_all([list, of, isolates]) to add multiples at the same time
-    db.session.add(isolate)
+    db.session.add_all([isolate1, isolate2])
     db.session.commit()
+
+
+def add_study():
+    pass
 
 
 def add_isolate_and_rs():
@@ -28,7 +32,7 @@ def add_isolate_and_rs():
     nrs1 = NanoporeReadSet(read_set_id=3, path_fastq="/path/to/ASH001_nanopore_sequencing.fastq")
     rs3.nanopore_read_sets = [nrs1]
 
-    isolate = Isolate(date_collected=datetime.datetime.utcnow(), species='Salmonella',
+    isolate = Isolate(date_added=datetime.datetime.utcnow(), species='Salmonella',
                       location='blah', isolate_identifier='ASH001')
     isolate.read_sets = [rs1, rs2, rs3]
     # print(isolate.illumina_read_sets)
@@ -91,40 +95,11 @@ def query_mykrobe():
         print(x.read_set_id)
 
 
-def query_join():
-    ## this one works - it works when teh first outerjoin is on Isolate, but not when it's on IRS
-    # a = db.session.query(Isolate, IlluminaReadSet, Mykrobe) \
-    #     .outerjoin(Isolate) \
-    #     .outerjoin(Mykrobe).all()
-
-    # a = db.session.query(Isolate, IlluminaReadSet, Mykrobe, NanoporeReadSet) \
-    #     .outerjoin(Isolate) \
-    #     .outerjoin(NanoporeReadSet, Isolate, NanoporeReadSet.isolate_id == Isolate.id) \
-    #     .outerjoin(Mykrobe).all()
-
-    # a = db.session.query(Isolate)
-
-    # a = db.session.query(Isolate, IlluminaReadSet, NanoporeReadSet, Mykrobe)\
-    #     .join(Isolate, IlluminaReadSet, Isolate.id == IlluminaReadSet.isolate_id, isouter=True)\
-    #     .join(Isolate, NanoporeReadSet, Isolate.id == NanoporeReadSet.isolate_id, isouter=True).all()
-        # .join(Mykrobe, IlluminaReadSet, IlluminaReadSet.id == Mykrobe.illumina_read_set_id, isouter=True)\
-        # .join(Mykrobe, NanoporeReadSet, NanoporeReadSet.id == Mykrobe.nanopore_read_set_id, isouter=True)\
-
+def query_isolate_reads_myk():
     a = db.session.query(Isolate, ReadSet, Mykrobe)\
         .join(Isolate, isouter=True)\
         .join(Mykrobe, isouter=True).distinct()
 
-    # b = db.session.query(Isolate, NanoporeReadSet, Mykrobe)\
-    #     .join(Isolate, isouter=True)\
-    #     .join(Mykrobe, isouter=True).distinct()
-
-    # c = a.union(b)
-        # .join()
-        # .join(NanoporeReadSet, isouter=True).all()
-        # .join(Isolate, isouter=True).all()
-        # .join(Mykrobe, IlluminaReadSet, IlluminaReadSet.id == Mykrobe.illumina_read_set_id, isouter=True)\
-        # .join(Mykrobe, NanoporeReadSet, NanoporeReadSet.id == Mykrobe.nanopore_read_set_id, isouter=True)\
-    # a = a.extend(b)
     pprint.pprint(a.all())
     # print()
     # pprint.pprint(b.all())
@@ -148,8 +123,8 @@ def add_isolate_and_study():
     pass
 
 
-# create_it()
-# add_isolate()
+create_it()
+add_isolate()
 # add_isolate_and_rs()
 # add_nanopore_read_set()
 # add_mykrobe()
@@ -157,5 +132,5 @@ def add_isolate_and_study():
 # query_irs()
 # query_nrs()
 # query_mykrobe()
-query_join()
+# query_isolate_reads_myk()
 # join_nrs()
