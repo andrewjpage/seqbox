@@ -27,6 +27,14 @@ def add_isolate_study():
     db.session.commit()
 
 
+def add_isolate_study_same_time():
+    isolate1 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH001')
+    isolate2 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH002')
+    study1 = Study(study_details="a made up study")
+    study2 = Study(study_details="a made up study")
+    isolate1.studies.append(study1)
+
+
 def add_isolate_and_rs():
     rs1 = ReadSet(read_set_filename='ASH001_sequencing', type="illumina")
     rs2 = ReadSet(read_set_filename='ASH001_v2_sequencing', type="illumina")

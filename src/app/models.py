@@ -180,7 +180,6 @@ class Mykrobe(db.Model):
     # alternative ways of doing it https://stackoverflow.com/questions/7844460/foreign-key-to-multiple-tables
 
 
-
 class Isolate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate", )
@@ -201,6 +200,7 @@ class Isolate(db.Model):
 
     def __repr__(self):
         return f"Sample({self.id}, {self.isolate_identifier}, {self.species})"
+
 
 class IlluminaBatch(db.Model):
     """[Define model 'Batch' mapped to table 'batch']
@@ -223,6 +223,7 @@ class IlluminaBatch(db.Model):
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
 
+
 class NanoporeBatch(db.Model):
     id = db.Column(db.VARCHAR(30), primary_key=True)
     name = db.Column(db.VARCHAR(50))
@@ -233,6 +234,7 @@ class NanoporeBatch(db.Model):
 
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
+
 
 class Location(db.Model):
     """[Define model 'Location' mapped to table 'location']
@@ -252,6 +254,7 @@ class Location(db.Model):
 
     def __repr__(self):
         return '<Location {}>'.format(self.continent)
+
 
 class Result1(db.Model):
     """[Define model 'Result1' mapped to table 'result1']
