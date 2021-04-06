@@ -185,7 +185,7 @@ class Isolate(db.Model):
     isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate", )
     species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
     sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? ")
-    patient_id = db.Column(db.ForeignKey("patient.id"))
+    # patient_id = db.Column(db.ForeignKey("patient.id"))
     # patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
     date_collected = db.Column(db.DATETIME)
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
@@ -199,7 +199,6 @@ class Isolate(db.Model):
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
     ## NOTE - is the isolate identifier unique within a group or within a study?
-    __table_args__ = (UniqueConstraint('isolate_identifier', 'group', name='_isolateidentifier_group_uc'),)
 
     def __repr__(self):
         return f"Sample({self.id}, {self.isolate_identifier}, {self.species})"
@@ -239,15 +238,15 @@ class NanoporeBatch(db.Model):
         return '<Batch {}>'.format(self.name)
 
 
-class Patient(db.Model):
-    # assuming that each patient can only be in one study
-    # assuming that each patient identifier is unique wihtin a study
-    id = db.Column(db.Integer, primary_key=True)
-    study_id = db.Column(db.Integer)
-    patient_identifier = db.Column(db.VARCHAR(30))
-    isolates = db.relationship("Isolate", backref="patient")
-    __table_args__ = (UniqueConstraint('study_id', 'patient_identifier', name='_studyname_group_uc'),)
-    # study = db.Column(db.ForeignKey("study.id"))
+# class Patient(db.Model):
+#     # TODO - need to change the patient study relationship to many to many
+#     # assuming that each patient identifier is unique wihtin a study
+#     id = db.Column(db.Integer, primary_key=True)
+#     study_id = db.Column(db.Integer, db.ForeignKey("study.id"))
+#     patient_identifier = db.Column(db.VARCHAR(30))
+#     isolates = db.relationship("Isolate", backref="patient")
+#     __table_args__ = (UniqueConstraint('study_id', 'patient_identifier', name='_studyid_patientidentifier_uc'),)
+#     # study = db.Column(db.ForeignKey("study.id"))
 
 
 class Location(db.Model):
@@ -307,6 +306,7 @@ class Study(db.Model):
     group = db.Column(db.VARCHAR(60), comment="The name of the group this isolate belongs to")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     study_details = db.Column(db.VARCHAR(160))
+    # patients = db.relationship("patient", backref="study")
     __table_args__ = (UniqueConstraint('study_name', 'group', name='_studyname_group_uc'),)
     # isolates = db.relationship("Isolate", secondary="isolate_study")
     

@@ -95,6 +95,7 @@ def query_isolates():
     for x in i:
         print(x.isolate_identifier)
         print(x.studies)
+        print(x.read_sets)
         # pprint.pprint(x.__dict__)
         # print([y for y in x.read_sets])
 
@@ -150,7 +151,7 @@ def create_it():
     db.create_all()
 
 
-create_it()
+# create_it()
 # add_isolate()
 # add_study()
 # add_isolate_study()
@@ -158,7 +159,7 @@ create_it()
 # add_isolate_study_same_time()
 # add_nanopore_read_set()
 # add_mykrobe()
-# query_isolates()
+query_isolates()
 # query_irs()
 # query_nrs()
 # query_mykrobe()

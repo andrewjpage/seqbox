@@ -42,6 +42,8 @@ def get_read_sets(read_set_info, isolate_identifier, group):
 
 
 def get_patient():
+    # need patient_identifier and teh study.id
+
     pass
 
 
@@ -66,13 +68,17 @@ def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
     for i in isolate_info:
         study_names = [x.strip() for x in i['studies'].split(';')]
         studies = get_studies(study_names, i['group'])
+        # TODO - readsets not working
         read_sets = get_read_sets(read_set_info, i['isolate_identifier'], i['group'])
         # patient = get_patient()
         # location = get_location()
-        # isolate = Isolate(isolate_identifier=i['isolate_identifier'], species=i['species'], sample_type=i['sample_type']
-        #                   , patient_identifier=patient, date_collected=i['date_collected'],
-        #                   location=location, latitude=i['latitude'], longitude=i['longitude'], studies=studies,
-        #                   group=i['group'], institution=i['institution'])
+        # TODO - add the date parsing in
+        isolate = Isolate(isolate_identifier=i['isolate_identifier'], species=i['species'], sample_type=i['sample_type']
+                          , read_sets=read_sets,
+                          latitude=i['latitude'], longitude=i['longitude'], studies=studies,
+                          institution=i['institution'])
+        db.session.add(isolate)
+    db.session.commit()
 
 
 def main():
