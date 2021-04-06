@@ -5,7 +5,7 @@ from datetime import datetime
 from app import db, login
 from flask_login import UserMixin
 from sqlalchemy.orm import backref # relationship
-from sqlalchemy.schema import Sequence
+from sqlalchemy.schema import Sequence, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -101,8 +101,8 @@ class ReadSet(db.Model):
                                                           passive_deletes=True))
     isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
                            nullable=True)
-    illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset")
-    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset")
+    illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset", uselist=False)
+    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset", uselist=False)
     # @hybrid_property
     # def read_set_id(self):
     #     return self.illumina_read_set_id or self.nanopore_read_set_id
@@ -185,18 +185,21 @@ class Isolate(db.Model):
     isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate", )
     species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
     sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? ")
-    patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
+    patient_id = db.Column(db.ForeignKey("patient.id"))
+    # patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
     date_collected = db.Column(db.DATETIME)
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    location = db.Column(db.VARCHAR(50), db.ForeignKey("location.id_location", onupdate="cascade", ondelete="set null"),
-                         nullable=True)
+    latitude = db.Column(db.Float(), comment="Latitude of isolate origin if known")
+    longitude = db.Column(db.Float(), comment="Longitude of isolate origin if known")
+
     locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
 
-    studies = db.relationship("Study", secondary="isolate_study", backref=db.backref("isolate"))
-    academic_group = db.Column(db.VARCHAR(60), comment="The name of the academic group this isolate belongs to")
+    studies = db.relationship("Study", secondary="isolate_study", backref=db.backref("isolates"))
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
+    ## NOTE - is the isolate identifier unique within a group or within a study?
+    __table_args__ = (UniqueConstraint('isolate_identifier', 'group', name='_isolateidentifier_group_uc'),)
 
     def __repr__(self):
         return f"Sample({self.id}, {self.isolate_identifier}, {self.species})"
@@ -211,7 +214,7 @@ class IlluminaBatch(db.Model):
     Returns:
         [type] -- [description]
     """
-    id = db.Column(db.VARCHAR(30), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.VARCHAR(50))
     date_run = db.Column(db.DATE)
     instrument = db.Column(db.VARCHAR(250))
@@ -236,6 +239,17 @@ class NanoporeBatch(db.Model):
         return '<Batch {}>'.format(self.name)
 
 
+class Patient(db.Model):
+    # assuming that each patient can only be in one study
+    # assuming that each patient identifier is unique wihtin a study
+    id = db.Column(db.Integer, primary_key=True)
+    study_id = db.Column(db.Integer)
+    patient_identifier = db.Column(db.VARCHAR(30))
+    isolates = db.relationship("Isolate", backref="patient")
+    __table_args__ = (UniqueConstraint('study_id', 'patient_identifier', name='_studyname_group_uc'),)
+    # study = db.Column(db.ForeignKey("study.id"))
+
+
 class Location(db.Model):
     """[Define model 'Location' mapped to table 'location']
     
@@ -245,11 +259,13 @@ class Location(db.Model):
     Returns:
         [type] -- [description]
     """
-    id_location = db.Column(db.VARCHAR(25),primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     continent = db.Column(db.VARCHAR(80))
     country = db.Column(db.VARCHAR(60))
     province = db.Column(db.VARCHAR(40))
     city = db.Column(db.VARCHAR(50))
+    isolates = db.Column(db.VARCHAR(50), db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
+                         nullable=True)
    
 
     def __repr__(self):
@@ -287,12 +303,15 @@ class Study(db.Model):
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
+    study_name = db.Column(db.VARCHAR(32))
+    group = db.Column(db.VARCHAR(60), comment="The name of the group this isolate belongs to")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    study_details = db.Column(db.VARCHAR(80))
+    study_details = db.Column(db.VARCHAR(160))
+    __table_args__ = (UniqueConstraint('study_name', 'group', name='_studyname_group_uc'),)
     # isolates = db.relationship("Isolate", secondary="isolate_study")
     
     def __repr__(self):
-        return f"Study(id: {self.id}, details: {self.study_details})"
+        return f"Study(id: {self.id}, details: {self.study_name})"
 
 
 isolate_study = db.Table("isolate_study", db.Column("isolate_id", db.Integer, db.ForeignKey("isolate.id"),
