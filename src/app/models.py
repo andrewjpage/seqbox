@@ -63,30 +63,6 @@ def load_user(id):
     return User.query.get(int(id))
 
 
-class Post(db.Model):
-    """[summary]
-    
-    Arguments:
-        db {[type]} -- [description]ll
-    
-    Returns:
-        [type] -- [description]
-    """
-    id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    # user.id here refers to user table, id column
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    def __repr__(self):
-        """[summary]
-        
-        Returns:
-            [type] -- [description]
-        """
-        return '<Post {}>'.format(self.body)
-
-
 class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.VARCHAR(32), comment="read set type i.e. is it Illumina, nanopore, etc.")
@@ -259,29 +235,6 @@ class Patient(db.Model):
     __table_args__ = (UniqueConstraint('project_id', 'patient_identifier', name='_projectid_patientidentifier_uc'),)
     # project = db.Column(db.ForeignKey("project.id"))
     projects = db.relationship("Project", secondary="patient_project", backref=db.backref("patients"))
-
-
-class Result1(db.Model):
-    """[Define model 'Result1' mapped to table 'result1']
-    
-    Arguments:
-        db {[type]} -- [description]
-    
-    Returns:
-        [type] -- [description]
-    """
-    id_result1 = db.Column(db.Integer,primary_key=True)
-    qc = db.Column(db.VARCHAR(60))
-    ql = db.Column(db.VARCHAR(60))
-    description = db.Column(db.VARCHAR(250))
-    snapper_variants = db.Column(db.Integer)
-    snapper_ignored = db.Column(db.Integer)
-    num_heterozygous = db.Column(db.Integer)
-    mean_depth = db.Column(db.CHAR)
-    coverage = db.Column(db.CHAR)
-   
-    def __repr__(self):
-        return '<Result1 {}>'.format(self.qc)
 
 
 class Project(db.Model):

@@ -80,7 +80,7 @@ def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
         project_names = [x.strip() for x in i['projects'].split(';')]
         projects = get_projects(project_names, i['group'])
         read_sets = get_read_sets(read_set_info, i['isolate_identifier'], i['group'])
-        # patient = get_patient(i['patient_identifier'], )
+        patient = get_patient(i['patient_identifier'], )
         # date_collected = datetime.datetime.strptime(i['date_collected'], '%d/%m/%Y')
         isolate = Isolate(isolate_identifier=i['isolate_identifier'], species=i['species'], sample_type=i['sample_type']
                           , read_sets=read_sets, day_collected=['day_collected'], month_collected=['month_collected'],
