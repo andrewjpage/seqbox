@@ -100,10 +100,10 @@ def query_isolates():
         # print([y for y in x.read_sets])
 
 
-def query_irs():
+def query_rs():
     # or can use db.session.query(Isolate)
-    i = IlluminaReadSet.query.all()
-    pprint.pprint(i[0].isolate)
+    i = ReadSet.query.all()
+    pprint.pprint(i)
 
 
 def query_nrs():
@@ -151,7 +151,7 @@ def create_it():
     db.create_all()
 
 
-# create_it()
+create_it()
 # add_isolate()
 # add_study()
 # add_isolate_study()
@@ -159,8 +159,8 @@ def create_it():
 # add_isolate_study_same_time()
 # add_nanopore_read_set()
 # add_mykrobe()
-query_isolates()
-# query_irs()
+# query_isolates()
+# query_rs()
 # query_nrs()
 # query_mykrobe()
 # query_isolate_reads_myk()

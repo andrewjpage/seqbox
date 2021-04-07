@@ -90,8 +90,11 @@ class Post(db.Model):
 class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.VARCHAR(32), comment="read set type i.e. is it Illumina, nanopore, etc.")
-    seqbox_id = db.Column(db.Integer, Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to uniquely "
-                                                                     "identify this read set")
+    # the Sequence won't work until port to postgres
+    seqbox_id = db.Column(db.Integer, db.Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to "
+                                                                        "uniquely identify this read set")
+    # seqbox_id = db.Column(db.Integer, comment="SeqBox id, incrementing integer id to uniquely identify this read set",
+    #                       sqlite_autoincrement=True)
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
                                                           "Illumina data)")
@@ -261,8 +264,13 @@ class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     continent = db.Column(db.VARCHAR(80))
     country = db.Column(db.VARCHAR(60))
-    province = db.Column(db.VARCHAR(40))
-    city = db.Column(db.VARCHAR(50))
+    # for the below, if in doubt, consult here https://en.wikipedia.org/wiki/List_of_administrative_divisions_by_country
+    first_level = db.Column(db.VARCHAR(40), comment="Highest level of organisation within country e.g. region, "
+                                                    "province, state")
+    second_level = db.Column(db.VARCHAR(50), comment="Second highest level of organisation e.g. county, district "
+                                                     "(Malawi), large city/metro area")
+    third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district (UK/VN), "
+                                                    "township (MW)")
     isolates = db.Column(db.VARCHAR(50), db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
                          nullable=True)
    

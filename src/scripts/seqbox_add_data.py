@@ -1,8 +1,9 @@
 import csv
 import sys
 import pprint
+import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Study
+from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Study, Location
 
 
 def get_studies(study_names, group):
@@ -47,8 +48,21 @@ def get_patient():
     pass
 
 
-def get_location():
+def get_location(township, city, country):
+    Location.query.filter_by()
     pass
+
+
+def read_in_as_dict(inhandle):
+    # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
+    # pull in everything from a generator into an honest to goodness iterable.
+    info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
+    # info is a list of ordered dicts, so convert each one to
+    l = []
+    for each_dict in info:
+        new_info = {x: each_dict[x] for x in each_dict}
+        l.append(new_info)
+    return l
 
 
 def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
@@ -63,22 +77,28 @@ def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
         iii. a Study, check if already exists, if not then add it in, if it does exist, add that all the isolates with
             that study to that Study.isolates
     '''
-    isolate_info = csv.DictReader(open(isolate_inhandle, encoding='utf-8-sig'))
-    read_set_info = csv.DictReader(open(read_set_inhandle, encoding='utf-8-sig'))
+    isolate_info = read_in_as_dict(isolate_inhandle)
+    # print(isolate_info)
+    read_set_info = read_in_as_dict(read_set_inhandle)
+    # isolate_info = csv.DictReader(open(isolate_inhandle, encoding='utf-8-sig'))
+    # read_set_info = csv.DictReader(open(read_set_inhandle, encoding='utf-8-sig'))
+    # print(read_set_info)
     for i in isolate_info:
+        print(i)
+        # print(i['isolate_identifier'])
         study_names = [x.strip() for x in i['studies'].split(';')]
         studies = get_studies(study_names, i['group'])
-        # TODO - readsets not working
         read_sets = get_read_sets(read_set_info, i['isolate_identifier'], i['group'])
         # patient = get_patient()
-        # location = get_location()
+        location = get_location(i['township'], i['city'], i['country'])
         # TODO - add the date parsing in
+        date_collected = datetime.datetime.strptime(i['date_collected'], '%d/%m/%Y')
         isolate = Isolate(isolate_identifier=i['isolate_identifier'], species=i['species'], sample_type=i['sample_type']
-                          , read_sets=read_sets,
-                          latitude=i['latitude'], longitude=i['longitude'], studies=studies,
+                          , read_sets=read_sets, date_collected=date_collected,
+                          latitude=float(i['latitude']), longitude=float(i['longitude']), studies=studies,
                           institution=i['institution'])
         db.session.add(isolate)
-    db.session.commit()
+    # db.session.commit()
 
 
 def main():
