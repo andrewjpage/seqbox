@@ -32,6 +32,16 @@ def return_read_set(rs):
     return read_set
 
 
+def add_location(isolate, isolate_info_dict):
+    if isolate_info_dict['country'] != '':
+        isolate.country = isolate_info_dict['country']
+    if isolate_info_dict['city'] != '':
+        isolate.location_second_level = isolate_info_dict['city']
+    if isolate_info_dict['township'] != '':
+        isolate.location_third_level = isolate_info_dict['township']
+
+
+
 def get_read_sets(read_set_info, isolate_identifier, group):
     read_sets = []
     for rs in read_set_info:
@@ -45,11 +55,6 @@ def get_read_sets(read_set_info, isolate_identifier, group):
 def get_patient():
     # need patient_identifier and teh study.id
 
-    pass
-
-
-def get_location(township, city, country):
-    Location.query.filter_by()
     pass
 
 
@@ -90,15 +95,14 @@ def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
         studies = get_studies(study_names, i['group'])
         read_sets = get_read_sets(read_set_info, i['isolate_identifier'], i['group'])
         # patient = get_patient()
-        location = get_location(i['township'], i['city'], i['country'])
-        # TODO - add the date parsing in
         date_collected = datetime.datetime.strptime(i['date_collected'], '%d/%m/%Y')
         isolate = Isolate(isolate_identifier=i['isolate_identifier'], species=i['species'], sample_type=i['sample_type']
                           , read_sets=read_sets, date_collected=date_collected,
                           latitude=float(i['latitude']), longitude=float(i['longitude']), studies=studies,
                           institution=i['institution'])
+        add_location(isolate, i)
         db.session.add(isolate)
-    # db.session.commit()
+    db.session.commit()
 
 
 def main():

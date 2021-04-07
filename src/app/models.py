@@ -194,8 +194,15 @@ class Isolate(db.Model):
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     latitude = db.Column(db.Float(), comment="Latitude of isolate origin if known")
     longitude = db.Column(db.Float(), comment="Longitude of isolate origin if known")
+    country = db.Column(db.VARCHAR(60), comment="country of origin")
+    location_first_level = db.Column(db.VARCHAR(40), comment="Highest level of organisation within country e.g. region,"
+                                                             " province, state")
+    location_second_level = db.Column(db.VARCHAR(50), comment="Second highest level of organisation e.g. county, "
+                                                              "district Malawi), large city/metro area")
+    location_third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district "
+                                                             "(UK/VN), township (MW)")
 
-    locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
+    # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
 
     studies = db.relationship("Study", secondary="isolate_study", backref=db.backref("isolates"))
@@ -265,12 +272,7 @@ class Location(db.Model):
     continent = db.Column(db.VARCHAR(80))
     country = db.Column(db.VARCHAR(60))
     # for the below, if in doubt, consult here https://en.wikipedia.org/wiki/List_of_administrative_divisions_by_country
-    first_level = db.Column(db.VARCHAR(40), comment="Highest level of organisation within country e.g. region, "
-                                                    "province, state")
-    second_level = db.Column(db.VARCHAR(50), comment="Second highest level of organisation e.g. county, district "
-                                                     "(Malawi), large city/metro area")
-    third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district (UK/VN), "
-                                                    "township (MW)")
+
     isolates = db.Column(db.VARCHAR(50), db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
                          nullable=True)
    
