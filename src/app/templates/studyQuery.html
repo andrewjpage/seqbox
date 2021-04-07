@@ -5,28 +5,28 @@
 {% block content %}
 
     
-    <h1>{{ ('List study') }}</h1>
+    <h1>{{ ('List project') }}</h1>
 
         <table> 
             <tr>
-                <th>Study ID</th>
-                <th>Date study</th>
-                <th>Result of study</th>
+                <th>Project ID</th>
+                <th>Date project</th>
+                <th>Result of project</th>
             </tr>
-        {% for study in studys %}
+        {% for project in projects %}
                 <tr>
-                <form method="GET" action="./list_study" style="display: inline">
-                    <th>{{study.id_study}}</th>
-                    <th>{{study.date_study}}</th>
-                    <th>{{study.result_study}}</th>
+                <form method="GET" action="./list_project" style="display: inline">
+                    <th>{{project.id_project}}</th>
+                    <th>{{project.date_project}}</th>
+                    <th>{{project.result_project}}</th>
                 </form>
-                <form method="POST" action="./list_study" style="display: inline">    
+                <form method="POST" action="./list_project" style="display: inline">
                     <th>
-                        <button type="submit" name="modify" value="{{ study.id_study }}">Modify</button>                        
+                        <button type="submit" name="modify" value="{{ project.id_project }}">Modify</button>
                     </th>
                     <th>
      
-                        <button type="submit" name="delete" value="{{ study.id_study }}">Delete</button>                               
+                        <button type="submit" name="delete" value="{{ project.id_project }}">Delete</button>
                     </th>
                 </form>
                 </tr>

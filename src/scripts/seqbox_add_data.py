@@ -3,24 +3,24 @@ import sys
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Study, Location
+from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Project
 
 
-def get_studies(study_names, group):
-    studies = []
-    for study_name in study_names:
-        matching_studies = Study.query.filter_by(study_name=study_name, group=group).all()
-        if len(matching_studies) == 0:
-            s = Study(study_name=study_name, group=group)
-            studies.append(s)
-        elif len(matching_studies) == 1:
-            s = matching_studies[0]
-            studies.append(s)
+def get_projects(project_names, group):
+    projects = []
+    for project_name in project_names:
+        matching_projects = Project.query.filter_by(project_name=project_name, group=group).all()
+        if len(matching_projects) == 0:
+            s = Project(project_name=project_name, group=group)
+            projects.append(s)
+        elif len(matching_projects) == 1:
+            s = matching_projects[0]
+            projects.append(s)
         else:
-            print(f"There is already more than one study called {study_name} from {group} in the database, "
+            print(f"There is already more than one project called {project_name} from {group} in the database, "
                   "this shouldn't happen.\nExiting.")
             sys.exit()
-    return studies
+    return projects
 
 
 def return_read_set(rs):
@@ -41,7 +41,6 @@ def add_location(isolate, isolate_info_dict):
         isolate.location_third_level = isolate_info_dict['township']
 
 
-
 def get_read_sets(read_set_info, isolate_identifier, group):
     read_sets = []
     for rs in read_set_info:
@@ -53,7 +52,9 @@ def get_read_sets(read_set_info, isolate_identifier, group):
 
 
 def get_patient():
-    # need patient_identifier and teh study.id
+    # need patient_identifier and teh project.id
+    # need to add the isolate to the patient (create patient if doesnt exist)
+    # and need to add patient to project (if patient doesnt exist)
 
     pass
 
@@ -71,38 +72,23 @@ def read_in_as_dict(inhandle):
 
 
 def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
-    '''
-    1. read in 2 files,
-        i. isolate file with one line per isolate
-        ii. one read set file with one line per read set.
-        iii. use csv reader or something, read in as dicts.
-    2. take two dicts, one for isolate and one for read set, build:
-        i. Isolates with ReadSets
-        ii. ReadSets with IlluminaReadSets (linked into readsets above)
-        iii. a Study, check if already exists, if not then add it in, if it does exist, add that all the isolates with
-            that study to that Study.isolates
-    '''
     isolate_info = read_in_as_dict(isolate_inhandle)
-    # print(isolate_info)
     read_set_info = read_in_as_dict(read_set_inhandle)
-    # isolate_info = csv.DictReader(open(isolate_inhandle, encoding='utf-8-sig'))
-    # read_set_info = csv.DictReader(open(read_set_inhandle, encoding='utf-8-sig'))
-    # print(read_set_info)
     for i in isolate_info:
-        print(i)
+        # print(i)
         # print(i['isolate_identifier'])
-        study_names = [x.strip() for x in i['studies'].split(';')]
-        studies = get_studies(study_names, i['group'])
+        project_names = [x.strip() for x in i['projects'].split(';')]
+        projects = get_projects(project_names, i['group'])
         read_sets = get_read_sets(read_set_info, i['isolate_identifier'], i['group'])
-        # patient = get_patient()
-        date_collected = datetime.datetime.strptime(i['date_collected'], '%d/%m/%Y')
+        # patient = get_patient(i['patient_identifier'], )
+        # date_collected = datetime.datetime.strptime(i['date_collected'], '%d/%m/%Y')
         isolate = Isolate(isolate_identifier=i['isolate_identifier'], species=i['species'], sample_type=i['sample_type']
-                          , read_sets=read_sets, date_collected=date_collected,
-                          latitude=float(i['latitude']), longitude=float(i['longitude']), studies=studies,
-                          institution=i['institution'])
+                          , read_sets=read_sets, day_collected=['day_collected'], month_collected=['month_collected'],
+                          year_collected=['year_collected'], latitude=float(i['latitude']),
+                          longitude=float(i['longitude']), projects=projects, institution=i['institution'])
         add_location(isolate, i)
         db.session.add(isolate)
-    db.session.commit()
+    # db.session.commit()
 
 
 def main():

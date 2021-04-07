@@ -166,35 +166,35 @@ INSERT INTO `sample` (`id_sample`, `num_reads`, `date_time`, `organism`, `batch`
 -- --------------------------------------------------------
 
 --
--- Structure de la table `sample_study`
+-- Structure de la table `sample_project`
 --
 
-CREATE TABLE IF NOT EXISTS `sample_study` (
+CREATE TABLE IF NOT EXISTS `sample_project` (
   `id_sample` varchar(40) NOT NULL,
-  `id_study` varchar(50) NOT NULL,
-  PRIMARY KEY (`id_sample`,`id_study`),
-  KEY `sample_study_ibfk_1` (`id_sample`) USING BTREE,
-  KEY `id_study` (`id_study`)
+  `id_project` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_sample`,`id_project`),
+  KEY `sample_project_ibfk_1` (`id_sample`) USING BTREE,
+  KEY `id_project` (`id_project`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `study`
+-- Structure de la table `project`
 --
 
-CREATE TABLE IF NOT EXISTS `study` (
-  `id_study` varchar(50) NOT NULL,
-  `date_study` date NOT NULL,
-  `result_study` varchar(80) NOT NULL,
-  PRIMARY KEY (`id_study`)
+CREATE TABLE IF NOT EXISTS `project` (
+  `id_project` varchar(50) NOT NULL,
+  `date_project` date NOT NULL,
+  `result_project` varchar(80) NOT NULL,
+  PRIMARY KEY (`id_project`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Contenu de la table `study`
+-- Contenu de la table `project`
 --
 
-INSERT INTO `study` (`id_study`, `date_study`, `result_study`) VALUES
+INSERT INTO `project` (`id_project`, `date_project`, `result_project`) VALUES
 ('Palsmodium', '2019-04-23', 'negatif2'),
 ('treee', '0000-00-00', ''),
 ('Treponema ', '2018-12-04', 'positif');
@@ -237,11 +237,11 @@ ALTER TABLE `sample`
   ADD CONSTRAINT `sample_ibfk_3` FOREIGN KEY (`result1`) REFERENCES `result1` (`id_result1`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `sample_study`
+-- Contraintes pour la table `sample_project`
 --
-ALTER TABLE `sample_study`
-  ADD CONSTRAINT `sample_study_ibfk_2` FOREIGN KEY (`id_sample`) REFERENCES `sample` (`id_sample`),
-  ADD CONSTRAINT `sample_study_ibfk_1` FOREIGN KEY (`id_study`) REFERENCES `study` (`id_study`);
+ALTER TABLE `sample_project`
+  ADD CONSTRAINT `sample_project_ibfk_2` FOREIGN KEY (`id_sample`) REFERENCES `sample` (`id_sample`),
+  ADD CONSTRAINT `sample_project_ibfk_1` FOREIGN KEY (`id_project`) REFERENCES `project` (`id_project`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

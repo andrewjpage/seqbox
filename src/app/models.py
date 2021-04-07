@@ -188,9 +188,12 @@ class Isolate(db.Model):
     isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate", )
     species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
     sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? ")
-    # patient_id = db.Column(db.ForeignKey("patient.id"))
+    patient_id = db.Column(db.ForeignKey("patient.id"))
     # patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
-    date_collected = db.Column(db.DATETIME)
+    # date_collected = db.Column(db.DATETIME)
+    day_collected = db.Column(db.Integer, comment="day of the month this was collected")
+    month_collected = db.Column(db.Integer, comment="month this was collected")
+    year_collected = db.Column(db.Integer, comment="year this was collected")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     latitude = db.Column(db.Float(), comment="Latitude of isolate origin if known")
     longitude = db.Column(db.Float(), comment="Longitude of isolate origin if known")
@@ -201,14 +204,12 @@ class Isolate(db.Model):
                                                               "district Malawi), large city/metro area")
     location_third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district "
                                                              "(UK/VN), township (MW)")
-
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
-
-    studies = db.relationship("Study", secondary="isolate_study", backref=db.backref("isolates"))
+    projects = db.relationship("Project", secondary="isolate_project", backref=db.backref("isolates"))
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
-    ## NOTE - is the isolate identifier unique within a group or within a study?
+    ## NOTE - is the isolate identifier unique within a group or within a project?
 
     def __repr__(self):
         return f"Sample({self.id}, {self.isolate_identifier}, {self.species})"
@@ -248,37 +249,16 @@ class NanoporeBatch(db.Model):
         return '<Batch {}>'.format(self.name)
 
 
-# class Patient(db.Model):
-#     # TODO - need to change the patient study relationship to many to many
-#     # assuming that each patient identifier is unique wihtin a study
-#     id = db.Column(db.Integer, primary_key=True)
-#     study_id = db.Column(db.Integer, db.ForeignKey("study.id"))
-#     patient_identifier = db.Column(db.VARCHAR(30))
-#     isolates = db.relationship("Isolate", backref="patient")
-#     __table_args__ = (UniqueConstraint('study_id', 'patient_identifier', name='_studyid_patientidentifier_uc'),)
-#     # study = db.Column(db.ForeignKey("study.id"))
-
-
-class Location(db.Model):
-    """[Define model 'Location' mapped to table 'location']
-    
-    Arguments:
-        db {[type]} -- [description]
-    
-    Returns:
-        [type] -- [description]
-    """
+class Patient(db.Model):
+    # TODO - need to change the patient project relationship to many to many
+    # assuming that each patient identifier is unique wihtin a project
     id = db.Column(db.Integer, primary_key=True)
-    continent = db.Column(db.VARCHAR(80))
-    country = db.Column(db.VARCHAR(60))
-    # for the below, if in doubt, consult here https://en.wikipedia.org/wiki/List_of_administrative_divisions_by_country
-
-    isolates = db.Column(db.VARCHAR(50), db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
-                         nullable=True)
-   
-
-    def __repr__(self):
-        return '<Location {}>'.format(self.continent)
+    project_id = db.Column(db.Integer, db.ForeignKey("project.id"))
+    patient_identifier = db.Column(db.VARCHAR(30))
+    isolates = db.relationship("Isolate", backref="patient")
+    __table_args__ = (UniqueConstraint('project_id', 'patient_identifier', name='_projectid_patientidentifier_uc'),)
+    # project = db.Column(db.ForeignKey("project.id"))
+    projects = db.relationship("Project", secondary="patient_project", backref=db.backref("patients"))
 
 
 class Result1(db.Model):
@@ -304,26 +284,32 @@ class Result1(db.Model):
         return '<Result1 {}>'.format(self.qc)
 
 
-class Study(db.Model):
-
-    """[Define model 'Study' mapped to table 'study']
+class Project(db.Model):
+    """[Define model 'project' mapped to table 'project']
     
     Returns:
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
-    study_name = db.Column(db.VARCHAR(32))
+    project_name = db.Column(db.VARCHAR(32))
     group = db.Column(db.VARCHAR(60), comment="The name of the group this isolate belongs to")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    study_details = db.Column(db.VARCHAR(160))
-    # patients = db.relationship("patient", backref="study")
-    __table_args__ = (UniqueConstraint('study_name', 'group', name='_studyname_group_uc'),)
-    # isolates = db.relationship("Isolate", secondary="isolate_study")
+    project_details = db.Column(db.VARCHAR(160))
+    # patients = db.relationship("patient", backref="project")
+    __table_args__ = (UniqueConstraint('project_name', 'group', name='_projectname_group_uc'),)
+    # isolates = db.relationship("Isolate", secondary="isolate_project")
     
     def __repr__(self):
-        return f"Study(id: {self.id}, details: {self.study_name})"
+        return f"Project(id: {self.id}, details: {self.project_name})"
 
 
-isolate_study = db.Table("isolate_study", db.Column("isolate_id", db.Integer, db.ForeignKey("isolate.id"),
-                                                    primary_key=True),
-                         db.Column("study_id", db.Integer, db.ForeignKey("study.id"), primary_key=True))
+isolate_project = db.Table("isolate_project",
+                         db.Column("isolate_id", db.Integer, db.ForeignKey("isolate.id"), primary_key=True),
+                         db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
+                         )
+
+
+patient_project = db.Table("patient_project",
+                         db.Column("patient_id", db.Integer, db.ForeignKey("patient.id"), primary_key=True),
+                         db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
+                         )

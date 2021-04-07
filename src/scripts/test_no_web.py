@@ -1,7 +1,7 @@
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Study, isolate_study#, IsolateStudy
+from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Project, isolate_project
 
 
 def add_isolate():
@@ -14,28 +14,28 @@ def add_isolate():
     db.session.commit()
 
 
-def add_study():
-    study1 = Study(study_details="a made up study")
-    study2 = Study(study_details="a made up study")
-    db.session.add_all([study1, study2])
+def add_project():
+    project1 = Project(project_details="a made up project")
+    project2 = Project(project_details="a made up project")
+    db.session.add_all([project1, project2])
 
 
-def add_isolate_study():
-    # isolate_study.insert().values(isolate_id=1, study_id=1)
-    db.session.execute(isolate_study.insert(), params={"isolate_id": 1, "study_id": 1})
-    db.session.execute(isolate_study.insert(), params={"isolate_id": 2, "study_id": 1})
-    db.session.execute(isolate_study.insert(), params={"isolate_id": 1, "study_id": 2})
+def add_isolate_project():
+    # isolate_project.insert().values(isolate_id=1, project_id=1)
+    db.session.execute(isolate_project.insert(), params={"isolate_id": 1, "project_id": 1})
+    db.session.execute(isolate_project.insert(), params={"isolate_id": 2, "project_id": 1})
+    db.session.execute(isolate_project.insert(), params={"isolate_id": 1, "project_id": 2})
     db.session.commit()
 
 
-def add_isolate_study_same_time():
+def add_isolate_project_same_time():
     isolate1 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH001')
     isolate2 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH002')
-    study1 = Study(study_details="a made up study")
-    study2 = Study(study_details="a made up study")
-    isolate1.studies.append(study1)
-    isolate2.studies.append(study1)
-    isolate2.studies.append(study2)
+    project1 = Project(project_details="a made up project")
+    project2 = Project(project_details="a made up project")
+    isolate1.studies.append(project1)
+    isolate2.studies.append(project1)
+    isolate2.studies.append(project2)
     db.session.add_all([isolate1, isolate2])
     db.session.commit()
 
@@ -49,11 +49,9 @@ def add_isolate_and_rs():
                            path_r2="/path/to/ASH001_v2_sequencing_2.fastq")
     rs1.illumina_read_sets = [irs1]
     rs2.illumina_read_sets = [irs2]
-
     rs3 = ReadSet(read_set_filename="ASH001_nanop", type="nanopore")
     nrs1 = NanoporeReadSet(read_set_id=3, path_fastq="/path/to/ASH001_nanopore_sequencing.fastq")
     rs3.nanopore_read_sets = [nrs1]
-
     isolate = Isolate(date_added=datetime.datetime.utcnow(), species='Salmonella',
                       location='blah', isolate_identifier='ASH001')
     isolate.read_sets = [rs1, rs2, rs3]
@@ -140,9 +138,9 @@ def join_nrs():
     pprint.pprint(a)
 
 
-def query_study():
+def query_project():
     # print()
-    s = Study.query.all()
+    s = Project.query.all()
     for x in s:
         # print()
         print(x.isolates)
@@ -152,18 +150,18 @@ def create_it():
     db.create_all()
 
 
-# create_it()
+create_it()
 # add_isolate()
-# add_study()
-# add_isolate_study()
+# add_project()
+# add_isolate_project()
 # add_isolate_and_rs()
-# add_isolate_study_same_time()
+# add_isolate_project_same_time()
 # add_nanopore_read_set()
 # add_mykrobe()
-query_isolates()
+# query_isolates()
 # query_rs()
 # query_nrs()
 # query_mykrobe()
 # query_isolate_reads_myk()
 # join_nrs()
-# query_study()
+# query_project()

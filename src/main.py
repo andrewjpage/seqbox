@@ -1,10 +1,10 @@
 from app import app, db
-from app.models import User, Sample, Post, Batch, Location, Result1, Mykrobe, Study, Sample_study
+from app.models import User, Sample, Post, Batch, Location, Result1, Mykrobe, Project, Sample_project
 
 
 @app.shell_context_processor
 def make_shell_context():
-    return {'db': db, 'User': User, 'Sample': Sample, 'Batch': Batch, 'Location': Location, 'Result1': Result1, 'Mykrobe': Mykrobe, 'Sample_study': Sample_study, 'Study': Study, 'Post': Post}
+    return {'db': db, 'User': User, 'Sample': Sample, 'Batch': Batch, 'Location': Location, 'Result1': Result1, 'Mykrobe': Mykrobe, 'Sample_project': Sample_project, 'Project': Project, 'Post': Post}
 
 if __name__ == "__main__":
     # this db.create_all() might just be needed for sqlite
