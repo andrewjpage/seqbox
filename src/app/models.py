@@ -29,7 +29,7 @@ class User(UserMixin, db.Model):
     # dynamic returns a query object which you can apply further selects to
     # dynamic is an unusual choice according to here
     # https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
+    # posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
         """[The __repr__ method tells Python how to print objects of this class.]
@@ -226,7 +226,6 @@ class NanoporeBatch(db.Model):
 
 
 class Patient(db.Model):
-    # TODO - need to change the patient project relationship to many to many
     # assuming that each patient identifier is unique wihtin a project
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey("project.id"))
