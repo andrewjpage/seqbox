@@ -218,18 +218,6 @@ class ReadSetBatch(db.Model):
         return '<Batch {}>'.format(self.name)
 
 
-class NanoporeBatch(db.Model):
-    id = db.Column(db.VARCHAR(30), primary_key=True)
-    name = db.Column(db.VARCHAR(50))
-    date_run = db.Column(db.DATE)
-    instrument = db.Column(db.VARCHAR(250))
-    library_prep_method = db.Column(db.VARCHAR(250))
-    dna_extraction_method = db.Column(db.VARCHAR(250))
-
-    def __repr__(self):
-        return '<Batch {}>'.format(self.name)
-
-
 # class Patient(db.Model):
 #     # assuming that each patient identifier is unique wihtin a project
 #     id = db.Column(db.Integer, primary_key=True)
