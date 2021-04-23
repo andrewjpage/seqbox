@@ -77,23 +77,46 @@ def read_in_as_dict(inhandle):
     return l
 
 
+def get_isolate(isolate_info):
+    matching_isolate = ReadSetBatch.query.filter_by(isolate_identifier=isolate_info['isolate_identifier']).all()
+    if len(matching_isolate) == 0:
+        isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'], species=isolate_info['species'],
+                          sample_type=isolate_info['sample_type'], day_collected=isolate_info['day_collected'],
+                          month_collected=isolate_info['month_collected'],
+                          year_collected=isolate_info['year_collected'], latitude=float(isolate_info['latitude']),
+                          longitude=float(isolate_info['longitude']), institution=isolate_info['institution'],
+                          patient_identifier=isolate_info['patient_identifier'])
+        return isolate
+    elif len(matching_isolate) == 1:
+        return matching_isolate[0]
+    else:
+        print(f"There is already more than one isolate called {isolate_info['isolate_identifier']} in the database, "
+              "this shouldn't happen.\nExiting.")
+        sys.exit()
+
+
 def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
-    isolate_info = read_in_as_dict(isolate_inhandle)
+    all_isolate_info = read_in_as_dict(isolate_inhandle)
     read_set_info = read_in_as_dict(read_set_inhandle)
-    for i in isolate_info:
-        # print(i)
-        # print(i['isolate_identifier'])
-        project_names = [x.strip() for x in i['projects'].split(';')]
-        projects = get_projects(project_names, i['group'])
-        read_sets = get_read_sets(read_set_info, i['isolate_identifier'], i['group'])
-        # patient = get_patient(i['patient_identifier'], projects, i['group'])
-        # date_collected = datetime.datetime.strptime(i['date_collected'], '%d/%m/%Y')
-        isolate = Isolate(isolate_identifier=i['isolate_identifier'], species=i['species'], sample_type=i['sample_type']
-                          , read_sets=read_sets, day_collected=i['day_collected'], month_collected=i['month_collected'],
-                          year_collected=i['year_collected'], latitude=float(i['latitude']),
-                          longitude=float(i['longitude']), projects=projects, institution=i['institution'],
-                          patient_identifier=i['patient_identifier'],)
-        add_location(isolate, i)
+    for isolate_info in all_isolate_info:
+        # print(isolate_info)
+        # print(isolate_info['isolate_identifier'])
+        project_names = [x.strip() for x in isolate_info['projects'].split(';')]
+        projects = get_projects(project_names, isolate_info['group'])
+        read_sets = get_read_sets(read_set_info, isolate_info['isolate_identifier'], isolate_info['group'])
+        # patient = get_patient(isolate_info['patient_identifier'], projects, isolate_info['group'])
+        isolate = get_isolate(isolate_info)
+        isolate.projects = projects
+        isolate.read_sets = read_sets
+        # isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'], species=isolate_info['species'],
+        # sample_type=isolate_info['sample_type']
+        #                   , read_sets=read_sets, day_collected=isolate_info['day_collected'],
+        #                   month_collected=isolate_info['month_collected'],
+        #                   year_collected=isolate_info['year_collected'], latitude=float(isolate_info['latitude']),
+        #                   longitude=float(isolate_info['longitude']), projects=projects,
+        #                   institution=isolate_info['institution'],
+        #                   patient_identifier=isolate_info['patient_identifier'])
+        add_location(isolate, isolate_info)
         db.session.add(isolate)
     db.session.commit()
 
