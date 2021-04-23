@@ -1,7 +1,8 @@
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Project, isolate_project
+from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Project, isolate_project, \
+    ReadSetBatch
 
 
 def add_isolate():
@@ -145,6 +146,11 @@ def query_project():
         # print()
         print(x.isolates)
 
+def query_readsetbatch():
+    m = ReadSetBatch.query.all()
+    for x in m:
+        print(x)
+        print(x.read_sets)
 
 def create_it():
     db.create_all()
@@ -165,3 +171,4 @@ create_it()
 # query_isolate_reads_myk()
 # join_nrs()
 # query_project()
+# query_readsetbatch()

@@ -83,6 +83,7 @@ class ReadSet(db.Model):
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset", uselist=False)
     nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset", uselist=False)
     dna_extraction_method = db.Column(db.VARCHAR(64))
+    batch_id = db.Column(db.Integer, db.ForeignKey("read_set_batch.id"))
     # @hybrid_property
     # def read_set_id(self):
     #     return self.illumina_read_set_id or self.nanopore_read_set_id
@@ -101,7 +102,7 @@ class IlluminaReadSet(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
-    batch_id = db.Column(db.Integer, db.ForeignKey("isolate.id"))
+
     # illumina_batch = db.Column(db.VARCHAR(50), db.ForeignKey("illumina_batch.id", onupdate="cascade",
     #                                                          ondelete="set null"), nullable=True, comment="")
     # illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_read_set", passive_updates=True,
@@ -193,7 +194,7 @@ class Isolate(db.Model):
         return f"Sample({self.id}, {self.isolate_identifier}, {self.species})"
 
 
-class IlluminaBatch(db.Model):
+class ReadSetBatch(db.Model):
     """[Define model 'Batch' mapped to table 'batch']
     
     Arguments:

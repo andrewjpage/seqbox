@@ -3,7 +3,7 @@ import sys
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Project #, Patient
+from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Project, ReadSetBatch #, Patient
 
 
 def get_projects(project_names, group):
@@ -23,9 +23,23 @@ def get_projects(project_names, group):
     return projects
 
 
+def get_batch(batch_name, group):
+    matching_batch = ReadSetBatch.query.filter_by(name=batch_name).all()
+    if len(matching_batch) == 0:
+        rsb = ReadSetBatch(name=batch_name)
+        return rsb
+    elif len(matching_batch) == 1:
+        return matching_batch[0]
+    else:
+        print(f"There is already more than one batch called {batch_name} from {group} in the database, "
+              "this shouldn't happen.\nExiting.")
+        sys.exit()
+
+
 def return_read_set(rs):
     ## TODO - add nanopore
-    read_set = ReadSet(type=rs['type'], read_set_filename=rs['read_set_filename'])
+    batch = get_batch(rs['batch'], rs['group'])
+    read_set = ReadSet(type=rs['type'], read_set_filename=rs['read_set_filename'], batch=batch)
     if rs['type'] == 'Illumina':
         irs = IlluminaReadSet(path_r1=rs['path_r1'], path_r2=rs['path_r2'])
         read_set.illumina_read_sets = irs
