@@ -82,6 +82,7 @@ class ReadSet(db.Model):
                            nullable=True)
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset", uselist=False)
     nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset", uselist=False)
+    dna_extraction_method = db.Column(db.VARCHAR(64))
     # @hybrid_property
     # def read_set_id(self):
     #     return self.illumina_read_set_id or self.nanopore_read_set_id
@@ -100,6 +101,7 @@ class IlluminaReadSet(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
+    batch_id = db.Column(db.Integer, db.ForeignKey("isolate.id"))
     # illumina_batch = db.Column(db.VARCHAR(50), db.ForeignKey("illumina_batch.id", onupdate="cascade",
     #                                                          ondelete="set null"), nullable=True, comment="")
     # illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_read_set", passive_updates=True,
@@ -161,11 +163,11 @@ class Mykrobe(db.Model):
 
 class Isolate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate", )
+    isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
     sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? ")
-    patient_id = db.Column(db.ForeignKey("patient.id"))
-    # patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
+    # patient_id = db.Column(db.ForeignKey("patient.id"))
+    patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
     # date_collected = db.Column(db.DATETIME)
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")
@@ -203,11 +205,13 @@ class IlluminaBatch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.VARCHAR(50))
     date_run = db.Column(db.DATE)
-    instrument = db.Column(db.VARCHAR(250))
+    instrument = db.Column(db.VARCHAR(64))
+    instrument_name = db.Column(db.VARCHAR(64), comment="For MLW machines, which exact machine was it run on")
     # primer = db.Column(db.VARCHAR(100))
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    library_prep_method = db.Column(db.VARCHAR(250))
-    dna_extraction_method = db.Column(db.VARCHAR(250))
+    library_prep_method = db.Column(db.VARCHAR(64))
+    sequencing_centre = db.Column(db.VARCHAR(64), comment="E.g. Sanger, CGR, MLW, etc.")
+    read_sets = db.relationship("ReadSet", backref="batch")
     
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
@@ -225,15 +229,15 @@ class NanoporeBatch(db.Model):
         return '<Batch {}>'.format(self.name)
 
 
-class Patient(db.Model):
-    # assuming that each patient identifier is unique wihtin a project
-    id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey("project.id"))
-    patient_identifier = db.Column(db.VARCHAR(30))
-    isolates = db.relationship("Isolate", backref="patient")
-    __table_args__ = (UniqueConstraint('project_id', 'patient_identifier', name='_projectid_patientidentifier_uc'),)
-    # project = db.Column(db.ForeignKey("project.id"))
-    projects = db.relationship("Project", secondary="patient_project", backref=db.backref("patients"))
+# class Patient(db.Model):
+#     # assuming that each patient identifier is unique wihtin a project
+#     id = db.Column(db.Integer, primary_key=True)
+#     group_id = db.Column(db.Integer, db.ForeignKey("group.id"))
+#     patient_identifier = db.Column(db.VARCHAR(30))
+#     isolates = db.relationship("Isolate", backref="patient")
+#     __table_args__ = (UniqueConstraint('project_id', 'patient_identifier', name='_projectid_patientidentifier_uc'),)
+#     # project = db.Column(db.ForeignKey("project.id"))
+#     # projects = db.relationship("Project", secondary="patient_project", backref=db.backref("patients"))
 
 
 class Project(db.Model):
@@ -260,8 +264,8 @@ isolate_project = db.Table("isolate_project",
                          db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
                          )
 
-
-patient_project = db.Table("patient_project",
-                         db.Column("patient_id", db.Integer, db.ForeignKey("patient.id"), primary_key=True),
-                         db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
-                         )
+#
+# patient_project = db.Table("patient_project",
+#                          db.Column("patient_id", db.Integer, db.ForeignKey("patient.id"), primary_key=True),
+#                          db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
+#                          )
