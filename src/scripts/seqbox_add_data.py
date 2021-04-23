@@ -6,19 +6,20 @@ from app import db
 from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Project, ReadSetBatch #, Patient
 
 
-def get_projects(project_names, group):
+def get_projects(isolate_info):
+    project_names = [x.strip() for x in isolate_info['projects'].split(';')]
     projects = []
     for project_name in project_names:
-        matching_projects = Project.query.filter_by(project_name=project_name, group=group).all()
+        matching_projects = Project.query.filter_by(project_name=project_name, group=isolate_info['group']).all()
         if len(matching_projects) == 0:
-            s = Project(project_name=project_name, group=group)
+            s = Project(project_name=project_name, group=isolate_info['group'])
             projects.append(s)
         elif len(matching_projects) == 1:
             s = matching_projects[0]
             projects.append(s)
         else:
-            print(f"There is already more than one project called {project_name} from {group} in the database, "
-                  "this shouldn't happen.\nExiting.")
+            print(f"There is already more than one project called {project_name} from {isolate_info['group']} in the "
+                  f"database, this shouldn't happen.\nExiting.")
             sys.exit()
     return projects
 
@@ -78,7 +79,7 @@ def read_in_as_dict(inhandle):
 
 
 def get_isolate(isolate_info):
-    matching_isolate = ReadSetBatch.query.filter_by(isolate_identifier=isolate_info['isolate_identifier']).all()
+    matching_isolate = Isolate.query.filter_by(isolate_identifier=isolate_info['isolate_identifier']).all()
     if len(matching_isolate) == 0:
         isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'], species=isolate_info['species'],
                           sample_type=isolate_info['sample_type'], day_collected=isolate_info['day_collected'],
@@ -99,23 +100,12 @@ def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
     all_isolate_info = read_in_as_dict(isolate_inhandle)
     read_set_info = read_in_as_dict(read_set_inhandle)
     for isolate_info in all_isolate_info:
-        # print(isolate_info)
-        # print(isolate_info['isolate_identifier'])
-        project_names = [x.strip() for x in isolate_info['projects'].split(';')]
-        projects = get_projects(project_names, isolate_info['group'])
+        projects = get_projects(isolate_info)
         read_sets = get_read_sets(read_set_info, isolate_info['isolate_identifier'], isolate_info['group'])
         # patient = get_patient(isolate_info['patient_identifier'], projects, isolate_info['group'])
         isolate = get_isolate(isolate_info)
         isolate.projects = projects
         isolate.read_sets = read_sets
-        # isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'], species=isolate_info['species'],
-        # sample_type=isolate_info['sample_type']
-        #                   , read_sets=read_sets, day_collected=isolate_info['day_collected'],
-        #                   month_collected=isolate_info['month_collected'],
-        #                   year_collected=isolate_info['year_collected'], latitude=float(isolate_info['latitude']),
-        #                   longitude=float(isolate_info['longitude']), projects=projects,
-        #                   institution=isolate_info['institution'],
-        #                   patient_identifier=isolate_info['patient_identifier'])
         add_location(isolate, isolate_info)
         db.session.add(isolate)
     db.session.commit()
