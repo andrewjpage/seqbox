@@ -58,6 +58,8 @@ def add_location(isolate, isolate_info_dict):
 
 def get_read_sets(read_set_info, isolate_identifier, group):
     read_sets = []
+    # rs is a dictoinary where the keys are the header of the read set input csv, and the values are from one line
+    # of the CSV
     for rs in read_set_info:
         if rs['isolate_identifier'] == isolate_identifier:
             if rs['group'] == group:
@@ -78,22 +80,31 @@ def read_in_as_dict(inhandle):
     return l
 
 
-def get_isolate(isolate_info):
-    matching_isolate = Isolate.query.filter_by(isolate_identifier=isolate_info['isolate_identifier']).all()
+# , species=isolate_info['species'],
+#                           sample_type=isolate_info['sample_type'], day_collected=isolate_info['day_collected'],
+#                           month_collected=isolate_info['month_collected'],
+#                           year_collected=isolate_info['year_collected'], latitude=float(isolate_info['latitude']),
+#                           longitude=float(isolate_info['longitude']), institution=isolate_info['institution'],
+#                           patient_identifier=isolate_info['patient_identifier']
+
+
+def get_isolate(isolate_identifier):
+    matching_isolate = Isolate.query.filter_by(isolate_identifier=isolate_identifier).all()
     if len(matching_isolate) == 0:
-        isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'], species=isolate_info['species'],
-                          sample_type=isolate_info['sample_type'], day_collected=isolate_info['day_collected'],
-                          month_collected=isolate_info['month_collected'],
-                          year_collected=isolate_info['year_collected'], latitude=float(isolate_info['latitude']),
-                          longitude=float(isolate_info['longitude']), institution=isolate_info['institution'],
-                          patient_identifier=isolate_info['patient_identifier'])
+        isolate = Isolate(isolate_identifier=isolate_identifier)
         return isolate
     elif len(matching_isolate) == 1:
         return matching_isolate[0]
     else:
-        print(f"There is already more than one isolate called {isolate_info['isolate_identifier']} in the database, "
+        print(f"There is already more than one isolate called {isolate_identifier} in the database, "
               "this shouldn't happen.\nExiting.")
         sys.exit()
+
+
+def add_isolate(isolate_inhandle):
+    all_isolate_info = read_in_as_dict(isolate_inhandle)
+    for isolate_info in all_isolate_info:
+        isolate = get_isolate(isolate_info['isolate_identifier'])
 
 
 def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
@@ -103,7 +114,7 @@ def add_isolate_and_readset(isolate_inhandle, read_set_inhandle):
         projects = get_projects(isolate_info)
         read_sets = get_read_sets(read_set_info, isolate_info['isolate_identifier'], isolate_info['group'])
         # patient = get_patient(isolate_info['patient_identifier'], projects, isolate_info['group'])
-        isolate = get_isolate(isolate_info)
+        isolate = get_isolate(isolate_info['isolate_identifier'])
         isolate.projects = projects
         isolate.read_sets = read_sets
         add_location(isolate, isolate_info)
@@ -115,6 +126,8 @@ def main():
     isolate_inhandle = '/Users/flashton/Dropbox/scripts/seqbox/src/scripts/isolate_example.csv'
     read_set_inhandle = '/Users/flashton/Dropbox/scripts/seqbox/src/scripts/illumina_read_set_example.csv'
     add_isolate_and_readset(isolate_inhandle, read_set_inhandle)
+    # add_isolate(isolate_inhandle)
+    # todo - need to have a good hard think about how this is going to be used IRL
 
 
 if __name__ == '__main__':
