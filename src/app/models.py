@@ -185,8 +185,7 @@ class Isolate(db.Model):
                                                              "(UK/VN), township (MW)")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
-    projects = db.relationship("Project", secondary="isolate_project", backref=db.backref("isolates"), comment="You"
-                                    "can think about this as 'what study got ethics for this isolate to be taken'")
+    projects = db.relationship("Project", secondary="isolate_project", backref=db.backref("isolates"))
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
     ## NOTE - is the isolate identifier unique within a group or within a project?
@@ -237,12 +236,13 @@ class Project(db.Model):
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
-    project_name = db.Column(db.VARCHAR(32))
-    group = db.Column(db.VARCHAR(60), comment="The name of the group this isolate belongs to")
+    project_name = db.Column(db.VARCHAR(32), comment="You can think about this as 'what study got ethics for this "
+                                                     "isolate to be taken'")
+    group_name = db.Column(db.VARCHAR(60), comment="The name of the group this isolate belongs to")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     project_details = db.Column(db.VARCHAR(160))
     # patients = db.relationship("patient", backref="project")
-    __table_args__ = (UniqueConstraint('project_name', 'group', name='_projectname_group_uc'),)
+    __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
     # isolates = db.relationship("Isolate", secondary="isolate_project")
     
     def __repr__(self):

@@ -1,12 +1,14 @@
 import argparse
-from seqbox_utils import read_in_as_dict, check_if_isolate_exists, add_isolate
+from seqbox_utils import read_in_as_dict, does_isolate_already_exist, add_isolate
 
 
 def add_isolates(args):
     all_isolate_info = read_in_as_dict(args.isolates_inhandle)
     for isolate_info in all_isolate_info:
-        if check_if_isolate_exists(isolate_info['isolate_identifier'], isolate_info['group']) is False:
+        if does_isolate_already_exist(isolate_info['isolate_identifier'], isolate_info['group_name']) is False:
             add_isolate(isolate_info)
+        # if check_if_isolate_exists(isolate_info['isolate_identifier'], isolate_info['group']) is False:
+
 
 
 def run_command(args):

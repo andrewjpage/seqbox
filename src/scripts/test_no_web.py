@@ -30,13 +30,13 @@ def add_isolate_project():
 
 
 def add_isolate_project_same_time():
-    isolate1 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH001')
-    isolate2 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH002')
-    project1 = Project(project_details="a made up project")
-    project2 = Project(project_details="a made up project")
-    isolate1.studies.append(project1)
-    isolate2.studies.append(project1)
-    isolate2.studies.append(project2)
+    isolate1 = Isolate(species='Salmonella', isolate_identifier='ASH003')
+    isolate2 = Isolate(species='Salmonella', isolate_identifier='ASH004')
+    project1 = Project(project_details="a made up project", group_name="BlahBlah")
+    project2 = Project(project_details="a second made up project", group_name="BlahBlah")
+    isolate1.projects.append(project1)
+    isolate2.projects.append(project1)
+    isolate2.projects.append(project2)
     db.session.add_all([isolate1, isolate2])
     db.session.commit()
 
@@ -158,12 +158,12 @@ def create_it():
     db.create_all()
 
 
-create_it()
+# create_it()
 # add_isolate()
 # add_project()
 # add_isolate_project()
 # add_isolate_and_rs()
-# add_isolate_project_same_time()
+add_isolate_project_same_time()
 # add_nanopore_read_set()
 # add_mykrobe()
 # query_isolates()
