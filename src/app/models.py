@@ -185,7 +185,8 @@ class Isolate(db.Model):
                                                              "(UK/VN), township (MW)")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
-    projects = db.relationship("Project", secondary="isolate_project", backref=db.backref("isolates"))
+    projects = db.relationship("Project", secondary="isolate_project", backref=db.backref("isolates"), comment="You"
+                                    "can think about this as 'what study got ethics for this isolate to be taken'")
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
     ## NOTE - is the isolate identifier unique within a group or within a project?

@@ -6,6 +6,18 @@ from app import db
 from app.models import Isolate, ReadSet, IlluminaReadSet, NanoporeReadSet, Project, ReadSetBatch #, Patient
 
 
+def read_in_as_dict(inhandle):
+    # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
+    # pull in everything from a generator into an honest to goodness iterable.
+    info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
+    # info is a list of ordered dicts, so convert each one to
+    l = []
+    for each_dict in info:
+        new_info = {x: each_dict[x] for x in each_dict}
+        l.append(new_info)
+    return l
+
+
 def get_projects(isolate_info):
     project_names = [x.strip() for x in isolate_info['projects'].split(';')]
     projects = []
@@ -39,6 +51,7 @@ def get_batch(batch_name, group):
 
 def return_read_set(rs):
     ## TODO - add nanopore
+    ## todo - isn't handling existing readset yet
     batch = get_batch(rs['batch'], rs['group'])
     read_set = ReadSet(type=rs['type'], read_set_filename=rs['read_set_filename'], batch=batch)
     if rs['type'] == 'Illumina':
@@ -58,6 +71,7 @@ def add_location(isolate, isolate_info_dict):
 
 def get_read_sets(read_set_info, isolate_identifier, group):
     read_sets = []
+    # read_set_info is a list of dioctionaries generated from the read set input csv
     # rs is a dictoinary where the keys are the header of the read set input csv, and the values are from one line
     # of the CSV
     for rs in read_set_info:
@@ -66,26 +80,6 @@ def get_read_sets(read_set_info, isolate_identifier, group):
                 read_set = return_read_set(rs)
                 read_sets.append(read_set)
     return read_sets
-
-
-def read_in_as_dict(inhandle):
-    # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
-    # pull in everything from a generator into an honest to goodness iterable.
-    info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
-    # info is a list of ordered dicts, so convert each one to
-    l = []
-    for each_dict in info:
-        new_info = {x: each_dict[x] for x in each_dict}
-        l.append(new_info)
-    return l
-
-
-# , species=isolate_info['species'],
-#                           sample_type=isolate_info['sample_type'], day_collected=isolate_info['day_collected'],
-#                           month_collected=isolate_info['month_collected'],
-#                           year_collected=isolate_info['year_collected'], latitude=float(isolate_info['latitude']),
-#                           longitude=float(isolate_info['longitude']), institution=isolate_info['institution'],
-#                           patient_identifier=isolate_info['patient_identifier']
 
 
 def get_isolate(isolate_identifier):

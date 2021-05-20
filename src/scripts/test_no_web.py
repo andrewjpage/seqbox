@@ -146,17 +146,19 @@ def query_project():
         # print()
         print(x.isolates)
 
+
 def query_readsetbatch():
     m = ReadSetBatch.query.all()
     for x in m:
         print(x)
         print(x.read_sets)
 
+
 def create_it():
     db.create_all()
 
 
-# create_it()
+create_it()
 # add_isolate()
 # add_project()
 # add_isolate_project()
@@ -164,7 +166,7 @@ def create_it():
 # add_isolate_project_same_time()
 # add_nanopore_read_set()
 # add_mykrobe()
-query_isolates()
+# query_isolates()
 # query_rs()
 # query_nrs()
 # query_mykrobe()
