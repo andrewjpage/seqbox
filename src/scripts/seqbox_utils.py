@@ -67,9 +67,11 @@ def get_projects(isolate_info):
                                                     group_name=isolate_info['group_name'],
                                                     instituion=isolate_info['institution']).all()
         if len(matching_projects) == 0:
-            s = Project(project_name=project_name, group_name=isolate_info['group_name'],
-                        institution=isolate_info['institution'])
-            projects.append(s)
+            print(f"Project {project_name} from group {isolate_info['group_name']} from institution "
+                  f"{isolate_info['institution']} doesnt exist in the db, you need to add it using the seqbox_cmd.py "
+                  f"add_projects function.\nExiting now.")
+            # todo - print a list of all the project names in case of typo
+            sys.exit()
         elif len(matching_projects) == 1:
             s = matching_projects[0]
             projects.append(s)
@@ -116,6 +118,8 @@ def add_isolate(isolate_info):
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     projects = get_projects(isolate_info)
+    # todo - shift add_patients to a seqbox_cmd thing,
+    # todo -
     patient = get_patient(isolate_info)
     # instantiate a new Isolate
     isolate = read_in_isolate_info(isolate_info)
