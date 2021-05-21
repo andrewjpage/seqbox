@@ -167,8 +167,8 @@ class Isolate(db.Model):
     isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
     sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? E.g. blood, stool, etc.")
-    # patient_id = db.Column(db.ForeignKey("patient.id"))
-    patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
+    patient_id = db.Column(db.ForeignKey("patient.id"))
+
     # date_collected = db.Column(db.DATETIME)
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")
@@ -185,7 +185,8 @@ class Isolate(db.Model):
                                                              "(UK/VN), township (MW)")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="isolate")
-    projects = db.relationship("Project", secondary="isolate_project", backref=db.backref("isolates"))
+
+
     institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
                                                     "institution which assigned the isolate_identifier.")
     ## NOTE - is the isolate identifier unique within a group or within a project?
@@ -229,6 +230,12 @@ class ReadSetBatch(db.Model):
 #     # projects = db.relationship("Project", secondary="patient_project", backref=db.backref("patients"))
 
 
+class Patient(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
+    projects = db.relationship("Project", secondary="patient_project", backref=db.backref("projects"))
+    isolates = db.relationship("Isolate", backref="patient")
+
 class Project(db.Model):
     """[Define model 'project' mapped to table 'project']
 
@@ -251,8 +258,8 @@ class Project(db.Model):
         return f"Project(id: {self.id}, details: {self.project_name})"
 
 
-isolate_project = db.Table("isolate_project",
-                         db.Column("isolate_id", db.Integer, db.ForeignKey("isolate.id"), primary_key=True),
+patient_project = db.Table("patient_project",
+                         db.Column("patient_id", db.Integer, db.ForeignKey("patient.id"), primary_key=True),
                          db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
                          )
 
