@@ -37,16 +37,19 @@ def get_projects(isolate_info):
     project_names = [x.strip() for x in isolate_info['projects'].split(';')]
     projects = []
     for project_name in project_names:
-        matching_projects = Project.query.filter_by(project_name=project_name, group_name=isolate_info['group_name']).all()
+        matching_projects = Project.query.filter_by(project_name=project_name,
+                                                    group_name=isolate_info['group_name'],
+                                                    instituion=isolate_info['institution']).all()
         if len(matching_projects) == 0:
-            s = Project(project_name=project_name, group_name=isolate_info['group_name'])
+            s = Project(project_name=project_name, group_name=isolate_info['group_name'],
+                        institution=isolate_info['institution'])
             projects.append(s)
         elif len(matching_projects) == 1:
             s = matching_projects[0]
             projects.append(s)
         else:
-            print(f"There is already more than one project called {project_name} from {isolate_info['group_name']} in the "
-                  f"database, this shouldn't happen.\nExiting.")
+            print(f"There is already more than one project called {project_name} from {isolate_info['group_name']} at "
+                  f"{isolate_info['institution']} in the database, this shouldn't happen.\nExiting.")
             sys.exit()
     return projects
 
@@ -60,14 +63,40 @@ def add_location(isolate, isolate_info_dict):
         isolate.location_third_level = isolate_info_dict['township']
 
 
+def read_in_isolate_info(isolate_info):
+    isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'])
+    if isolate_info['species'] != '':
+        isolate.species = isolate_info['species']
+    if isolate_info['sample_type'] != '':
+        isolate.sample_type = isolate_info['sample_type']
+    if isolate_info['patient_identifier'] != '':
+        isolate.patient_identifier = isolate_info['patient_identifier']
+    if isolate_info['day_collected'] != '':
+        isolate.day_collected = isolate_info['day_collected']
+    if isolate_info['month_collected'] != '':
+        isolate.month_collected = isolate_info['month_collected']
+    if isolate_info['year_collected'] != '':
+        isolate.year_collected = isolate_info['year_collected']
+    if isolate_info['township'] != '':
+        isolate.location_third_level = isolate_info['township']
+    if isolate_info['city'] != '':
+        isolate.location_second_level = isolate_info['city']
+    if isolate_info['country'] != '':
+        isolate.country = isolate_info['country']
+    if isolate_info['latitude'] != '':
+        isolate.latitude = isolate_info['latitude']
+    if isolate_info['longitude'] != '':
+        isolate.longitude = isolate_info['longitude']
+    return isolate
+
 def add_isolate(isolate_info):
     # isolate_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     projects = get_projects(isolate_info)
     # instantiate a new Isolate
-    # todo - add more of the data from the CSV here
-    isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'])
+    isolate = read_in_isolate_info(isolate_info)
+    # todo - think about patient table
     isolate.projects = projects
     add_location(isolate, isolate_info)
     db.session.add(isolate)

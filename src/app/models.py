@@ -166,7 +166,7 @@ class Isolate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
-    sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? ")
+    sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? E.g. blood, stool, etc.")
     # patient_id = db.Column(db.ForeignKey("patient.id"))
     patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
     # date_collected = db.Column(db.DATETIME)
@@ -231,15 +231,17 @@ class ReadSetBatch(db.Model):
 
 class Project(db.Model):
     """[Define model 'project' mapped to table 'project']
-    
+
     Returns:
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
     project_name = db.Column(db.VARCHAR(32), comment="You can think about this as 'what study got ethics for this "
                                                      "isolate to be taken'")
-    group_name = db.Column(db.VARCHAR(60), comment="The name of the group this isolate belongs to")
+    group_name = db.Column(db.VARCHAR(60), comment="The name of the group running this project (again, think about"
+                                                   "this in context of ethics permission).")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    institution = db.Column(db.VARCHAR(60), comment="The name of the institution running this project.")
     project_details = db.Column(db.VARCHAR(160))
     # patients = db.relationship("patient", backref="project")
     __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
