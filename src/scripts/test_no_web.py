@@ -28,13 +28,16 @@ def add_isolate_patient_project_same_time():
     patient2 = Patient(patient_identifier="patient2")
     project1 = Project(project_details="a made up project", group_name="BlahBlah")
     project2 = Project(project_details="a second made up project", group_name="BlahBlah")
-    patient1.isolates.append(isolate1)
-    patient2.isolates.append(isolate2)
-    patient2.isolates.append(isolate3)
+    isolate1.patient = patient1
+    isolate2.patient = patient2
+    isolate3.patient = patient1
+    # patient1.isolates.append(isolate1)
+    # patient2.isolates.append(isolate2)
+    # patient2.isolates.append(isolate3)
     patient1.projects.append(project1)
     patient2.projects.append(project1)
     patient2.projects.append(project2)
-    db.session.add_all([isolate1, isolate2])
+    db.session.add_all([isolate1, isolate2, isolate3])
     db.session.commit()
 
 
@@ -155,7 +158,7 @@ def create_it():
     db.create_all()
 
 
-# create_it()
+create_it()
 # add_isolate()
 # add_project()
 # add_isolate_project()

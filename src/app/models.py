@@ -236,6 +236,7 @@ class Patient(db.Model):
     projects = db.relationship("Project", secondary="patient_project", backref=db.backref("projects"))
     isolates = db.relationship("Isolate", backref="patient")
 
+
 class Project(db.Model):
     """[Define model 'project' mapped to table 'project']
 

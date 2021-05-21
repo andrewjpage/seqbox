@@ -3,6 +3,7 @@ from seqbox_utils import read_in_as_dict, does_isolate_already_exist, add_isolat
 
 
 def add_isolates(args):
+    # todo - pull out patient information from input csv, handle adding patients and isolates separately
     all_isolate_info = read_in_as_dict(args.isolates_inhandle)
     for isolate_info in all_isolate_info:
         if does_isolate_already_exist(isolate_info['isolate_identifier'], isolate_info['group_name']) is False:

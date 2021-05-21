@@ -1,7 +1,7 @@
 import csv
 import sys
 from app import db
-from app.models import Isolate, Project, ReadSet, IlluminaReadSet, ReadSetBatch
+from app.models import Isolate, Project, Patient, ReadSet, IlluminaReadSet, ReadSetBatch
 
 
 def read_in_as_dict(inhandle):
@@ -54,13 +54,9 @@ def get_projects(isolate_info):
     return projects
 
 
-def add_location(isolate, isolate_info_dict):
-    if isolate_info_dict['country'] != '':
-        isolate.country = isolate_info_dict['country']
-    if isolate_info_dict['city'] != '':
-        isolate.location_second_level = isolate_info_dict['city']
-    if isolate_info_dict['township'] != '':
-        isolate.location_third_level = isolate_info_dict['township']
+def get_patient(isolate_info):
+    matching_patient = Patient.query.join(Patient.projects).\
+        filter_by(patient_identifier=isolate_info['patient_identifier'])
 
 
 def read_in_isolate_info(isolate_info):
@@ -94,11 +90,11 @@ def add_isolate(isolate_info):
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     projects = get_projects(isolate_info)
+    patient = get_patient(isolate_info)
     # instantiate a new Isolate
     isolate = read_in_isolate_info(isolate_info)
-    # todo - think about patient table
+
     isolate.projects = projects
-    add_location(isolate, isolate_info)
     db.session.add(isolate)
     db.session.commit()
 
