@@ -25,12 +25,38 @@ def does_isolate_already_exist(isolate_identifier, group):
     all = Isolate.query.with_entities(Isolate.isolate_identifier).join(Isolate.projects)\
         .filter_by(group_name=group)\
         .distinct()
+    # have to do this extra bit in python becayse couldn't figure out how to do another "where" in the above query
+    # would just have to do `where Isolate.isolate_identifier == isolate_identifier`
     isolates_from_this_group = set([i[0] for i in all])
     if isolate_identifier in isolates_from_this_group:
         print(f"This isolate ({isolate_identifier}) already exists in the database for the group {group}")
         return True
     else:
         return False
+
+
+def does_project_already_exist(project_info):
+    matching_projects = Project.query.filter_by(project_name=project_info['project_name'],
+                                                group_name=project_info['group_name']).all()
+    if len(matching_projects) == 0:
+        print(f"Project called {project_info['project_name']} from group "
+              f"{project_info['group_name']} doesn't exist, creating project in DB")
+        return False
+    elif len(matching_projects) == 1:
+        print(f"Project called {project_info['project_name']} from group "
+              f"{project_info['group_name']} already exists, no action will be taken")
+        return True
+    else:
+        print(f"there is more than one project called {project_info['project_name']} from group "
+              f"{project_info['group_name']} - this shouldn't happen, exiting")
+        sys.exit()
+
+
+def add_project(project_info):
+    project = Project(project_name=project_info['project_name'], group_name=project_info['group_name'],
+                      institution=project_info['institution'], project_details=project_info['project_details'])
+    db.session.add(project)
+    db.session.commit()
 
 
 def get_projects(isolate_info):
