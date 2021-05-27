@@ -1,0 +1,10 @@
+﻿sample_source_identifier,sample_identifier,species,sample_type,day_collected,month_collected,year_collected,institution
+Patient1,ASH001,Salmonella,Blood,4,3,2021,MLW
+Patient1,ASH002,Salmonella,Blood,5,3,2021,MLW
+Patient2,ASH003,Salmonella,Blood,5,4,2021,MLW
+Patient2,ASH005,Salmonella,Blood,5,4,2021,MLW
+Patient3,ASH006,Salmonella,Blood,5,4,2021,MLW
+Household1,HS001,Salmonella,bootsock,5,4,2021,MLW
+River1_Site1,RS001,Salmonella,water,5,4,2021,MLW
+River1_Site2,RS002,Salmonella,water,5,4,2021,MLW
+River1_Site2,RS003,Salmonella,water,5,4,2021,MLW

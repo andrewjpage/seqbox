@@ -1,0 +1,5 @@
+﻿isolate_identifier,group,type,read_set_filename,path_r1,path_r2,batch
+ASH001,GordonGroup,Illumina,SEQ_A,/path/to/SEQ_A_1.fastq.gz,/path/to/SEQ_A_2.fastq.gz,batch1
+ASH002,GordonGroup,Illumina,SEQ_B,/path/to/SEQ_B_1.fastq.gz,/path/to/SEQ_B_2.fastq.gz,batch1
+ASH003,GordonGroup,Illumina,SEQ_C,/path/to/SEQ_C_1.fastq.gz,/path/to/SEQ_C_2.fastq.gz,batch1
+ASH002,GordonGroup,Illumina,SEQ_B_v2,/path/to/SEQ_B_v2_1.fastq.gz,/path/to/SEQ_B_v2_2.fastq.gz,batch1
