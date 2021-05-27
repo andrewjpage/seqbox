@@ -42,17 +42,16 @@ def does_sample_source_already_exist(sample_source_info):
     # the aim of this query is to get a list of all the sample identifiers belonging to a specific group
     # this does a join of sample and projects (via magic), and the filters by the group_name
     # https://stackoverflow.com/questions/40699642/how-to-query-many-to-many-sqlalchemy
-    # todo - check how many lines this returns for a sample source which is associated with multiple projects
-    all = SampleSource.query.with_entities(SampleSource.sample_source_identifier).join(SampleSource.projects)\
+    all_sample_source_identifiers_for_this_group = \
+        SampleSource.query.with_entities(SampleSource.sample_source_identifier).join(SampleSource.projects)\
         .filter_by(group_name=sample_source_info['group_name'])\
         .distinct()
     # have to do this extra bit in python becayse couldn't figure out how to do another "where" in the above query
     # would just have to do `where SampleSource.sample_source_identifier ==
     # sample_source_info['sample_source_identifier']`
-    sample_source_identifiers_from_this_group = set([i[0] for i in all])
-    if sample_source_info['sample_source_identifier'] in sample_source_identifiers_from_this_group:
-        print(f"This sample ({sample_source_info['sample_source_identifier']}) already exists in the database for the "
-              f"group {sample_source_info['group']}")
+    if sample_source_info['sample_source_identifier'] in all_sample_source_identifiers_for_this_group:
+        print(f"This sample source ({sample_source_info['sample_source_identifier']}) already exists in the database "
+              f"for the group {sample_source_info['group_name']}")
         # todo - need to check that the sample is associated with this project as well.
         return True
     else:
@@ -107,7 +106,6 @@ def get_projects(info):
     return projects
 
 
-# todo - where is this function used?
 def get_sample_source(sample_info):
     # want to find whether this sample_source is already part of this project
     matching_sample_source = SampleSource.query.join(SampleSource.projects).\
@@ -153,14 +151,10 @@ def add_sample(sample_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
-    # todo - remove projects from sample workflow
-    projects = get_projects(sample_info)
-    # todo - shift add_patients to a seqbox_cmd thing,
     sample_source = get_sample_source(sample_info)
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
-
-    sample.projects = projects
+    # todo - add sample_source to sample
     db.session.add(sample)
     db.session.commit()
 
@@ -169,7 +163,6 @@ def add_sample_source(sample_source_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
-    # todo - add test for if project doesnt exist in the database
     projects = get_projects(sample_source_info)
     # instantiate a new SampleSource
     sample_source = read_in_sample_source_info(sample_source_info)
