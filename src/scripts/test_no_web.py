@@ -1,7 +1,7 @@
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Project, ReadSetBatch, Patient
+from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Project, ReadSetBatch, IsolateSource
 
 
 def add_isolate():
@@ -20,23 +20,23 @@ def add_project():
     db.session.add_all([project1, project2])
 
 
-def add_isolate_patient_project_same_time():
-    isolate1 = Isolate(species='Salmonella', isolate_identifier='ASH001')
-    isolate2 = Isolate(species='Salmonella', isolate_identifier='ASH002')
-    isolate3 = Isolate(species='Salmonella', isolate_identifier='ASH003')
-    patient1 = Patient(patient_identifier="patient1")
-    patient2 = Patient(patient_identifier="patient2")
+def add_isolate_isolatesource_project_same_time():
+    isolate1 = Isolate(species='Salmonella', isolate_identifier='ASH004')
+    isolate2 = Isolate(species='Salmonella', isolate_identifier='ASH005')
+    isolate3 = Isolate(species='Salmonella', isolate_identifier='ASH006')
+    isolatesource1 = IsolateSource(isolate_source_identifier="patient1")
+    isolatesource2 = IsolateSource(isolate_source_identifier="patient2")
     project1 = Project(project_details="a made up project", group_name="BlahBlah")
     project2 = Project(project_details="a second made up project", group_name="BlahBlah")
-    isolate1.patient = patient1
-    isolate2.patient = patient2
-    isolate3.patient = patient1
+    isolate1.isolate_source = isolatesource1
+    isolate2.isolate_source = isolatesource2
+    isolate3.isolate_source = isolatesource1
     # patient1.isolates.append(isolate1)
     # patient2.isolates.append(isolate2)
     # patient2.isolates.append(isolate3)
-    patient1.projects.append(project1)
-    patient2.projects.append(project1)
-    patient2.projects.append(project2)
+    isolatesource1.projects.append(project1)
+    isolatesource2.projects.append(project1)
+    isolatesource2.projects.append(project2)
     db.session.add_all([isolate1, isolate2, isolate3])
     db.session.commit()
 
@@ -163,7 +163,7 @@ create_it()
 # add_project()
 # add_isolate_project()
 # add_isolate_and_rs()
-add_isolate_patient_project_same_time()
+add_isolate_isolatesource_project_same_time()
 # add_nanopore_read_set()
 # add_mykrobe()
 # query_isolates()

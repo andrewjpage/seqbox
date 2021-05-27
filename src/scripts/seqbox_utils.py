@@ -1,7 +1,7 @@
 import csv
 import sys
 from app import db
-from app.models import Isolate, Project, Patient, ReadSet, IlluminaReadSet, ReadSetBatch
+from app.models import Isolate, Project, IsolateSource, ReadSet, IlluminaReadSet, ReadSetBatch
 
 
 def read_in_as_dict(inhandle):
@@ -16,7 +16,7 @@ def read_in_as_dict(inhandle):
     return l
 
 
-def does_isolate_already_exist(isolate_identifier, group):
+def does_isolate_already_exist(isolate_info):
     # this function checks if this isolate identifier has already been used by this group, and if so,
     # returns True, if not it returns false
     # the aim of this query is to get a list of all the isolate identifiers belonging to a specific group
@@ -28,8 +28,9 @@ def does_isolate_already_exist(isolate_identifier, group):
     # have to do this extra bit in python becayse couldn't figure out how to do another "where" in the above query
     # would just have to do `where Isolate.isolate_identifier == isolate_identifier`
     isolates_from_this_group = set([i[0] for i in all])
-    if isolate_identifier in isolates_from_this_group:
-        print(f"This isolate ({isolate_identifier}) already exists in the database for the group {group}")
+    if isolate_info['isolate_identifier'] in isolates_from_this_group:
+        print(f"This isolate ({isolate_info['isolate_identifier']}) already exists in the database for the group {group}")
+        # todo - need to check that the isolate is associated with this project as well.
         return True
     else:
         return False
@@ -82,9 +83,10 @@ def get_projects(isolate_info):
     return projects
 
 
-def get_patient(isolate_info):
-    matching_patient = Patient.query.join(Patient.projects).\
-        filter_by(patient_identifier=isolate_info['patient_identifier'])
+def get_isolate_source(isolate_info):
+    # want to find whether this isolate_source is already part of this project
+    matching_isolate_source = IsolateSource.query.join(IsolateSource.projects).\
+        filter_by(isolate_source_identifier=isolate_info['isolate_source_identifier'])
 
 
 def read_in_isolate_info(isolate_info):
@@ -113,14 +115,14 @@ def read_in_isolate_info(isolate_info):
         isolate.longitude = isolate_info['longitude']
     return isolate
 
+
 def add_isolate(isolate_info):
     # isolate_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     projects = get_projects(isolate_info)
     # todo - shift add_patients to a seqbox_cmd thing,
-    # todo -
-    patient = get_patient(isolate_info)
+    isolate_source = get_isolate_source(isolate_info)
     # instantiate a new Isolate
     isolate = read_in_isolate_info(isolate_info)
 

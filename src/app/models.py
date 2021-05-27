@@ -4,7 +4,7 @@ SQLAlchemy : Using ORM(Oject Relational Mapper)
 from datetime import datetime
 from app import db, login
 from flask_login import UserMixin
-from sqlalchemy.orm import backref # relationship
+from sqlalchemy.orm import backref  # relationship
 from sqlalchemy.schema import Sequence, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True, nullable=False)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+
     # establishes a relationship between User and Post
     # backref adds a new property to the Post class, Post.author will point to a User
     # lazy defines when sqlalchemy will load data from the database
@@ -75,15 +76,16 @@ class ReadSet(db.Model):
     read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
                                                           "Illumina data)")
     read_set_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
-                                                      "{read_set_id}-{isolate.isolate_identifier}")
+                                                      "{read_set_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("read_set", passive_updates=True,
                                                           passive_deletes=True))
-    isolate_id = db.Column(db.Integer, db.ForeignKey("isolate.id", onupdate="cascade", ondelete="set null"),
+    sample_id = db.Column(db.Integer, db.ForeignKey("sample.id", onupdate="cascade", ondelete="set null"),
                            nullable=True)
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset", uselist=False)
     nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset", uselist=False)
     dna_extraction_method = db.Column(db.VARCHAR(64))
     batch_id = db.Column(db.Integer, db.ForeignKey("read_set_batch.id"))
+
     # @hybrid_property
     # def read_set_id(self):
     #     return self.illumina_read_set_id or self.nanopore_read_set_id
@@ -93,7 +95,6 @@ class ReadSet(db.Model):
 
 
 class IlluminaReadSet(db.Model):
-
     """[Define model 'Sample' mapped to table 'sample']
     Arguments:
         db {[type]} -- [description]
@@ -121,6 +122,7 @@ class NanoporeReadSet(db.Model):
     path_fast5 = db.Column(db.VARCHAR(60))
     path_fastq = db.Column(db.VARCHAR(60))
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+
     # nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade",
     # ondelete="set null"), nullable=True)
     # num_reads = db.Column()
@@ -136,7 +138,7 @@ class Mykrobe(db.Model):
         [type] -- [description]
     """
     read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id", onupdate="cascade",
-                                                               ondelete="set null"), nullable=True)
+                                                      ondelete="set null"), nullable=True)
     id = db.Column(db.Integer, primary_key=True)
     # seqbox_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.seqbox_id", onupdate="cascade",
     # ondelete="set null"), nullable=True)
@@ -162,37 +164,28 @@ class Mykrobe(db.Model):
     # alternative ways of doing it https://stackoverflow.com/questions/7844460/foreign-key-to-multiple-tables
 
 
-class Isolate(db.Model):
+class Sample(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    isolate_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for this isolate")
-    species = db.Column(db.VARCHAR(120), comment="Putative species of this isolate")
-    sample_type = db.Column(db.VARCHAR(60), comment="what sample type is it from? E.g. blood, stool, etc.")
-    patient_id = db.Column(db.ForeignKey("patient.id"))
-
-    # date_collected = db.Column(db.DATETIME)
+    sample_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for the sample which DNA was extracted from")
+    sample_type = db.Column(db.VARCHAR(60), comment="What was DNA extracted from? An isolate, clinical sample (for "
+                                                    "covid), a plate sweep, whole stools, etc.")
+    species = db.Column(db.VARCHAR(120), comment="Putative species of this sample, if known/appropriate.")
+    sample_source_id = db.Column(db.ForeignKey("sample_source.id"))
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")
     year_collected = db.Column(db.Integer, comment="year this was collected")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    latitude = db.Column(db.Float(), comment="Latitude of isolate origin if known")
-    longitude = db.Column(db.Float(), comment="Longitude of isolate origin if known")
-    country = db.Column(db.VARCHAR(60), comment="country of origin")
-    location_first_level = db.Column(db.VARCHAR(40), comment="Highest level of organisation within country e.g. region,"
-                                                             " province, state")
-    location_second_level = db.Column(db.VARCHAR(50), comment="Second highest level of organisation e.g. county, "
-                                                              "district Malawi), large city/metro area")
-    location_third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district "
-                                                             "(UK/VN), township (MW)")
+
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
-    read_sets = db.relationship("ReadSet", backref="isolate")
+    read_sets = db.relationship("ReadSet", backref="sample")
 
+    institution = db.Column(db.VARCHAR(60), comment="The institution this sample originated at. Specifically, the "
+                                                    "institution which assigned the sample_identifier.")
 
-    institution = db.Column(db.VARCHAR(60), comment="The institution this isolate originated at. Specifically, the "
-                                                    "institution which assigned the isolate_identifier.")
-    ## NOTE - is the isolate identifier unique within a group or within a project?
+    ## todo - is the sample identifier unique within a group or within a project?
 
     def __repr__(self):
-        return f"Sample({self.id}, {self.isolate_identifier}, {self.species})"
+        return f"Sample({self.id}, {self.sample_identifier}, {self.species})"
 
 
 class ReadSetBatch(db.Model):
@@ -214,27 +207,31 @@ class ReadSetBatch(db.Model):
     library_prep_method = db.Column(db.VARCHAR(64))
     sequencing_centre = db.Column(db.VARCHAR(64), comment="E.g. Sanger, CGR, MLW, etc.")
     read_sets = db.relationship("ReadSet", backref="batch")
-    
+
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
 
 
-# class Patient(db.Model):
-#     # assuming that each patient identifier is unique wihtin a project
-#     id = db.Column(db.Integer, primary_key=True)
-#     group_id = db.Column(db.Integer, db.ForeignKey("group.id"))
-#     patient_identifier = db.Column(db.VARCHAR(30))
-#     isolates = db.relationship("Isolate", backref="patient")
-#     __table_args__ = (UniqueConstraint('project_id', 'patient_identifier', name='_projectid_patientidentifier_uc'),)
-#     # project = db.Column(db.ForeignKey("project.id"))
-#     # projects = db.relationship("Project", secondary="patient_project", backref=db.backref("patients"))
-
-
-class Patient(db.Model):
+class SampleSource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    patient_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the patient this isolate came from")
-    projects = db.relationship("Project", secondary="patient_project", backref=db.backref("projects"))
-    isolates = db.relationship("Isolate", backref="patient")
+    sample_source_identifier = db.Column(db.VARCHAR(30), comment="the identifier for the sample source this sample "
+                                                                  "came from, e.g. if it's a stool sample, then "
+                                                                 "what is the identifier of the patient it came from")
+    sample_source_type = db.Column(db.VARCHAR(60), comment="what type of sample source did it come from? i.e. what "
+                                                           "does the sample source identifier identify? is it a patient"
+                                                           "or a visit (like tyvac/strataa), or a sampling location for"
+                                                           " an environmental sample")
+    projects = db.relationship("Project", secondary="sample_source_project", backref=db.backref("projects"))
+    samples = db.relationship("Sample", backref="sample_source")
+    latitude = db.Column(db.Float(), comment="Latitude of sample source if known")
+    longitude = db.Column(db.Float(), comment="Longitude of sample source origin if known")
+    country = db.Column(db.VARCHAR(60), comment="country of origin")
+    location_first_level = db.Column(db.VARCHAR(40), comment="Highest level of organisation within country e.g. region,"
+                                                             " province, state")
+    location_second_level = db.Column(db.VARCHAR(50), comment="Second highest level of organisation e.g. county, "
+                                                              "district Malawi), large city/metro area")
+    location_third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district "
+                                                             "(UK/VN), township (MW)")
 
 
 class Project(db.Model):
@@ -245,27 +242,20 @@ class Project(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     project_name = db.Column(db.VARCHAR(32), comment="You can think about this as 'what study got ethics for this "
-                                                     "isolate to be taken'")
+                                                     "sample to be taken'")
     group_name = db.Column(db.VARCHAR(60), comment="The name of the group running this project (again, think about"
                                                    "this in context of ethics permission).")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     institution = db.Column(db.VARCHAR(60), comment="The name of the institution running this project.")
     project_details = db.Column(db.VARCHAR(160))
-    # patients = db.relationship("patient", backref="project")
     __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
-    # isolates = db.relationship("Isolate", secondary="isolate_project")
-    
+
     def __repr__(self):
         return f"Project(id: {self.id}, details: {self.project_name})"
 
 
-patient_project = db.Table("patient_project",
-                         db.Column("patient_id", db.Integer, db.ForeignKey("patient.id"), primary_key=True),
-                         db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
-                         )
-
-#
-# patient_project = db.Table("patient_project",
-#                          db.Column("patient_id", db.Integer, db.ForeignKey("patient.id"), primary_key=True),
-#                          db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
-#                          )
+sample_source_project = db.Table("sample_source_project",
+                                  db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id"),
+                                            primary_key=True),
+                                  db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
+                                  )
