@@ -1,7 +1,0 @@
-﻿sample_source_identifier,sample_type,township,city,country,latitude,longitude,projects,group_name
-Patient1,isolate,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,GordonGroup
-Patient2,isolate,Bangwe,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro; TyVAC,GordonGroup
-Patient3,isolate,Zingwangwe,Blantyre,Malawi,-15.80526123,35.02232035,TyVAC,GordonGroup
-Household1,isolate,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,GordonGroup
-River1_Site1,isolate,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,GordonGroup
-River1_Site2,isolate,Ndirande,Blantyre,Malawi,-15.80526456,35.02232146,iNTS_enviro,GordonGroup
