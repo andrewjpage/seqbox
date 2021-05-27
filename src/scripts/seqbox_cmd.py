@@ -1,5 +1,5 @@
 import argparse
-from seqbox_utils import read_in_as_dict, does_isolate_already_exist, add_isolate, does_project_already_exist, \
+from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, does_project_already_exist, \
     add_project
 
 # todo - need to handle "what if the isolate source (or isolate) already exists as part of another project",
@@ -11,13 +11,13 @@ from seqbox_utils import read_in_as_dict, does_isolate_already_exist, add_isolat
 
 ## currently - the test_no_web is not working as expected
 
-def add_isolates(args):
-    # todo - pull out patient information from input csv, handle adding patients and isolates separately
-    all_isolate_info = read_in_as_dict(args.isolates_inhandle)
-    for isolate_info in all_isolate_info:
-        if does_isolate_already_exist(isolate_info) is False:
-            add_isolate(isolate_info)
-        # if check_if_isolate_exists(isolate_info['isolate_identifier'], isolate_info['group']) is False:
+def add_samples(args):
+    # todo - pull out patient information from input csv, handle adding patients and samples separately
+    all_samples_info = read_in_as_dict(args.samples_inhandle)
+    for sample_info in all_samples_info:
+        if does_sample_already_exist(sample_info) is False:
+            add_sample(sample_info)
+        # if check_if_sample_exists(sample_info['sample_identifier'], sample_info['group']) is False:
 
 
 def add_projects(args):
@@ -28,8 +28,8 @@ def add_projects(args):
 
 
 def run_command(args):
-    if args.command == 'add_isolates':
-        add_isolates(args=args)
+    if args.command == 'add_samples':
+        add_samples(args=args)
     if args.command == 'add_projects':
         add_projects(args=args)
 
@@ -37,8 +37,8 @@ def run_command(args):
 def main():
     parser = argparse.ArgumentParser(prog='seqbox_cmd')
     subparsers = parser.add_subparsers(title='[sub-commands]', dest='command')
-    parser_add_isolates = subparsers.add_parser('add_isolates', help='Take a csv file of isolates and add to the DB')
-    parser_add_isolates.add_argument('-i', dest='isolates_inhandle', help='A CSV file containing isolates'
+    parser_add_samples = subparsers.add_parser('add_samples', help='Take a csv file of samples and add to the DB')
+    parser_add_samples.add_argument('-i', dest='samples_inhandle', help='A CSV file containing samples'
                                      , required=True)
     parser_add_projects = subparsers.add_parser('add_projects', help='take a csv file of projects and add to the DB')
     parser_add_projects.add_argument('-i', dest='projects_inhandle', help='A CSV file containing projects'

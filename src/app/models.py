@@ -175,12 +175,9 @@ class Sample(db.Model):
     month_collected = db.Column(db.Integer, comment="month this was collected")
     year_collected = db.Column(db.Integer, comment="year this was collected")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-
+    processing_institution = db.Column(db.VARCHAR(60), comment="The institution which did the DNA extraction.")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     read_sets = db.relationship("ReadSet", backref="sample")
-
-    institution = db.Column(db.VARCHAR(60), comment="The institution this sample originated at. Specifically, the "
-                                                    "institution which assigned the sample_identifier.")
 
     ## todo - is the sample identifier unique within a group or within a project?
 
@@ -221,6 +218,9 @@ class SampleSource(db.Model):
                                                            "does the sample source identifier identify? is it a patient"
                                                            "or a visit (like tyvac/strataa), or a sampling location for"
                                                            " an environmental sample")
+    # todo - how do we handle multiple picks from same plate?
+    # projects is an attribute of sample_source because it's the sample source which"
+    # is the primary thing enrolled in the project, not the sample itself
     projects = db.relationship("Project", secondary="sample_source_project", backref=db.backref("projects"))
     samples = db.relationship("Sample", backref="sample_source")
     latitude = db.Column(db.Float(), comment="Latitude of sample source if known")

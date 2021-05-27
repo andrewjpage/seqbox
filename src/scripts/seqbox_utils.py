@@ -1,7 +1,7 @@
 import csv
 import sys
 from app import db
-from app.models import Isolate, Project, IsolateSource, ReadSet, IlluminaReadSet, ReadSetBatch
+from app.models import Sample, Project, SampleSource, ReadSet, IlluminaReadSet, ReadSetBatch
 
 
 def read_in_as_dict(inhandle):
@@ -16,21 +16,21 @@ def read_in_as_dict(inhandle):
     return l
 
 
-def does_isolate_already_exist(isolate_info):
-    # this function checks if this isolate identifier has already been used by this group, and if so,
+def does_sample_already_exist(sample_info):
+    # this function checks if this sample identifier has already been used by this group, and if so,
     # returns True, if not it returns false
-    # the aim of this query is to get a list of all the isolate identifiers belonging to a specific group
-    # this does a join of isolate and projects (via magic), and the filters by the group_name
+    # the aim of this query is to get a list of all the sample identifiers belonging to a specific group
+    # this does a join of sample and projects (via magic), and the filters by the group_name
     # https://stackoverflow.com/questions/40699642/how-to-query-many-to-many-sqlalchemy
-    all = Isolate.query.with_entities(Isolate.isolate_identifier).join(Isolate.projects)\
+    all = Sample.query.with_entities(Sample.sample_identifier).join(Sample.projects)\
         .filter_by(group_name=group)\
         .distinct()
     # have to do this extra bit in python becayse couldn't figure out how to do another "where" in the above query
-    # would just have to do `where Isolate.isolate_identifier == isolate_identifier`
-    isolates_from_this_group = set([i[0] for i in all])
-    if isolate_info['isolate_identifier'] in isolates_from_this_group:
-        print(f"This isolate ({isolate_info['isolate_identifier']}) already exists in the database for the group {group}")
-        # todo - need to check that the isolate is associated with this project as well.
+    # would just have to do `where Sample.sample_identifier == sample_identifier`
+    samples_from_this_group = set([i[0] for i in all])
+    if sample_info['sample_identifier'] in samples_from_this_group:
+        print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group {group}")
+        # todo - need to check that the sample is associated with this project as well.
         return True
     else:
         return False
@@ -60,16 +60,16 @@ def add_project(project_info):
     db.session.commit()
 
 
-def get_projects(isolate_info):
-    project_names = [x.strip() for x in isolate_info['projects'].split(';')]
+def get_projects(sample_info):
+    project_names = [x.strip() for x in sample_info['projects'].split(';')]
     projects = []
     for project_name in project_names:
         matching_projects = Project.query.filter_by(project_name=project_name,
-                                                    group_name=isolate_info['group_name'],
-                                                    instituion=isolate_info['institution']).all()
+                                                    group_name=sample_info['group_name'],
+                                                    instituion=sample_info['institution']).all()
         if len(matching_projects) == 0:
-            print(f"Project {project_name} from group {isolate_info['group_name']} from institution "
-                  f"{isolate_info['institution']} doesnt exist in the db, you need to add it using the seqbox_cmd.py "
+            print(f"Project {project_name} from group {sample_info['group_name']} from institution "
+                  f"{sample_info['institution']} doesnt exist in the db, you need to add it using the seqbox_cmd.py "
                   f"add_projects function.\nExiting now.")
             # todo - print a list of all the project names in case of typo
             sys.exit()
@@ -77,67 +77,67 @@ def get_projects(isolate_info):
             s = matching_projects[0]
             projects.append(s)
         else:
-            print(f"There is already more than one project called {project_name} from {isolate_info['group_name']} at "
-                  f"{isolate_info['institution']} in the database, this shouldn't happen.\nExiting.")
+            print(f"There is already more than one project called {project_name} from {sample_info['group_name']} at "
+                  f"{sample_info['institution']} in the database, this shouldn't happen.\nExiting.")
             sys.exit()
     return projects
 
 
-def get_isolate_source(isolate_info):
-    # want to find whether this isolate_source is already part of this project
-    matching_isolate_source = IsolateSource.query.join(IsolateSource.projects).\
-        filter_by(isolate_source_identifier=isolate_info['isolate_source_identifier'])
+def get_sample_source(sample_info):
+    # want to find whether this sample_source is already part of this project
+    matching_sample_source = SampleSource.query.join(SampleSource.projects).\
+        filter_by(sample_source_identifier=sample_info['sample_source_identifier'])
 
 
-def read_in_isolate_info(isolate_info):
-    isolate = Isolate(isolate_identifier=isolate_info['isolate_identifier'])
-    if isolate_info['species'] != '':
-        isolate.species = isolate_info['species']
-    if isolate_info['sample_type'] != '':
-        isolate.sample_type = isolate_info['sample_type']
-    if isolate_info['patient_identifier'] != '':
-        isolate.patient_identifier = isolate_info['patient_identifier']
-    if isolate_info['day_collected'] != '':
-        isolate.day_collected = isolate_info['day_collected']
-    if isolate_info['month_collected'] != '':
-        isolate.month_collected = isolate_info['month_collected']
-    if isolate_info['year_collected'] != '':
-        isolate.year_collected = isolate_info['year_collected']
-    if isolate_info['township'] != '':
-        isolate.location_third_level = isolate_info['township']
-    if isolate_info['city'] != '':
-        isolate.location_second_level = isolate_info['city']
-    if isolate_info['country'] != '':
-        isolate.country = isolate_info['country']
-    if isolate_info['latitude'] != '':
-        isolate.latitude = isolate_info['latitude']
-    if isolate_info['longitude'] != '':
-        isolate.longitude = isolate_info['longitude']
-    return isolate
+def read_in_sample_info(sample_info):
+    sample = Sample(sample_identifier=sample_info['sample_identifier'])
+    if sample_info['species'] != '':
+        sample.species = sample_info['species']
+    if sample_info['sample_type'] != '':
+        sample.sample_type = sample_info['sample_type']
+    if sample_info['patient_identifier'] != '':
+        sample.patient_identifier = sample_info['patient_identifier']
+    if sample_info['day_collected'] != '':
+        sample.day_collected = sample_info['day_collected']
+    if sample_info['month_collected'] != '':
+        sample.month_collected = sample_info['month_collected']
+    if sample_info['year_collected'] != '':
+        sample.year_collected = sample_info['year_collected']
+    if sample_info['township'] != '':
+        sample.location_third_level = sample_info['township']
+    if sample_info['city'] != '':
+        sample.location_second_level = sample_info['city']
+    if sample_info['country'] != '':
+        sample.country = sample_info['country']
+    if sample_info['latitude'] != '':
+        sample.latitude = sample_info['latitude']
+    if sample_info['longitude'] != '':
+        sample.longitude = sample_info['longitude']
+    return sample
 
 
-def add_isolate(isolate_info):
-    # isolate_info is a dict of one line of the input csv (keys from col header)
+def add_sample(sample_info):
+    # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
-    projects = get_projects(isolate_info)
+    projects = get_projects(sample_info)
     # todo - shift add_patients to a seqbox_cmd thing,
-    isolate_source = get_isolate_source(isolate_info)
-    # instantiate a new Isolate
-    isolate = read_in_isolate_info(isolate_info)
+    sample_source = get_sample_source(sample_info)
+    # instantiate a new Sample
+    sample = read_in_sample_info(sample_info)
 
-    isolate.projects = projects
-    db.session.add(isolate)
+    sample.projects = projects
+    db.session.add(sample)
     db.session.commit()
 
 
-# def get_read_sets(read_set_info, isolate_identifier, group):
+# def get_read_sets(read_set_info, sample_identifier, group):
 #     read_sets = []
 #     # read_set_info is a list of dioctionaries generated from the read set input csv
 #     # rs is a dictoinary where the keys are the header of the read set input csv, and the values are from one line
 #     # of the CSV
 #     for rs in read_set_info:
-#         if rs['isolate_identifier'] == isolate_identifier:
+#         if rs['sample_identifier'] == sample_identifier:
 #             if rs['group'] == group:
 #                 read_set = return_read_set(rs)
 #                 read_sets.append(read_set)

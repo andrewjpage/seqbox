@@ -1,16 +1,16 @@
 import pprint
 import datetime
 from app import db
-from app.models import Isolate, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Project, ReadSetBatch, IsolateSource
+from app.models import Sample, ReadSet, IlluminaReadSet, Mykrobe, NanoporeReadSet, Project, ReadSetBatch, SampleSource
 
 
-def add_isolate():
-    isolate1 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH001')
-    isolate2 = Isolate(species='Salmonella', location='blah', isolate_identifier='ASH002')
-    # print(isolate)
+def add_sample():
+    sample1 = Sample(species='Salmonella', location='blah', sample_identifier='ASH001')
+    sample2 = Sample(species='Salmonella', location='blah', sample_identifier='ASH002')
+    # print(sample)
     #save the model to the database
-    # use add_all([list, of, isolates]) to add multiples at the same time
-    db.session.add_all([isolate1, isolate2])
+    # use add_all([list, of, samples]) to add multiples at the same time
+    db.session.add_all([sample1, sample2])
     db.session.commit()
 
 
@@ -20,28 +20,28 @@ def add_project():
     db.session.add_all([project1, project2])
 
 
-def add_isolate_isolatesource_project_same_time():
-    isolate1 = Isolate(species='Salmonella', isolate_identifier='ASH004')
-    isolate2 = Isolate(species='Salmonella', isolate_identifier='ASH005')
-    isolate3 = Isolate(species='Salmonella', isolate_identifier='ASH006')
-    isolatesource1 = IsolateSource(isolate_source_identifier="patient1")
-    isolatesource2 = IsolateSource(isolate_source_identifier="patient2")
+def add_sample_samplesource_project_same_time():
+    sample1 = Sample(species='Salmonella', sample_identifier='ASH004')
+    sample2 = Sample(species='Salmonella', sample_identifier='ASH005')
+    sample3 = Sample(species='Salmonella', sample_identifier='ASH006')
+    samplesource1 = SampleSource(sample_source_identifier="patient1")
+    samplesource2 = SampleSource(sample_source_identifier="patient2")
     project1 = Project(project_details="a made up project", group_name="BlahBlah")
     project2 = Project(project_details="a second made up project", group_name="BlahBlah")
-    isolate1.isolate_source = isolatesource1
-    isolate2.isolate_source = isolatesource2
-    isolate3.isolate_source = isolatesource1
-    # patient1.isolates.append(isolate1)
-    # patient2.isolates.append(isolate2)
-    # patient2.isolates.append(isolate3)
-    isolatesource1.projects.append(project1)
-    isolatesource2.projects.append(project1)
-    isolatesource2.projects.append(project2)
-    db.session.add_all([isolate1, isolate2, isolate3])
+    sample1.sample_source = samplesource1
+    sample2.sample_source = samplesource2
+    sample3.sample_source = samplesource1
+    # patient1.samples.append(sample1)
+    # patient2.samples.append(sample2)
+    # patient2.samples.append(sample3)
+    samplesource1.projects.append(project1)
+    samplesource2.projects.append(project1)
+    samplesource2.projects.append(project2)
+    db.session.add_all([sample1, sample2, sample3])
     db.session.commit()
 
 
-def add_isolate_and_rs():
+def add_sample_and_rs():
     rs1 = ReadSet(read_set_filename='ASH001_sequencing', type="illumina")
     rs2 = ReadSet(read_set_filename='ASH001_v2_sequencing', type="illumina")
     irs1 = IlluminaReadSet(read_set_id=1, path_r1="/path/to/ASH001_sequencing_1.fastq",
@@ -53,16 +53,16 @@ def add_isolate_and_rs():
     rs3 = ReadSet(read_set_filename="ASH001_nanop", type="nanopore")
     nrs1 = NanoporeReadSet(read_set_id=3, path_fastq="/path/to/ASH001_nanopore_sequencing.fastq")
     rs3.nanopore_read_sets = [nrs1]
-    isolate = Isolate(date_added=datetime.datetime.utcnow(), species='Salmonella',
-                      location='blah', isolate_identifier='ASH001')
-    isolate.read_sets = [rs1, rs2, rs3]
-    # print(isolate.illumina_read_sets)
-    db.session.add(isolate)
+    sample = Sample(date_added=datetime.datetime.utcnow(), species='Salmonella',
+                      location='blah', sample_identifier='ASH001')
+    sample.read_sets = [rs1, rs2, rs3]
+    # print(sample.illumina_read_sets)
+    db.session.add(sample)
     db.session.commit()
 
 
 def add_nanopore_read_set():
-    nanopore_read_set = NanoporeReadSet(isolate_id=1, read_set_filename='PMQ124_sequencing_nanopore',
+    nanopore_read_set = NanoporeReadSet(sample_id=1, read_set_filename='PMQ124_sequencing_nanopore',
                                         path_fast5="/path/to/PMQ124_sequencing.nanopore.fast5",
                                         path_fastq="/path/to/PMQ124_sequencing.nanopore.fastq")
     db.session.add(nanopore_read_set)
@@ -88,12 +88,12 @@ def add_mykrobe():
     db.session.commit()
 
 
-def query_isolates():
-    # or can use db.session.query(Isolate)
-    i = Isolate.query.all()
+def query_samples():
+    # or can use db.session.query(Sample)
+    i = Sample.query.all()
     for x in i:
         print(vars(x))
-        # print(x.isolate_identifier)
+        # print(x.sample_identifier)
         # print(x.studies)
         # print(x.read_sets)
         # pprint.pprint(x.__dict__)
@@ -101,13 +101,13 @@ def query_isolates():
 
 
 def query_rs():
-    # or can use db.session.query(Isolate)
+    # or can use db.session.query(Sample)
     i = ReadSet.query.all()
     pprint.pprint(i)
 
 
 def query_nrs():
-    # or can use db.session.query(Isolate)
+    # or can use db.session.query(Sample)
     i = NanoporeReadSet.query.all()
     pprint.pprint(i)
 
@@ -119,9 +119,9 @@ def query_mykrobe():
         print(x.read_set_id)
 
 
-def query_isolate_reads_myk():
-    a = db.session.query(Isolate, ReadSet, Mykrobe)\
-        .join(Isolate, isouter=True)\
+def query_sample_reads_myk():
+    a = db.session.query(Sample, ReadSet, Mykrobe)\
+        .join(Sample, isouter=True)\
         .join(Mykrobe, isouter=True).distinct()
 
     pprint.pprint(a.all())
@@ -132,8 +132,8 @@ def query_isolate_reads_myk():
 
 
 def join_nrs():
-    a = db.session.query(Isolate, NanoporeReadSet, Mykrobe)\
-        .join(Isolate)\
+    a = db.session.query(Sample, NanoporeReadSet, Mykrobe)\
+        .join(Sample)\
         .join(Mykrobe) \
         .all()
     pprint.pprint(a)
@@ -144,7 +144,7 @@ def query_project():
     s = Project.query.all()
     for x in s:
         # print()
-        print(x.isolates)
+        print(x.samples)
 
 
 def query_readsetbatch():
@@ -159,18 +159,18 @@ def create_it():
 
 
 create_it()
-# add_isolate()
+# add_sample()
 # add_project()
-# add_isolate_project()
-# add_isolate_and_rs()
-add_isolate_isolatesource_project_same_time()
+# add_sample_project()
+# add_sample_and_rs()
+# add_sample_samplesource_project_same_time()
 # add_nanopore_read_set()
 # add_mykrobe()
-# query_isolates()
+# query_samples()
 # query_rs()
 # query_nrs()
 # query_mykrobe()
-# query_isolate_reads_myk()
+# query_sample_reads_myk()
 # join_nrs()
 # query_project()
 # query_readsetbatch()
