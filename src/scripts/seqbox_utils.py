@@ -120,7 +120,7 @@ def get_projects(info):
         # todo - this is new, added for different function, so check it works
         p = query_projects(info, project_name)
         if p[0] is True:
-            projects.append(p)
+            projects.append(p[1])
         elif p[0] is False:
             print(f"Project {project_name} from group {info['group_name']} "
                   f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
@@ -192,6 +192,7 @@ def add_sample_source(sample_source_info):
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     projects = get_projects(sample_source_info)
+    print(projects)
     # instantiate a new SampleSource
     sample_source = read_in_sample_source_info(sample_source_info)
     sample_source.projects = projects
