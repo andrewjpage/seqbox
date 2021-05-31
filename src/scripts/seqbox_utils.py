@@ -39,8 +39,6 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
     # sample_source_info is a line from the input csv
     # sample_source is the corresponding entry from the DB
     # get the projects from the input file as set
-    # todo - need to test this again, delete the bottom line from sample_source, run import, then add the line in and
-    #  run again
     projects_from_input_file = sample_source_info['projects'].split(';')
     projects_from_input_file = set([x.strip() for x in projects_from_input_file])
     # get the projects from the db for this sample_source
@@ -51,7 +49,8 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
     if len(new_projects_from_file) > 0:
         # then, for each one
         for project_name in new_projects_from_file:
-            print(f"Adding {sample_source_info['sample_source_identifier']} to project {project_name}")
+            print(f"Adding existing sample_source {sample_source_info['sample_source_identifier']} to project "
+                  f"{project_name}")
             # query projects, this will only return project DB entry if the project name already exists for this group
             # otherwise, they need to add the project and re-run.
             p = query_projects(project_name, sample_source_info)
@@ -64,7 +63,6 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
 def does_sample_source_already_exist(sample_source_info):
     # this function checks is a sample source with the specified identifier already exists for this group
     # sample_source is joined to projects by automagic (via sample_source_project)
-
     # SampleSource.query.with_entities(SampleSource.sample_source_identifier).join(SampleSource.projects)\
     all_sample_sources_for_this_group = \
         SampleSource.query.join(SampleSource.projects)\
@@ -76,8 +74,6 @@ def does_sample_source_already_exist(sample_source_info):
     # if our sample_source is in the db for this group already
     if sample_source_info['sample_source_identifier'] in all_sample_sources_for_this_group:
         # we need to check if the project we're entering it with here is associated with it in the database
-        # todo - think about whether we want to update the database with this, or just return error and have a different
-        #  seqbox_cmd function which adds new project to sample_source relationships
         check_sample_source_associated_with_project(all_sample_sources_for_this_group[sample_source_info['sample_source_identifier']], sample_source_info)
         print(f"This sample source ({sample_source_info['sample_source_identifier']}) already exists in the database "
               f"for the group {sample_source_info['group_name']}")
@@ -92,6 +88,7 @@ def does_sample_already_exist(sample_info):
     # the aim of this query is to get a list of all the sample identifiers belonging to a specific group
     # this does a join of sample and projects (via magic), and the filters by the group_name
     # https://stackoverflow.com/questions/40699642/how-to-query-many-to-many-sqlalchemy
+    # todo - fix this group error
     all = Sample.query.with_entities(Sample.sample_identifier)\
         .filter_by(group_name=group)\
         .distinct()
@@ -101,7 +98,6 @@ def does_sample_already_exist(sample_info):
     samples_from_this_group = set([i[0] for i in all])
     if sample_info['sample_identifier'] in samples_from_this_group:
         print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group {group}")
-        # todo - need to check that the sample is associated with this project as well.
         return True
     else:
         return False
@@ -115,6 +111,9 @@ def add_project(project_info):
 
 
 def query_projects(project_name, info):
+    # query_projects differs from does_project_already_exist because query_projects returns an error if it can't
+    # find match, while does_project_already_exist returns false
+    # combine with does_project_already_exist
     matching_projects = Project.query.filter_by(project_name=project_name,
                                                 group_name=info['group_name']).all()
     if len(matching_projects) == 0:
@@ -133,6 +132,7 @@ def query_projects(project_name, info):
 
 
 def get_projects(info):
+
     assert 'projects' in info
     assert 'group_name' in info
     project_names = [x.strip() for x in info['projects'].split(';')]
@@ -205,8 +205,9 @@ def add_sample_source(sample_source_info):
     # instantiate a new SampleSource
     sample_source = read_in_sample_source_info(sample_source_info)
     sample_source.projects = projects
+    print(f'adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
     db.session.add(sample_source)
-    # db.session.commit()
+    db.session.commit()
 
 # def get_read_sets(read_set_info, sample_identifier, group):
 #     read_sets = []

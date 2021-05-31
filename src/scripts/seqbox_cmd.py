@@ -2,13 +2,6 @@ import argparse
 from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, does_project_already_exist, \
     add_project, does_sample_source_already_exist, add_sample_source
 
-# todo - need to handle "what if the isolate source (or isolate) already exists as part of another project",
-#  if it is then we don't want to add another isolate, but we want to add another project to that isolate.projects.
-#  problem is - how do we know it's the same sample, as opposed to just the same id in two different projects?
-#  solution is - isolate and isolate source identifiers have to be unique within a group, AND, isolates and isolate
-#  sources cannot be shared between groups.
-#  projects belogn to one group
-
 
 def add_samples(args):
     all_samples_info = read_in_as_dict(args.samples_inhandle)
