@@ -75,21 +75,16 @@ def does_sample_already_exist(sample_info):
     # the aim of this query is to get a list of all the sample identifiers belonging to a specific group
     # this does a join of sample and projects (via magic), and the filters by the group_name
     # https://stackoverflow.com/questions/40699642/how-to-query-many-to-many-sqlalchemy
-    # todo - is this query working as expected
-    all_samples = Sample.query.with_entities(Sample.sample_identifier).join(SampleSource).join(SampleSource.projects)\
+    matching_sample = Sample.query.with_entities(Sample.sample_identifier).\
+        filter_by(sample_identifier=sample_info['sample_identifier']).join(SampleSource).join(SampleSource.projects)\
         .filter_by(group_name=sample_info['group_name'])\
-        .distinct()
-    # have to do this extra bit in python becayse couldn't figure out how to do another "where" in the above query
-    # would just have to do `where Sample.sample_identifier == sample_identifier`
-    # todo - i think can just do something like .filter_by(group_name=group, Sample.sample_identifier=sample_identifier)
-    # todo - need to add sample_source <-> sample relationship
-    samples_from_this_group = set([i[0] for i in all_samples])
-    if sample_info['sample_identifier'] in samples_from_this_group:
+        .distinct().all()
+    if len(matching_sample) == 0:
+        return False
+    elif len(matching_sample) == 1:
         print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group "
               f"{sample_info['group_name']}")
         return True
-    else:
-        return False
 
 
 def add_project(project_info):
