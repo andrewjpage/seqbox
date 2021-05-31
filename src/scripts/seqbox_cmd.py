@@ -1,6 +1,6 @@
 import argparse
-from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, does_project_already_exist, \
-    add_project, does_sample_source_already_exist, add_sample_source
+from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, \
+    add_project, does_sample_source_already_exist, add_sample_source, query_projects
 
 
 def add_samples(args):
@@ -21,8 +21,16 @@ def add_sample_sources(args):
 def add_projects(args):
     all_projects_info = read_in_as_dict(args.projects_inhandle)
     for project_info in all_projects_info:
-        if does_project_already_exist(project_info) is False:
+        # query_projects takes project_info['project_name'] as well as project_info because 'project_name' isn't
+        # always in the dictionary which this function takes
+        projects_results = query_projects(project_info, project_info['project_name'])
+        if projects_results[0] is False:
+            print(f"Project called {project_info['project_name']} from group "
+                  f"{project_info['group_name']} doesn't exist, creating project in DB")
             add_project(project_info)
+        elif projects_results[0] is True:
+            print(f"Project called {project_info['project_name']} from group {project_info['group_name']} already "
+                  f"exists, no action will be taken")
 
 
 def run_command(args):

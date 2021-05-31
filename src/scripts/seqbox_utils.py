@@ -16,25 +16,6 @@ def read_in_as_dict(inhandle):
     return l
 
 
-def does_project_already_exist(project_info):
-    # this function checks if this project already exists, and if so returns True, if not it returns False
-    # if there are more than one match, it errors
-    matching_projects = Project.query.filter_by(project_name=project_info['project_name'],
-                                                group_name=project_info['group_name']).all()
-    if len(matching_projects) == 0:
-        print(f"Project called {project_info['project_name']} from group "
-              f"{project_info['group_name']} doesn't exist, creating project in DB")
-        return False
-    elif len(matching_projects) == 1:
-        print(f"Project called {project_info['project_name']} from group "
-              f"{project_info['group_name']} already exists, no action will be taken")
-        return True
-    else:
-        print(f"there is more than one project called {project_info['project_name']} from group "
-              f"{project_info['group_name']} - this shouldn't happen, exiting")
-        sys.exit()
-
-
 def check_sample_source_associated_with_project(sample_source, sample_source_info):
     # sample_source_info is a line from the input csv
     # sample_source is the corresponding entry from the DB
@@ -88,16 +69,18 @@ def does_sample_already_exist(sample_info):
     # the aim of this query is to get a list of all the sample identifiers belonging to a specific group
     # this does a join of sample and projects (via magic), and the filters by the group_name
     # https://stackoverflow.com/questions/40699642/how-to-query-many-to-many-sqlalchemy
-    # todo - fix this group error
-    all = Sample.query.with_entities(Sample.sample_identifier)\
-        .filter_by(group_name=group)\
+    # todo - is this query working as expected
+    all_samples = Sample.query.with_entities(Sample.sample_identifier).join(SampleSource).join(SampleSource.projects)\
+        .filter_by(group_name=sample_info['group_name'])\
         .distinct()
     # have to do this extra bit in python becayse couldn't figure out how to do another "where" in the above query
     # would just have to do `where Sample.sample_identifier == sample_identifier`
     # todo - i think can just do something like .filter_by(group_name=group, Sample.sample_identifier=sample_identifier)
-    samples_from_this_group = set([i[0] for i in all])
+    # todo - need to add sample_source <-> sample relationship
+    samples_from_this_group = set([i[0] for i in all_samples])
     if sample_info['sample_identifier'] in samples_from_this_group:
-        print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group {group}")
+        print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group "
+              f"{sample_info['group']}")
         return True
     else:
         return False
@@ -110,21 +93,18 @@ def add_project(project_info):
     db.session.commit()
 
 
-def query_projects(project_name, info):
+def query_projects(info, project_name):
     # query_projects differs from does_project_already_exist because query_projects returns an error if it can't
     # find match, while does_project_already_exist returns false
     # combine with does_project_already_exist
     matching_projects = Project.query.filter_by(project_name=project_name,
                                                 group_name=info['group_name']).all()
     if len(matching_projects) == 0:
-        print(f"Project {project_name} from group {info['group_name']} "
-              f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
-              f"add_projects function.\nExiting now.")
-        # todo - print a list of all the project names in case of typo
-        sys.exit()
+        # need this to have the `,` so that can evaluate the return correctly for the elif section
+        return False,
     elif len(matching_projects) == 1:
         s = matching_projects[0]
-        return s
+        return True, s
     else:
         print(f"There is already more than one project called {project_name} from {info['group_name']} at "
               f"{info['institution']} in the database, this shouldn't happen.\nExiting.")
@@ -132,22 +112,31 @@ def query_projects(project_name, info):
 
 
 def get_projects(info):
-
     assert 'projects' in info
     assert 'group_name' in info
     project_names = [x.strip() for x in info['projects'].split(';')]
     projects = []
     for project_name in project_names:
         # todo - this is new, added for different function, so check it works
-        p = query_projects(project_name, info)
-        projects.append(p)
+        p = query_projects(info, project_name)
+        if p[0] is True:
+            projects.append(p)
+        elif p[0] is False:
+            print(f"Project {project_name} from group {info['group_name']} "
+                  f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
+                  f"add_projects function.\nExiting now.")
+            sys.exit()
     return projects
 
 
 def get_sample_source(sample_info):
     # want to find whether this sample_source is already part of this project
-    matching_sample_source = SampleSource.query.join(SampleSource.projects).\
-        filter_by(sample_source_identifier=sample_info['sample_source_identifier'])
+    # matching_sample_source = SampleSource.query.join(SampleSource.projects).\
+    #     filter_by(sample_source_identifier=sample_info['sample_source_identifier'])
+    matching_sample_source = SampleSource.query.all()
+    print(matching_sample_source)
+    for x in matching_sample_source:
+        print(x)
 
 
 def read_in_sample_info(sample_info):
@@ -156,8 +145,8 @@ def read_in_sample_info(sample_info):
         sample.species = sample_info['species']
     if sample_info['sample_type'] != '':
         sample.sample_type = sample_info['sample_type']
-    if sample_info['patient_identifier'] != '':
-        sample.patient_identifier = sample_info['patient_identifier']
+    if sample_info['sample_source_identifier'] != '':
+        sample.sample_source_id = sample_info['sample_source_identifier']
     if sample_info['day_collected'] != '':
         sample.day_collected = sample_info['day_collected']
     if sample_info['month_collected'] != '':
@@ -189,6 +178,7 @@ def add_sample(sample_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
+    # print(sample_info)
     sample_source = get_sample_source(sample_info)
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
