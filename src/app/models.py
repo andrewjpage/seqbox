@@ -208,6 +208,12 @@ class ReadSetBatch(db.Model):
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
 
+sample_source_project = db.Table("sample_source_project",
+                                  db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id"),
+                                            primary_key=True),
+                                  db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
+                                  )
+
 
 class SampleSource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -219,9 +225,8 @@ class SampleSource(db.Model):
                                                            "or a visit (like tyvac/strataa), or a sampling location for"
                                                            " an environmental sample")
     # todo - how do we handle multiple picks from same plate?
-    # projects is an attribute of sample_source because it's the sample source which"
-    # is the primary thing enrolled in the project, not the sample itself
-    projects = db.relationship("Project", secondary="sample_source_project", backref=db.backref("projects"))
+    # projects = db.relationship("Project", secondary="sample_source_project", backref=db.backref("projects"))
+    projects = db.relationship("Project", secondary="sample_source_project", backref="sample_source")
     samples = db.relationship("Sample", backref="sample_source")
     latitude = db.Column(db.Float(), comment="Latitude of sample source if known")
     longitude = db.Column(db.Float(), comment="Longitude of sample source origin if known")
@@ -254,8 +259,4 @@ class Project(db.Model):
         return f"Project(id: {self.id}, details: {self.project_name})"
 
 
-sample_source_project = db.Table("sample_source_project",
-                                  db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id"),
-                                            primary_key=True),
-                                  db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
-                                  )
+
