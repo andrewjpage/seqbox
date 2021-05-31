@@ -118,7 +118,6 @@ def get_projects(info):
     project_names = [x.strip() for x in info['projects'].split(';')]
     projects = []
     for project_name in project_names:
-        # todo - this is new, added for different function, so check it works
         p = query_projects(info, project_name)
         if p[0] is True:
             projects.append(p[1])
