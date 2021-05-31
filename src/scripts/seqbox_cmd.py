@@ -4,6 +4,7 @@ from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample,
 
 
 def add_samples(args):
+    # todo - add samples
     all_samples_info = read_in_as_dict(args.samples_inhandle)
     for sample_info in all_samples_info:
         if does_sample_already_exist(sample_info) is False:

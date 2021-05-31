@@ -137,12 +137,25 @@ def get_projects(info):
 
 def get_sample_source(sample_info):
     # want to find whether this sample_source is already part of this project
-    # matching_sample_source = SampleSource.query.join(SampleSource.projects).\
-    #     filter_by(sample_source_identifier=sample_info['sample_source_identifier'])
-    matching_sample_source = SampleSource.query.all()
-    print(matching_sample_source)
-    for x in matching_sample_source:
-        print(x)
+    matching_sample_source = SampleSource.query.\
+        filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
+        .join(SampleSource.projects)\
+        .filter_by(group_name=sample_info['group_name']).all()
+    # matching_sample_source = SampleSource.query.all()
+    # print(matching_sample_source)
+    # print(sample_info['sample_source_identifier'], sample_info['group_name'])
+    if len(matching_sample_source) == 0:
+        print(f"There is no matching sample_source with the sample_source_identifier "
+              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, please add using "
+              f"python seqbox_cmd.py add_sample_source and then re-run this command. Exiting.")
+        sys.exit()
+    elif len(matching_sample_source) == 1:
+        return matching_sample_source[0]
+    else:
+        print(f"There is more than one matching sample_source with the sample_source_identifier "
+              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, This shouldn't happen. Exiting.")
+    # for x in matching_sample_source:
+    #     print(x.sample_source_identifier, [y.group_name for y in x.projects])
 
 
 def read_in_sample_info(sample_info):
@@ -188,7 +201,7 @@ def add_sample(sample_info):
     sample_source = get_sample_source(sample_info)
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
-    # todo - add sample_source to sample
+    sample_source.samples.append(sample)
     db.session.add(sample)
     db.session.commit()
 
