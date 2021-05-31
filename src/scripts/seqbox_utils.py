@@ -86,7 +86,7 @@ def does_sample_already_exist(sample_info):
     samples_from_this_group = set([i[0] for i in all_samples])
     if sample_info['sample_identifier'] in samples_from_this_group:
         print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group "
-              f"{sample_info['group']}")
+              f"{sample_info['group_name']}")
         return True
     else:
         return False
@@ -202,6 +202,7 @@ def add_sample(sample_info):
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
     sample_source.samples.append(sample)
+    print(f"Adding sample {sample_info['sample_identifier']}")
     db.session.add(sample)
     db.session.commit()
 
