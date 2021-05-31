@@ -32,11 +32,17 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
         for project_name in new_projects_from_file:
             print(f"Adding existing sample_source {sample_source_info['sample_source_identifier']} to project "
                   f"{project_name}")
-            # query projects, this will only return project DB entry if the project name already exists for this group
+            # query projects, this will only return p[0] is True if the project name already exists for this group
             # otherwise, they need to add the project and re-run.
-            p = query_projects(project_name, sample_source_info)
-            # add it to the projects assocaited with this sample source
-            sample_source.projects.append(p)
+            p = query_projects(sample_source_info, project_name)
+            if p[0] is True:
+                # add it to the projects assocaited with this sample source
+                sample_source.projects.append(p[1])
+            else:
+                print(f"Project {project_name} from group {sample_source_info['group_name']} "
+                      f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
+                      f"add_projects function.\nExiting now.")
+                sys.exit()
     # and update the database.
     db.session.commit()
 
@@ -192,7 +198,7 @@ def add_sample_source(sample_source_info):
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     projects = get_projects(sample_source_info)
-    print(projects)
+    # print(projects)
     # instantiate a new SampleSource
     sample_source = read_in_sample_source_info(sample_source_info)
     sample_source.projects = projects
