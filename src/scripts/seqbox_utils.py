@@ -101,8 +101,7 @@ def does_extraction_already_exist(extraction_info):
         print(f"There is already an extraction for sample {extraction_info['sample_identifier']} in the db for "
               f"{extraction_info['date_extracted']} with extraction id {extraction_info['extraction_identifier']}. "
               f"Is this the second extract you did for this sample on this day? If so, increment the extraction id and "
-              f"re-upload. Exiting.")
-        sys.exit()
+              f"re-upload.")
     else:
         print(f"There is more than one extraction for for sample {extraction_info['sample_identifier']} in the db for "
               f"{extraction_info['date_extracted']} with extraction id {extraction_info['extraction_identifier']}. This"
@@ -253,8 +252,8 @@ def add_sample_source(sample_source_info):
     # instantiate a new SampleSource
     sample_source = read_in_sample_source_info(sample_source_info)
     sample_source.projects = projects
-    print(f'adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
     db.session.add(sample_source)
+    print(f'adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
     db.session.commit()
 
 
@@ -263,6 +262,7 @@ def add_extraction(extraction_info):
     extraction = read_in_extraction(extraction_info)
     sample.extractions.append(extraction)
     db.session.add(extraction)
+    print(f"Adding {extraction_info['sample_identifier']} extraction on {extraction_info['date_extracted']} to the DB")
     db.session.commit()
 
 
