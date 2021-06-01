@@ -59,7 +59,6 @@ def load_user(id):
     """[The @login.user_loader decorated function is used by Flask-Login to convert a stored user ID to an actual user instance.
     The user loader callack function receives a user identifier as a Unicode string the return value of the function 
     must be the user object if available or None otherwise. ]  
-    
     """
     return User.query.get(int(id))
 
@@ -70,8 +69,6 @@ class ReadSet(db.Model):
     # the Sequence won't work until port to postgres
     seqbox_id = db.Column(db.Integer, db.Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to "
                                                                         "uniquely identify this read set")
-    # seqbox_id = db.Column(db.Integer, comment="SeqBox id, incrementing integer id to uniquely identify this read set",
-    #                       sqlite_autoincrement=True)
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
                                                           "Illumina data)")
@@ -79,7 +76,7 @@ class ReadSet(db.Model):
                                                       "{read_set_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("read_set", passive_updates=True,
                                                           passive_deletes=True))
-    sample_id = db.Column(db.Integer, db.ForeignKey("sample.id", onupdate="cascade", ondelete="set null"),
+    extraction_id = db.Column(db.Integer, db.ForeignKey("extraction.id", onupdate="cascade", ondelete="set null"),
                            nullable=True)
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset", uselist=False)
     nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset", uselist=False)
@@ -175,14 +172,41 @@ class Sample(db.Model):
     month_collected = db.Column(db.Integer, comment="month this was collected")
     year_collected = db.Column(db.Integer, comment="year this was collected")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    processing_institution = db.Column(db.VARCHAR(60), comment="The institution which did the DNA extraction.")
+    processing_institution = db.Column(db.VARCHAR(60), comment="The institution which processed the sample.")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
-    read_sets = db.relationship("ReadSet", backref="sample")
+    extractions = db.relationship("Extraction", backref="sample")
 
     ## todo - is the sample identifier unique within a group or within a project?
 
     def __repr__(self):
         return f"Sample({self.id}, {self.sample_identifier}, {self.species})"
+
+
+class Extraction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sample_id = db.Column(db.ForeignKey("sample.id"))
+    extraction_identifier = db.Column(db.Integer, comment="An identifier to differentiate mutliple extracts from the "
+                                                          "ame sample on the same day. It will usually be 1, but if "
+                                                          "this is the second extract done on this sample on this day, "
+                                                          "it needs to be 2 (and so on).")
+    extraction_machine = db.Column(db.VARCHAR(60), comment="E.g. QiaSymphony, manual")
+    extraction_kit = db.Column(db.VARCHAR(60), comment="E.g. Qiasymphony Minikit")
+    what_was_extracted = db.Column(db.VARCHAR(60), comment="E.g. DNA, RNA")
+    date_extracted = db.Column(db.DATETIME, comment="Date this extract was done")
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    processing_institution = db.Column(db.VARCHAR(60), comment="The institution which did the DNA extraction.")
+    read_sets = db.relationship("ReadSet", backref="extraction")
+
+    def __repr__(self):
+        return f"Extraction(id={self.id}, sample.id={self.sample_id}, date_extracted={self.date_extracted})"
+
+
+class TilingPcr(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    extraction_id = db.Column(db.ForeignKey("extraction.id"))
+    number_of_cycles = db.Column(db.Integer, comment="Number of PCR cycles")
+    date_run = db.Column(db.DATETIME, comment="Date this PCR was done")
+    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
 
 
 class ReadSetBatch(db.Model):

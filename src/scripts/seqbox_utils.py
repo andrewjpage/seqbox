@@ -1,7 +1,8 @@
 import csv
 import sys
+import datetime
 from app import db
-from app.models import Sample, Project, SampleSource, ReadSet, IlluminaReadSet, ReadSetBatch
+from app.models import Sample, Project, SampleSource, ReadSet, IlluminaReadSet, ReadSetBatch, Extraction
 
 
 def read_in_as_dict(inhandle):
@@ -85,6 +86,29 @@ def does_sample_already_exist(sample_info):
         print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group "
               f"{sample_info['group_name']}")
         return True
+
+
+def does_extraction_already_exist(extraction_info):
+    # todo - test with another extraction on a different day with extraction identifier, and with same day, different
+    #  extraction identifier
+    # todo - check this query works when there is a matching extrac tin database
+    matching_extraction = Extraction.query.filter_by(extraction_identifier=extraction_info['extraction_identifier'],
+                                                     date_extracted=datetime.datetime.strptime(extraction_info['date_extracted'], '%d/%m/%Y'))\
+        .join(Sample).filter_by(sample_identifier=extraction_info['sample_identifier']).all()
+    if len(matching_extraction) == 0:
+        return False
+    elif len(matching_extraction) == 1:
+        print(f"There is already an extraction for sample {extraction_info['sample_identifier']} in the db for "
+              f"{extraction_info['date_extracted']} with extraction id {extraction_info['extraction_identifier']}. "
+              f"Is this the second extract you did for this sample on this day? If so, increment the extraction id and "
+              f"re-upload. Exiting.")
+        sys.exit()
+    else:
+        print(f"There is more than one extraction for for sample {extraction_info['sample_identifier']} in the db for "
+              f"{extraction_info['date_extracted']} with extraction id {extraction_info['extraction_identifier']}. This"
+              f" shouldn't happen, exiting.")
+        sys.exit()
+
 
 
 def add_project(project_info):
@@ -184,6 +208,23 @@ def read_in_sample_source_info(sample_source_info):
     return sample_source
 
 
+def read_in_extraction(extraction_info):
+    extraction = Extraction()
+    if extraction_info['extraction_identifier'] != '':
+        extraction.extraction_identifier = extraction_info['extraction_identifier']
+    if extraction_info['extraction_machine'] != '':
+        extraction.extraction_machine = extraction_info['extraction_machine']
+    if extraction_info['extraction_kit'] != '':
+        extraction.extraction_kit = extraction_info['extraction_kit']
+    if extraction_info['what_was_extracted'] != '':
+        extraction.what_was_extracted = extraction_info['what_was_extracted']
+    if extraction_info['date_extracted'] != '':
+        extraction.date_extracted = datetime.datetime.strptime(extraction_info['date_extracted'], '%d/%m/%Y')
+    if extraction_info['processing_institution'] != '':
+        extraction.processing_institution = extraction_info['processing_institution']
+    return extraction
+
+
 def read_in_readset(readset_info):
     readset = ReadSet()
 
@@ -217,6 +258,14 @@ def add_sample_source(sample_source_info):
     db.session.commit()
 
 
+def add_extraction(extraction_info):
+    sample = get_sample(extraction_info)
+    extraction = read_in_extraction(extraction_info)
+    sample.extractions.append(extraction)
+    db.session.add(extraction)
+    db.session.commit()
+
+
 def does_readset_already_exist(readset_info):
     matching_readset = ReadSet.query.filter_by(readset_info['readset_filename']).join(Sample).join(SampleSource).\
         join(SampleSource.projects).filter_by(group_name=readset_info['group_name'])\
@@ -231,7 +280,7 @@ def does_readset_already_exist(readset_info):
 
 def get_sample(readset_info):
     matching_sample = Sample.query. \
-        filter_by(sample_source_identifier=readset_info['sample_identifier']) \
+        filter_by(sample_identifier=readset_info['sample_identifier']) \
         .join(SampleSource) \
         .join(SampleSource.projects) \
         .filter_by(group_name=readset_info['group_name']).all()
@@ -253,8 +302,9 @@ def add_readsets(readset_info):
     # todo - write read_in_readset()
     readset = read_in_readset(readset_info)
     # todo - need to add in an illumina or nanopore readset, and link it to this readset
-    # todo - do i need to assign seqbox_id?
+    # todo - do i need to assign seqbox_id? definitely need to set read_set_name, after it's been added to the db
     # todo - need to handle sequencing_batch
+    # todo = need a flag in the input CSV, is this tiling PCR protocol True/False if it's true, then
 
     
 
