@@ -2,7 +2,7 @@ import csv
 import sys
 import datetime
 from app import db
-from app.models import Sample, Project, SampleSource, ReadSet, IlluminaReadSet, ReadSetBatch, Extraction
+from app.models import Sample, Project, SampleSource, ReadSet, IlluminaReadSet, ReadSetBatch, Extraction, RawSequencing
 
 
 def read_in_as_dict(inhandle):
@@ -89,9 +89,6 @@ def does_sample_already_exist(sample_info):
 
 
 def does_extraction_already_exist(extraction_info):
-    # todo - test with another extraction on a different day with extraction identifier, and with same day, different
-    #  extraction identifier
-    # todo - check this query works when there is a matching extrac tin database
     matching_extraction = Extraction.query.filter_by(extraction_identifier=extraction_info['extraction_identifier'],
                                                      date_extracted=datetime.datetime.strptime(extraction_info['date_extracted'], '%d/%m/%Y'))\
         .join(Sample).filter_by(sample_identifier=extraction_info['sample_identifier']).all()
@@ -297,10 +294,51 @@ def get_sample(readset_info):
               f"Exiting.")
 
 
-def add_readsets(readset_info):
-    sample = get_sample(readset_info)
+def get_extraction(readset_info):
+    matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
+                                                     date_extracted=datetime.datetime.strptime(
+                                                         readset_info['date_extracted'], '%d/%m/%Y')) \
+        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).all()
+    if len(matching_extraction) == 1:
+        return matching_extraction[0]
+    elif len(matching_extraction) == 0:
+        print(f"no match for {readset_info['sample_identifier']}, need to add that extract and re-run. Exiting.")
+        sys.exit()
+    else:
+        print(f"More than one match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
+        sys.exit()
+
+
+def read_in_raw_sequencing():
+    pass
+
+
+def get_raw_sequencing(readset_info, extraction):
+    # todo - this only covers nanopore, not illumina
+    #  for illumina, do i need to do the previous method, joining multiple tables etc?
+    #  or soemthign else...
+    matching_raw_sequencing = RawSequencing.query.filter_by(path_fast5=readset_info['path_fast5']).all()
+    if len(matching_raw_sequencing) == 0:
+        raw_sequencing = read_in_raw_sequencing(readset_info)
+        extraction.raw_sequencing.append(raw_sequencing)
+    elif len(matching_raw_sequencing) == 1:
+        return matching_raw_sequencing[0]
+    else:
+        print("this shouldnt happen blkjha")
+
+
+def add_readset(readset_info):
+    # todo - need to handle two broad categories - 1. this is the first time this raw sequencing data is being
+    #  added. 2. this is a second readset generated fro mthe same raw sequencing data (nanopore base caller update)
+    extraction = get_extraction(readset_info)
+    # need to pass extract in here because need to link raw_sequencing to extract if this is the first time
+    # raw sequencing is being added.
+    raw_sequencing = get_raw_sequencing(readset_info, extraction)
     # todo - write read_in_readset()
     readset = read_in_readset(readset_info)
+    raw_sequencing.append(readset)
+    db.session.add(readset)
+    db.session.commit()
     # todo - need to add in an illumina or nanopore readset, and link it to this readset
     # todo - do i need to assign seqbox_id? definitely need to set read_set_name, after it's been added to the db
     # todo - need to handle sequencing_batch

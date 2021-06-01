@@ -65,7 +65,7 @@ def load_user(id):
 
 class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.VARCHAR(32), comment="read set type i.e. is it Illumina, nanopore, etc.")
+
     # the Sequence won't work until port to postgres
     seqbox_id = db.Column(db.Integer, db.Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to "
                                                                         "uniquely identify this read set")
@@ -76,7 +76,7 @@ class ReadSet(db.Model):
                                                       "{read_set_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("read_set", passive_updates=True,
                                                           passive_deletes=True))
-    extraction_id = db.Column(db.Integer, db.ForeignKey("extraction.id", onupdate="cascade", ondelete="set null"),
+    raw_sequencing_id = db.Column(db.Integer, db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"),
                            nullable=True)
     illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset", uselist=False)
     nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset", uselist=False)
@@ -195,7 +195,7 @@ class Extraction(db.Model):
     date_extracted = db.Column(db.DATETIME, comment="Date this extract was done")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which did the DNA extraction.")
-    read_sets = db.relationship("ReadSet", backref="extraction")
+    raw_sequencing = db.relationship("RawSequencing", backref="extraction")
 
     def __repr__(self):
         return f"Extraction(id={self.id}, sample.id={self.sample_id}, date_extracted={self.date_extracted})"
@@ -207,6 +207,20 @@ class TilingPcr(db.Model):
     number_of_cycles = db.Column(db.Integer, comment="Number of PCR cycles")
     date_run = db.Column(db.DATETIME, comment="Date this PCR was done")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"TilingPcr(id={self.id}, extraction.id={self.extraction_id})"
+
+
+class RawSequencing(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    extraction_id = db.Column(db.ForeignKey("extraction.id"))
+    sequencing_type = db.Column(db.VARCHAR(32), comment="Sequencing type i.e. is it Illumina, nanopore, etc.")
+    read_set = db.relationship("ReadSet", backref="raw_sequencing")
+    path_fast5 = db.Column(db.VARCHAR(96))
+
+    def __repr__(self):
+        return f"RawSequencing(id={self.id}, extraction.id={self.extraction_id})"
 
 
 class ReadSetBatch(db.Model):

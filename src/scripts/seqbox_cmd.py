@@ -1,7 +1,7 @@
 import argparse
 from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, add_project,\
     does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, \
-    does_extraction_already_exist, add_extraction
+    does_extraction_already_exist, add_extraction, add_readset
 
 
 def add_readsets(args):
