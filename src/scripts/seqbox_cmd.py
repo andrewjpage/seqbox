@@ -1,6 +1,13 @@
 import argparse
-from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, \
-    add_project, does_sample_source_already_exist, add_sample_source, query_projects
+from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, add_project,\
+    does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, add_readset
+
+
+def add_readsets(args):
+    all_readsets_info = read_in_as_dict(args.readsets_inhandle)
+    for readset_info in all_readsets_info:
+        if does_readset_already_exist(readset_info) is False:
+            add_readset(readset_info)
 
 
 def add_samples(args):
@@ -40,6 +47,8 @@ def run_command(args):
         add_projects(args=args)
     if args.command == 'add_sample_sources':
         add_sample_sources(args=args)
+    if args.command == 'add_readsets':
+        add_readsets(args=args)
 
 
 def main():
@@ -55,6 +64,10 @@ def main():
                                                       help='Take a csv of sample sources and add to the DB.')
     parser_add_sample_sources.add_argument('-i', dest='sample_sources_inhandle',
                                            help='A CSV file containing sample_source info', required=True)
+    parser_add_readsets = subparsers.add_parser('add_readsets',
+                                                      help='Take a csv of readsets and add to the DB.')
+    parser_add_readsets.add_argument('-i', dest='readsets_inhandle',
+                                           help='A CSV file containing read_sets info', required=True)
     args = parser.parse_args()
     run_command(args)
 

@@ -4,6 +4,8 @@ local sequence management lightweight tools
 ## Database notes
 
 * sample_source_identifier needs to be unique within a group
+    * confirm this with the PI, Brigitte says that many of the older TB studies 
+    and some of the COM studies don't go through PreLink.
 * if you add an existing sample_source_identifier associated with a different 
 project then that sample_source_identifier will be associated
 with that project.

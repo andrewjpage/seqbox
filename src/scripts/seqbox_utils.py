@@ -135,9 +135,6 @@ def get_sample_source(sample_info):
         filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
         .join(SampleSource.projects)\
         .filter_by(group_name=sample_info['group_name']).all()
-    # matching_sample_source = SampleSource.query.all()
-    # print(matching_sample_source)
-    # print(sample_info['sample_source_identifier'], sample_info['group_name'])
     if len(matching_sample_source) == 0:
         print(f"There is no matching sample_source with the sample_source_identifier "
               f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, please add using "
@@ -187,6 +184,11 @@ def read_in_sample_source_info(sample_source_info):
     return sample_source
 
 
+def read_in_readset(readset_info):
+    readset = ReadSet()
+
+
+
 def add_sample(sample_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
@@ -213,6 +215,48 @@ def add_sample_source(sample_source_info):
     print(f'adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
     db.session.add(sample_source)
     db.session.commit()
+
+
+def does_readset_already_exist(readset_info):
+    matching_readset = ReadSet.query.filter_by(readset_info['readset_filename']).join(Sample).join(SampleSource).\
+        join(SampleSource.projects).filter_by(group_name=readset_info['group_name'])\
+        .distinct().all()
+    if len(matching_readset) == 0:
+        return False
+    elif len(matching_readset) == 1:
+        print(f"This readset ({readset_info['readset_filename']}) already exists in the database for the group "
+              f"{readset_info['group_name']}. Not adding it to the database.")
+        return True
+
+
+def get_sample(readset_info):
+    matching_sample = Sample.query. \
+        filter_by(sample_source_identifier=readset_info['sample_identifier']) \
+        .join(SampleSource) \
+        .join(SampleSource.projects) \
+        .filter_by(group_name=readset_info['group_name']).all()
+    if len(matching_sample) == 0:
+        print(f"There is no matching sample with the sample_source_identifier "
+              f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, please add using "
+              f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
+        sys.exit()
+    elif len(matching_sample) == 1:
+        return matching_sample[0]
+    else:
+        print(f"There is more than one matching sample with the sample_identifier "
+              f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, This shouldn't happen. "
+              f"Exiting.")
+
+
+def add_readsets(readset_info):
+    sample = get_sample(readset_info)
+    # todo - write read_in_readset()
+    readset = read_in_readset(readset_info)
+    # todo - need to add in an illumina or nanopore readset, and link it to this readset
+    # todo - do i need to assign seqbox_id?
+    # todo - need to handle sequencing_batch
+
+    
 
 # def get_read_sets(read_set_info, sample_identifier, group):
 #     read_sets = []
