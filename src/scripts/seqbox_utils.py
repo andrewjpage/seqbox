@@ -2,7 +2,8 @@ import csv
 import sys
 import datetime
 from app import db
-from app.models import Sample, Project, SampleSource, ReadSet, IlluminaReadSet, ReadSetBatch, Extraction, RawSequencing
+from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, ReadSetBatch,\
+    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina
 
 
 def read_in_as_dict(inhandle):
@@ -221,8 +222,6 @@ def read_in_extraction(extraction_info):
     return extraction
 
 
-def read_in_readset(readset_info):
-    readset = ReadSet()
 
 
 
@@ -264,9 +263,11 @@ def add_extraction(extraction_info):
 
 
 def does_readset_already_exist(readset_info):
-    matching_readset = ReadSet.query.filter_by(readset_info['readset_filename']).join(Sample).join(SampleSource).\
-        join(SampleSource.projects).filter_by(group_name=readset_info['group_name'])\
+    matching_readset = ReadSet.query.filter_by(read_set_filename=readset_info['readset_filename']).\
+        join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects).\
+        filter_by(group_name=readset_info['group_name'])\
         .distinct().all()
+    # print(matching_readset)
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
@@ -294,7 +295,23 @@ def get_sample(readset_info):
               f"Exiting.")
 
 
+def find_matching_raw_sequencing(readset_info):
+    # todo - check that readset_info['sequencing_type'] is an allowed value
+    if readset_info['sequencing_type'] == 'nanopore':
+        matching_raw_sequencing = RawSequencingNanopore.query.filter_by(path_fast5=readset_info['path_fast5']).all()
+        return matching_raw_sequencing
+    elif readset_info['sequencing_type'] == 'illumina':
+        matching_raw_sequencing = RawSequencingIllumina.query.filter_by(path_r1=readset_info['path_r1'])
+        return matching_raw_sequencing
+
+    print('Only "nanopore" and "illumina" are currently supported sequencing_type values, please check and re-run. '
+          'Exiting.')
+    sys.exit()
+
+
 def get_extraction(readset_info):
+    # todo - do i need to add a projec/group name to this? what if two projects extract something with the same
+    #  identifier on the same day?
     matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                      date_extracted=datetime.datetime.strptime(
                                                          readset_info['date_extracted'], '%d/%m/%Y')) \
@@ -309,38 +326,82 @@ def get_extraction(readset_info):
         sys.exit()
 
 
-def read_in_raw_sequencing():
-    pass
-
-
 def get_raw_sequencing(readset_info, extraction):
-    # todo - this only covers nanopore, not illumina
-    #  for illumina, do i need to do the previous method, joining multiple tables etc?
-    #  or soemthign else...
-    matching_raw_sequencing = RawSequencing.query.filter_by(path_fast5=readset_info['path_fast5']).all()
-    if len(matching_raw_sequencing) == 0:
+    # this function takes the readset_info and an extraction instance and returns a raw_sequencing instance with a
+    # raw_sequencing_ill/nano isntance associated with it. if the extraction has been sequenced before then
+    # it adds this raw sequencing record to the extraction record.
+    matching_raw_tech_sequencing = find_matching_raw_sequencing(readset_info)
+    if len(matching_raw_tech_sequencing) == 0:
+        # no matching raw sequencing will be the case for 99.999% of illumina (all illumina?) and most nanopore
         raw_sequencing = read_in_raw_sequencing(readset_info)
         extraction.raw_sequencing.append(raw_sequencing)
-    elif len(matching_raw_sequencing) == 1:
-        return matching_raw_sequencing[0]
+        return raw_sequencing, extraction
+    elif len(matching_raw_tech_sequencing) == 1:
+        # if there is already a raw_sequencing record (i.e. this is another basecallign run of the same raw_sequencing
+        # data), then extraction is already assocaited with the raw sequencing, so don't need to add.
+        return matching_raw_tech_sequencing[0].raw_sequencing, extraction
     else:
         print("this shouldnt happen blkjha")
 
 
+def read_in_raw_sequencing(readset_info):
+    raw_sequencing = RawSequencing()
+    # todo - readset_info['sequencing_type'] shouldnt be able to be empty
+    # todo - should throw error if sequencing_type isn't in allowed types
+    if readset_info['sequencing_type'] != '':
+        raw_sequencing.sequencing_type = readset_info['sequencing_type']
+
+    if readset_info['sequencing_type'] == 'illumina':
+        raw_sequencing.raw_sequencing_illumina = RawSequencingIllumina()
+        raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
+        raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r2']
+
+    if readset_info['sequencing_type'] == 'nanopore':
+        raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
+        raw_sequencing.raw_sequencing_nanopore.path_fast5 = readset_info['path_fast5']
+        # raw_sequencing.raw_sequencing_nanopore.append(raw_sequencing_nanopore)
+
+    return raw_sequencing
+
+
+def read_in_readset(readset_info):
+    readset = ReadSet()
+    readset.read_set_filename = readset_info['readset_filename']
+    if readset_info['sequencing_type'] == 'nanopore':
+        readset.read_set_nanopore = ReadSetNanopore()
+        readset.read_set_nanopore.path_fastq = readset_info['path_fastq']
+        readset.read_set_nanopore.basecaller = readset_info['basecaller']
+        # readset.nanopore_read_sets.append(read_set_nanopore)
+    elif readset_info['sequencing_type'] == 'illumina':
+        readset.read_set_illumina = ReadSetIllumina()
+        readset.read_set_illumina.path_r1 = readset_info['path_r1']
+        readset.read_set_illumina.path_r2 = readset_info['path_r2']
+    return readset
+
+
 def add_readset(readset_info):
     # todo - need to handle two broad categories - 1. this is the first time this raw sequencing data is being
-    #  added. 2. this is a second readset generated fro mthe same raw sequencing data (nanopore base caller update)
+    #  added. 2. this is a second readset generated from the same raw sequencing data (nanopore base caller update)
+    # get the information on the DNA extraction which was sequenced, from the CSV file, return an instance of the
+    # Extraction class
     extraction = get_extraction(readset_info)
-    # need to pass extract in here because need to link raw_sequencing to extract if this is the first time
-    # raw sequencing is being added.
-    raw_sequencing = get_raw_sequencing(readset_info, extraction)
-    # todo - write read_in_readset()
+    # need to pass extraction in here because need to link raw_sequencing to extract if this is the first time
+    # raw sequencing is being added. if it's not the first time the raw_sequencing is being added, the extraction
+    # already has raw_seq associated with it.
+    # todo - need to test i) having another raw_sequencing from the same extract ii) having another readset from
+    #  the raw_sequencing.
+    # note - using the fast5 and r1 path to identify the raw sequencing dataset.
+    raw_sequencing, extraction = get_raw_sequencing(readset_info, extraction)
     readset = read_in_readset(readset_info)
-    raw_sequencing.append(readset)
-    db.session.add(readset)
+    # print(readset.read_set_nanopore)
+    # print(raw_sequencing)
+    raw_sequencing.read_sets.append(readset)
+    # todo - check that extraction is updated with a new raw_seuqencing when that extract is sequenced twice
+    db.session.add(raw_sequencing)
     db.session.commit()
+
     # todo - need to add in an illumina or nanopore readset, and link it to this readset
-    # todo - do i need to assign seqbox_id? definitely need to set read_set_name, after it's been added to the db
+    # todo - need to set read_set_name in the db, after this readset has been added to the db.
     # todo - need to handle sequencing_batch
     # todo = need a flag in the input CSV, is this tiling PCR protocol True/False if it's true, then
 

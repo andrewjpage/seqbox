@@ -13,3 +13,5 @@ with that project.
 * projects is an attribute of sample_source because it's the 
 sample source which is the primary thing enrolled in the project,
 not the sample itself
+* we have raw sequencing class because what if we want to re-basecall the
+same sequencing run?

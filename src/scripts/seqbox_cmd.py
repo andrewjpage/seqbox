@@ -49,16 +49,16 @@ def add_projects(args):
 
 
 def run_command(args):
-    if args.command == 'add_samples':
-        add_samples(args=args)
     if args.command == 'add_projects':
         add_projects(args=args)
     if args.command == 'add_sample_sources':
         add_sample_sources(args=args)
-    if args.command == 'add_readsets':
-        add_readsets(args=args)
+    if args.command == 'add_samples':
+        add_samples(args=args)
     if args.command == 'add_extractions':
         add_extractions(args=args)
+    if args.command == 'add_readsets':
+        add_readsets(args=args)
 
 
 def main():

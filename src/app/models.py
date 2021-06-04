@@ -65,7 +65,9 @@ def load_user(id):
 
 class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
+    raw_sequencing_id = db.Column(db.Integer,
+                                  db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"),
+                                  nullable=True)
     # the Sequence won't work until port to postgres
     seqbox_id = db.Column(db.Integer, db.Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to "
                                                                         "uniquely identify this read set")
@@ -76,11 +78,9 @@ class ReadSet(db.Model):
                                                       "{read_set_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("read_set", passive_updates=True,
                                                           passive_deletes=True))
-    raw_sequencing_id = db.Column(db.Integer, db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"),
-                           nullable=True)
-    illumina_read_sets = db.relationship("IlluminaReadSet", backref="readset", uselist=False)
-    nanopore_read_sets = db.relationship("NanoporeReadSet", backref="readset", uselist=False)
-    dna_extraction_method = db.Column(db.VARCHAR(64))
+
+    read_set_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
+    read_set_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
     batch_id = db.Column(db.Integer, db.ForeignKey("read_set_batch.id"))
 
     # @hybrid_property
@@ -88,10 +88,10 @@ class ReadSet(db.Model):
     #     return self.illumina_read_set_id or self.nanopore_read_set_id
 
     def __repr__(self):
-        return f"ReadSet(id: {self.id}, seqbox_id: {self.seqbox_id}, type: {self.type})"
+        return f"ReadSet(id: {self.id}, seqbox_id: {self.seqbox_id}, read_set_filename: {self.read_set_filename})"
 
 
-class IlluminaReadSet(db.Model):
+class ReadSetIllumina(db.Model):
     """[Define model 'Sample' mapped to table 'sample']
     Arguments:
         db {[type]} -- [description]
@@ -110,22 +110,22 @@ class IlluminaReadSet(db.Model):
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"IlluminaReadSet({self.id}, {self.path_r1})"
+        return f"ReadSetIllumina({self.id}, {self.path_r1})"
 
 
-class NanoporeReadSet(db.Model):
+class ReadSetNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
-    path_fast5 = db.Column(db.VARCHAR(60))
     path_fastq = db.Column(db.VARCHAR(60))
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    basecaller = db.Column(db.VARCHAR(60))
 
     # nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade",
     # ondelete="set null"), nullable=True)
     # num_reads = db.Column()
 
     def __repr__(self):
-        return f"NanoporeReadSet({self.id}, {self.path_fastq})"
+        return f"ReadSetNanopore({self.id}, {self.path_fastq})"
 
 
 class Mykrobe(db.Model):
@@ -163,7 +163,8 @@ class Mykrobe(db.Model):
 
 class Sample(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sample_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for the sample which DNA was extracted from")
+    sample_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for the sample which DNA was extracted from. "
+                                                          "Has to be unique within a group.")
     sample_type = db.Column(db.VARCHAR(60), comment="What was DNA extracted from? An isolate, clinical sample (for "
                                                     "covid), a plate sweep, whole stools, etc.")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this sample, if known/appropriate.")
@@ -176,7 +177,6 @@ class Sample(db.Model):
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     extractions = db.relationship("Extraction", backref="sample")
 
-    ## todo - is the sample identifier unique within a group or within a project?
 
     def __repr__(self):
         return f"Sample({self.id}, {self.sample_identifier}, {self.species})"
@@ -185,7 +185,7 @@ class Sample(db.Model):
 class Extraction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sample_id = db.Column(db.ForeignKey("sample.id"))
-    extraction_identifier = db.Column(db.Integer, comment="An identifier to differentiate mutliple extracts from the "
+    extraction_identifier = db.Column(db.Integer, comment="An identifier to differentiate multiple extracts from the "
                                                           "ame sample on the same day. It will usually be 1, but if "
                                                           "this is the second extract done on this sample on this day, "
                                                           "it needs to be 2 (and so on).")
@@ -215,12 +215,34 @@ class TilingPcr(db.Model):
 class RawSequencing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
+    data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
+    file_name = db.Column(db.VARCHAR(64))
     sequencing_type = db.Column(db.VARCHAR(32), comment="Sequencing type i.e. is it Illumina, nanopore, etc.")
-    read_set = db.relationship("ReadSet", backref="raw_sequencing")
-    path_fast5 = db.Column(db.VARCHAR(96))
+    read_sets = db.relationship("ReadSet", backref="raw_sequencing")
+    raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
+    raw_sequencing_illumina = db.relationship("RawSequencingIllumina", backref="raw_sequencing", uselist=False)
 
     def __repr__(self):
         return f"RawSequencing(id={self.id}, extraction.id={self.extraction_id})"
+
+
+class RawSequencingNanopore(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id"))
+    path_fast5 = db.Column(db.VARCHAR(96))
+
+    def __repr__(self):
+        return f"RawSequencingNanopore(id={self.id}, path_fast5={self.path_fast5})"
+
+
+class RawSequencingIllumina(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id"))
+    path_r1 = db.Column(db.VARCHAR(96))
+    path_r2 = db.Column(db.VARCHAR(96))
+
+    def __repr__(self):
+        return f"RawSequencingIllumina(id={self.id}, path_r1={self.path_r1})"
 
 
 class ReadSetBatch(db.Model):
@@ -245,6 +267,7 @@ class ReadSetBatch(db.Model):
 
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
+
 
 sample_source_project = db.Table("sample_source_project",
                                   db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id"),
