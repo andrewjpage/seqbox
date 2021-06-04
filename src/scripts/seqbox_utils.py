@@ -263,16 +263,28 @@ def add_extraction(extraction_info):
 
 
 def does_readset_already_exist(readset_info):
-    matching_readset = ReadSet.query.filter_by(read_set_filename=readset_info['readset_filename']).\
-        join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects).\
-        filter_by(group_name=readset_info['group_name'])\
-        .distinct().all()
+    # todo - check readset_info['sequencing_type'] is allowed type
+    # todo - isn't the path_fastq or path_r1 enough to distinguish it? doesn't need to belong to that group
+    if readset_info['sequencing_type'] == 'nanopore':
+        matching_readset = ReadSetNanopore.query.filter_by(path_fastq=readset_info['path_fastq']).join(ReadSet).\
+            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects).\
+            filter_by(group_name=readset_info['group_name'])\
+            .distinct().all()
+    elif readset_info['sequencing_type'] == 'illumina':
+        matching_readset = ReadSetIllumina.query.filter_by(path_r1=readset_info['path_r1']).join(ReadSet).\
+            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects). \
+            filter_by(group_name=readset_info['group_name']) \
+            .distinct().all()
     # print(matching_readset)
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
-        print(f"This readset ({readset_info['readset_filename']}) already exists in the database for the group "
-              f"{readset_info['group_name']}. Not adding it to the database.")
+        if readset_info['sequencing_type'] == 'nanopore':
+            print(f"This readset ({readset_info['path_fastq']}) already exists in the database for the group "
+                  f"{readset_info['group_name']}. Not adding it to the database.")
+        elif readset_info['sequencing_type'] == 'illumina':
+            print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
+                  f"{readset_info['group_name']}. Not adding it to the database.")
         return True
 
 
