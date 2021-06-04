@@ -313,7 +313,7 @@ def find_matching_raw_sequencing(readset_info):
         matching_raw_sequencing = RawSequencingNanopore.query.filter_by(path_fast5=readset_info['path_fast5']).all()
         return matching_raw_sequencing
     elif readset_info['sequencing_type'] == 'illumina':
-        matching_raw_sequencing = RawSequencingIllumina.query.filter_by(path_r1=readset_info['path_r1'])
+        matching_raw_sequencing = RawSequencingIllumina.query.filter_by(path_r1=readset_info['path_r1']).all()
         return matching_raw_sequencing
 
     print('Only "nanopore" and "illumina" are currently supported sequencing_type values, please check and re-run. '
