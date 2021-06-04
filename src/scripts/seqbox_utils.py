@@ -392,65 +392,19 @@ def read_in_readset(readset_info):
 
 
 def add_readset(readset_info):
-    # todo - need to handle two broad categories - 1. this is the first time this raw sequencing data is being
-    #  added. 2. this is a second readset generated from the same raw sequencing data (nanopore base caller update)
     # get the information on the DNA extraction which was sequenced, from the CSV file, return an instance of the
     # Extraction class
     extraction = get_extraction(readset_info)
     # need to pass extraction in here because need to link raw_sequencing to extract if this is the first time
     # raw sequencing is being added. if it's not the first time the raw_sequencing is being added, the extraction
     # already has raw_seq associated with it.
-    # todo - need to test i) having another raw_sequencing from the same extract ii) having another readset from
-    #  the raw_sequencing.
     # note - using the fast5 and r1 path to identify the raw sequencing dataset.
     raw_sequencing, extraction = get_raw_sequencing(readset_info, extraction)
     readset = read_in_readset(readset_info)
-    # print(readset.read_set_nanopore)
-    # print(raw_sequencing)
     raw_sequencing.read_sets.append(readset)
-    # todo - check that extraction is updated with a new raw_seuqencing when that extract is sequenced twice
     db.session.add(raw_sequencing)
     db.session.commit()
 
-    # todo - need to add in an illumina or nanopore readset, and link it to this readset
     # todo - need to set read_set_name in the db, after this readset has been added to the db.
     # todo - need to handle sequencing_batch
     # todo = need a flag in the input CSV, is this tiling PCR protocol True/False if it's true, then
-
-    
-
-# def get_read_sets(read_set_info, sample_identifier, group):
-#     read_sets = []
-#     # read_set_info is a list of dioctionaries generated from the read set input csv
-#     # rs is a dictoinary where the keys are the header of the read set input csv, and the values are from one line
-#     # of the CSV
-#     for rs in read_set_info:
-#         if rs['sample_identifier'] == sample_identifier:
-#             if rs['group'] == group:
-#                 read_set = return_read_set(rs)
-#                 read_sets.append(read_set)
-#     return read_sets
-
-
-# def return_read_set(rs):
-#     ## TODO - add nanopore
-#     ## todo - isn't handling existing readset yet
-#     batch = get_batch(rs['batch'], rs['group'])
-#     read_set = ReadSet(type=rs['type'], read_set_filename=rs['read_set_filename'], batch=batch)
-#     if rs['type'] == 'Illumina':
-#         irs = IlluminaReadSet(path_r1=rs['path_r1'], path_r2=rs['path_r2'])
-#         read_set.illumina_read_sets = irs
-#     return read_set
-
-
-# def get_batch(batch_name, group):
-#     matching_batch = ReadSetBatch.query.filter_by(name=batch_name).all()
-#     if len(matching_batch) == 0:
-#         rsb = ReadSetBatch(name=batch_name)
-#         return rsb
-#     elif len(matching_batch) == 1:
-#         return matching_batch[0]
-#     else:
-#         print(f"There is already more than one batch called {batch_name} from {group} in the database, "
-#               "this shouldn't happen.\nExiting.")
-#         sys.exit()

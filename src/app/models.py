@@ -216,7 +216,6 @@ class RawSequencing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
-    file_name = db.Column(db.VARCHAR(64))
     sequencing_type = db.Column(db.VARCHAR(32), comment="Sequencing type i.e. is it Illumina, nanopore, etc.")
     read_sets = db.relationship("ReadSet", backref="raw_sequencing")
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
