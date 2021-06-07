@@ -3,7 +3,7 @@ import sys
 import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
-    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina
+    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr
 
 
 def read_in_as_dict(inhandle):
@@ -222,7 +222,17 @@ def read_in_extraction(extraction_info):
     return extraction
 
 
-
+def read_in_tiling_pcr(tiling_pcr_info):
+    tiling_pcr = TilingPcr()
+    if tiling_pcr_info['date_run'] != '':
+        tiling_pcr.date_run = datetime.datetime.strptime(tiling_pcr_info['date_run'], '%d/%m/%Y')
+    if tiling_pcr_info['pcr_identifier'] != '':
+        tiling_pcr.pcr_identifier = tiling_pcr_info['pcr_identifier']
+    if tiling_pcr_info['protocol'] != '':
+        tiling_pcr.protocol = tiling_pcr_info['protocol']
+    if tiling_pcr_info['number_of_cycles'] != '':
+        tiling_pcr.number_of_cycles = tiling_pcr_info['number_of_cycles']
+    return tiling_pcr
 
 
 def add_sample(sample_info):
@@ -249,8 +259,18 @@ def add_sample_source(sample_source_info):
     sample_source = read_in_sample_source_info(sample_source_info)
     sample_source.projects = projects
     db.session.add(sample_source)
-    print(f'adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
     db.session.commit()
+    print(f'adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
+
+
+def add_tiling_pcr(tiling_pcr_info):
+    extraction = get_extraction(tiling_pcr_info)
+    tiling_pcr = read_in_tiling_pcr(tiling_pcr_info)
+    extraction.tiling_pcrs.append(tiling_pcr)
+    db.session.add(tiling_pcr)
+    db.session.commit()
+    print(f"Adding tiling PCR for sample {tiling_pcr_info['sample_identifier']} run on "
+          f"{tiling_pcr_info['date_run']} PCR id {tiling_pcr_info['pcr_identifier']} to the database.")
 
 
 def add_extraction(extraction_info):
@@ -338,6 +358,21 @@ def get_extraction(readset_info):
         sys.exit()
 
 
+def get_tiling_pcr(tiling_pcr_info):
+    matching_tiling_pcr = TilingPcr.query.filter_by(pcr_identifier=tiling_pcr_info['pcr_identifier'],
+                                                    date_run=datetime.datetime.strptime(
+                                                        tiling_pcr_info['date_run'], '%d/%m/%Y')).\
+        join(Extraction).join(Sample).filter_by(sample_identifier=tiling_pcr_info['sample_identifier']).all()
+    if len(matching_tiling_pcr) == 1:
+        return matching_tiling_pcr[0]
+    elif len(matching_tiling_pcr) == 0:
+        return False
+    else:
+        print(f"More than one match for {tiling_pcr_info['sample_identifier']} on date {tiling_pcr_info['date_run']} "
+              f"with pcr_identifier {tiling_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
+        sys.exit()
+
+
 def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
     raw_sequencing_batch = RawSequencingBatch()
     raw_sequencing_batch.name = raw_sequencing_batch_info['batch_name']
@@ -366,6 +401,9 @@ def get_raw_sequencing_batch(batch_name):
     else:
         print(f"More than one match for {batch_name}. Shouldn't happen, exiting.")
         sys.exit()
+
+
+
 
 
 def get_raw_sequencing(readset_info, extraction):

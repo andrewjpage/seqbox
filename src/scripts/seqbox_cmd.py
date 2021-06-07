@@ -1,7 +1,15 @@
 import argparse
 from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, add_project,\
     does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, \
-    does_extraction_already_exist, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch
+    does_extraction_already_exist, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
+    get_tiling_pcr, add_tiling_pcr
+
+
+def add_tiling_pcrs(args):
+    all_tiling_pcrs_info = read_in_as_dict(args.tiling_pcrs_inhandle)
+    for tiling_pcr_info in all_tiling_pcrs_info:
+        if get_tiling_pcr(tiling_pcr_info) is False:
+            add_tiling_pcr(tiling_pcr_info)
 
 
 def add_raw_sequencing_batches(args):
@@ -68,6 +76,8 @@ def run_command(args):
         add_readsets(args=args)
     if args.command == 'add_raw_sequencing_batches':
         add_raw_sequencing_batches(args=args)
+    if args.command == 'add_tiling_pcrs':
+        add_tiling_pcrs(args=args)
 
 
 def main():
@@ -94,6 +104,10 @@ def main():
     parser_add_raw_sequencing_batches = subparsers.add_parser('add_raw_sequencing_batches',
                                                               help='Add information about a raw_sequencing batch')
     parser_add_raw_sequencing_batches.add_argument('-i', dest='raw_sequencing_batches_inhandle')
+    parser_add_tiling_pcrs = subparsers.add_parser('add_tiling_pcrs',
+                                                              help='Add information about a tiling PCR run')
+    parser_add_tiling_pcrs.add_argument('-i', dest='tiling_pcrs_inhandle')
+
     args = parser.parse_args()
     run_command(args)
 
