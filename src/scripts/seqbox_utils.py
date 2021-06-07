@@ -224,8 +224,8 @@ def read_in_extraction(extraction_info):
 
 def read_in_tiling_pcr(tiling_pcr_info):
     tiling_pcr = TilingPcr()
-    if tiling_pcr_info['date_run'] != '':
-        tiling_pcr.date_run = datetime.datetime.strptime(tiling_pcr_info['date_run'], '%d/%m/%Y')
+    if tiling_pcr_info['date_pcred'] != '':
+        tiling_pcr.date_pcred = datetime.datetime.strptime(tiling_pcr_info['date_pcred'], '%d/%m/%Y')
     if tiling_pcr_info['pcr_identifier'] != '':
         tiling_pcr.pcr_identifier = tiling_pcr_info['pcr_identifier']
     if tiling_pcr_info['protocol'] != '':
@@ -270,7 +270,7 @@ def add_tiling_pcr(tiling_pcr_info):
     db.session.add(tiling_pcr)
     db.session.commit()
     print(f"Adding tiling PCR for sample {tiling_pcr_info['sample_identifier']} run on "
-          f"{tiling_pcr_info['date_run']} PCR id {tiling_pcr_info['pcr_identifier']} to the database.")
+          f"{tiling_pcr_info['date_pcred']} PCR id {tiling_pcr_info['pcr_identifier']} to the database.")
 
 
 def add_extraction(extraction_info):
@@ -351,18 +351,21 @@ def get_extraction(readset_info):
     if len(matching_extraction) == 1:
         return matching_extraction[0]
     elif len(matching_extraction) == 0:
-        print(f"no match for {readset_info['sample_identifier']}, need to add that extract and re-run. Exiting.")
+        print(f"No Extraction match for {readset_info['sample_identifier']}, extracted on "
+              f"{readset_info['date_extracted']} for extraction id {readset_info['extraction_identifier']} need to add "
+              f"that extract and re-run. Exiting.")
         sys.exit()
     else:
-        print(f"More than one match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
+        print(f"More than one Extraction match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
 
 
 def get_tiling_pcr(tiling_pcr_info):
-    matching_tiling_pcr = TilingPcr.query.filter_by(pcr_identifier=tiling_pcr_info['pcr_identifier'],
-                                                    date_run=datetime.datetime.strptime(
-                                                        tiling_pcr_info['date_run'], '%d/%m/%Y')).\
-        join(Extraction).join(Sample).filter_by(sample_identifier=tiling_pcr_info['sample_identifier']).all()
+    matching_tiling_pcr = TilingPcr.query\
+        .filter_by(
+            pcr_identifier=tiling_pcr_info['pcr_identifier'],
+            date_pcred=datetime.datetime.strptime(tiling_pcr_info['date_pcred'], '%d/%m/%Y'))\
+        .join(Extraction).join(Sample).filter_by(sample_identifier=tiling_pcr_info['sample_identifier']).all()
     if len(matching_tiling_pcr) == 1:
         return matching_tiling_pcr[0]
     elif len(matching_tiling_pcr) == 0:
@@ -371,6 +374,43 @@ def get_tiling_pcr(tiling_pcr_info):
         print(f"More than one match for {tiling_pcr_info['sample_identifier']} on date {tiling_pcr_info['date_run']} "
               f"with pcr_identifier {tiling_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
+
+
+def interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info):
+    print(matching_covid_readset)
+    if len(matching_covid_readset) == 0:
+        return False
+    elif len(matching_covid_readset) == 1:
+        if covid_sequencing_info['sequencing_type'] == 'nanopore':
+            print(f"This readset ({covid_sequencing_info['path_fastq']}) already exists in the database for the group "
+                  f"{covid_sequencing_info['group_name']}. Not adding it to the database.")
+        elif covid_sequencing_info['sequencing_type'] == 'illumina':
+            print(f"This readset ({covid_sequencing_info['path_r1']}) already exists in the database for the group "
+                  f"{covid_sequencing_info['group_name']}. Not adding it to the database.")
+        return True
+    else:
+        print('this shouldnt happen')
+
+
+def get_covid_readset(covid_sequencing_info):
+    # todo - check that sequencing type is permissible.
+    if covid_sequencing_info['sequencing_type'] == 'nanopore':
+        matching_covid_readset = ReadSetNanopore.query.filter_by(path_fastq=covid_sequencing_info['path_fastq'])\
+            .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
+            .join(SampleSource.projects)\
+            .filter_by(group_name=covid_sequencing_info['group_name'])\
+            .distinct().all()
+        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info)
+        return result
+    elif covid_sequencing_info['sequencing_type'] == 'illumina':
+        matching_covid_readset = ReadSetIllumina.query.filter_by(path_r1=covid_sequencing_info['path_r1'])\
+            .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
+            .join(SampleSource.projects) \
+            .filter_by(group_name=covid_sequencing_info['group_name']) \
+            .distinct().all()
+        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info)
+        return result
+    print('this shouldnt run')
 
 
 def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
@@ -403,9 +443,6 @@ def get_raw_sequencing_batch(batch_name):
         sys.exit()
 
 
-
-
-
 def get_raw_sequencing(readset_info, extraction):
     # this function takes the readset_info and an extraction instance and returns a raw_sequencing instance with a
     # raw_sequencing_ill/nano instance associated with it. if the extraction has been sequenced before then
@@ -415,12 +452,9 @@ def get_raw_sequencing(readset_info, extraction):
         # no matching raw sequencing will be the case for 99.999% of illumina (all illumina?) and most nanopore
         raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
         if raw_sequencing_batch is False:
-            print(f"No match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+            print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
             sys.exit()
-
-
         raw_sequencing = read_in_raw_sequencing(readset_info)
-
         extraction.raw_sequencing.append(raw_sequencing)
         return raw_sequencing, extraction
     elif len(matching_raw_tech_sequencing) == 1:
@@ -465,7 +499,7 @@ def read_in_readset(readset_info):
     return readset
 
 
-def add_readset(readset_info):
+def add_readset(readset_info, covid):
     # get the information on the DNA extraction which was sequenced, from the CSV file, return an instance of the
     # Extraction class
     extraction = get_extraction(readset_info)
@@ -476,12 +510,25 @@ def add_readset(readset_info):
     # todo - does extraction need to be returned to here? or will it be updated even if not returned.
     raw_sequencing, extraction = get_raw_sequencing(readset_info, extraction)
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+    print("blah bs")
     if raw_sequencing_batch is False:
-        print(f"No match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+        print(f"No RawSequencing match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
         sys.exit()
     raw_sequencing_batch.raw_sequencings.append(raw_sequencing)
     readset = read_in_readset(readset_info)
     raw_sequencing.read_sets.append(readset)
+
+    if covid is True:
+        tiling_pcr = get_tiling_pcr(readset_info)
+
+        if tiling_pcr is False:
+            print(f"There is no TilingPcr record for sample {readset_info['sample_identifier']} PCRed on "
+                  f"{readset_info['date_pcred']} by group {readset_info['group_name']}. You need to add this. Exiting.")
+            sys.exit()
+
+        extraction.tiling_pcrs.append(tiling_pcr)
+        tiling_pcr.raw_sequencings.append(raw_sequencing)
+
     db.session.add(raw_sequencing)
     db.session.commit()
 

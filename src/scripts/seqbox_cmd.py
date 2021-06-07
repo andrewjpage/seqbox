@@ -2,7 +2,7 @@ import argparse
 from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, add_project,\
     does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, \
     does_extraction_already_exist, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
-    get_tiling_pcr, add_tiling_pcr
+    get_tiling_pcr, add_tiling_pcr, get_covid_readset
 
 
 def add_tiling_pcrs(args):
@@ -19,11 +19,18 @@ def add_raw_sequencing_batches(args):
             add_raw_sequencing_batch(raw_sequencing_batch_info)
 
 
+def add_covid_readsets(args):
+    all_covid_readsets_info = read_in_as_dict(args.covid_readsets_inhandle)
+    for covid_readset_info in all_covid_readsets_info:
+        if get_covid_readset(covid_readset_info) is False:
+            add_readset(readset_info=covid_readset_info, covid=True)
+
+
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     for readset_info in all_readsets_info:
         if does_readset_already_exist(readset_info) is False:
-            add_readset(readset_info)
+            add_readset(readset_info=readset_info, covid=False)
 
 
 def add_extractions(args):
@@ -78,6 +85,8 @@ def run_command(args):
         add_raw_sequencing_batches(args=args)
     if args.command == 'add_tiling_pcrs':
         add_tiling_pcrs(args=args)
+    if args.command == 'add_covid_readsets':
+        add_covid_readsets(args=args)
 
 
 def main():
@@ -107,7 +116,9 @@ def main():
     parser_add_tiling_pcrs = subparsers.add_parser('add_tiling_pcrs',
                                                               help='Add information about a tiling PCR run')
     parser_add_tiling_pcrs.add_argument('-i', dest='tiling_pcrs_inhandle')
-
+    parser_add_covid_readsets = subparsers.add_parser('add_covid_readsets',
+                                                   help='Add information about a tiling PCR run')
+    parser_add_covid_readsets.add_argument('-i', dest='covid_readsets_inhandle')
     args = parser.parse_args()
     run_command(args)
 

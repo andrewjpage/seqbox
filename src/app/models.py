@@ -205,10 +205,11 @@ class TilingPcr(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
     number_of_cycles = db.Column(db.Integer, comment="Number of PCR cycles")
-    date_run = db.Column(db.DATETIME, comment="Date this PCR was done")
+    date_pcred = db.Column(db.DATETIME, comment="Date this PCR was done")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
+    raw_sequencings = db.relationship("RawSequencing", backref="tiling_pcr")
 
     def __repr__(self):
         return f"TilingPcr(id={self.id}, extraction.id={self.extraction_id})"
@@ -218,8 +219,11 @@ class RawSequencing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
     raw_sequencing_batch_id = db.Column(db.ForeignKey("raw_sequencing_batch.id"))
+    tiling_pcr_id = db.Column(db.ForeignKey("tiling_pcr.id"))
+
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     sequencing_type = db.Column(db.VARCHAR(32), comment="Sequencing type i.e. is it Illumina, nanopore, etc.")
+
     read_sets = db.relationship("ReadSet", backref="raw_sequencing")
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
     raw_sequencing_illumina = db.relationship("RawSequencingIllumina", backref="raw_sequencing", uselist=False)
