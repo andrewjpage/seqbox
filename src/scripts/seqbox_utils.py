@@ -354,6 +354,7 @@ def add_raw_sequencing_batch(raw_sequencing_batch_info):
     raw_sequencing_batch = read_in_raw_sequencing_batch_info(raw_sequencing_batch_info)
     db.session.add(raw_sequencing_batch)
     db.session.commit()
+    print(f"Added batch {raw_sequencing_batch_info['batch_name']} to the database.")
 
 
 def get_raw_sequencing_batch(batch_name):
@@ -436,6 +437,11 @@ def add_readset(readset_info):
     # note - using the fast5 and r1 path to identify the raw sequencing dataset.
     # todo - does extraction need to be returned to here? or will it be updated even if not returned.
     raw_sequencing, extraction = get_raw_sequencing(readset_info, extraction)
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+    if raw_sequencing_batch is False:
+        print(f"No match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+        sys.exit()
+    raw_sequencing_batch.raw_sequencings.append(raw_sequencing)
     readset = read_in_readset(readset_info)
     raw_sequencing.read_sets.append(readset)
     db.session.add(raw_sequencing)

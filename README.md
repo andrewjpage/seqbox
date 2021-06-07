@@ -15,3 +15,4 @@ sample source which is the primary thing enrolled in the project,
 not the sample itself
 * we have raw sequencing class because what if we want to re-basecall the
 same sequencing run?
+* raw_sequencing_batch name has to be unique across all projects/groups
