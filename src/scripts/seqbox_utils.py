@@ -2,7 +2,7 @@ import csv
 import sys
 import datetime
 from app import db
-from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, ReadSetBatch,\
+from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina
 
 
@@ -338,18 +338,54 @@ def get_extraction(readset_info):
         sys.exit()
 
 
+def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
+    raw_sequencing_batch = RawSequencingBatch()
+    raw_sequencing_batch.name = raw_sequencing_batch_info['batch_name']
+    raw_sequencing_batch.date_run = datetime.datetime.strptime(raw_sequencing_batch_info['date_run'], '%d/%m/%Y')
+    raw_sequencing_batch.instrument_model = raw_sequencing_batch_info['instrument_model']
+    raw_sequencing_batch.instrument_name = raw_sequencing_batch_info['instrument_name']
+    raw_sequencing_batch.library_prep_method = raw_sequencing_batch_info['library_prep_method']
+    raw_sequencing_batch.sequencing_centre = raw_sequencing_batch_info['sequencing_centre']
+    raw_sequencing_batch.flowcell_type = raw_sequencing_batch_info['flowcell_type']
+    return raw_sequencing_batch
+
+
+def add_raw_sequencing_batch(raw_sequencing_batch_info):
+    raw_sequencing_batch = read_in_raw_sequencing_batch_info(raw_sequencing_batch_info)
+    db.session.add(raw_sequencing_batch)
+    db.session.commit()
+
+
+def get_raw_sequencing_batch(batch_name):
+    matching_raw_seq_batch = RawSequencingBatch.query.filter_by(name=batch_name).all()
+    if len(matching_raw_seq_batch) == 1:
+        return matching_raw_seq_batch[0]
+    elif len(matching_raw_seq_batch) == 0:
+        return False
+    else:
+        print(f"More than one match for {batch_name}. Shouldn't happen, exiting.")
+        sys.exit()
+
+
 def get_raw_sequencing(readset_info, extraction):
     # this function takes the readset_info and an extraction instance and returns a raw_sequencing instance with a
-    # raw_sequencing_ill/nano isntance associated with it. if the extraction has been sequenced before then
+    # raw_sequencing_ill/nano instance associated with it. if the extraction has been sequenced before then
     # it adds this raw sequencing record to the extraction record.
     matching_raw_tech_sequencing = find_matching_raw_sequencing(readset_info)
     if len(matching_raw_tech_sequencing) == 0:
         # no matching raw sequencing will be the case for 99.999% of illumina (all illumina?) and most nanopore
+        raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+        if raw_sequencing_batch is False:
+            print(f"No match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+            sys.exit()
+
+
         raw_sequencing = read_in_raw_sequencing(readset_info)
+
         extraction.raw_sequencing.append(raw_sequencing)
         return raw_sequencing, extraction
     elif len(matching_raw_tech_sequencing) == 1:
-        # if there is already a raw_sequencing record (i.e. this is another basecallign run of the same raw_sequencing
+        # if there is already a raw_sequencing record (i.e. this is another basecalling run of the same raw_sequencing
         # data), then extraction is already assocaited with the raw sequencing, so don't need to add.
         return matching_raw_tech_sequencing[0].raw_sequencing, extraction
     else:
@@ -358,16 +394,15 @@ def get_raw_sequencing(readset_info, extraction):
 
 def read_in_raw_sequencing(readset_info):
     raw_sequencing = RawSequencing()
+
     # todo - readset_info['sequencing_type'] shouldnt be able to be empty
     # todo - should throw error if sequencing_type isn't in allowed types
     if readset_info['sequencing_type'] != '':
         raw_sequencing.sequencing_type = readset_info['sequencing_type']
-
     if readset_info['sequencing_type'] == 'illumina':
         raw_sequencing.raw_sequencing_illumina = RawSequencingIllumina()
         raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
         raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r2']
-
     if readset_info['sequencing_type'] == 'nanopore':
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
         raw_sequencing.raw_sequencing_nanopore.path_fast5 = readset_info['path_fast5']
@@ -399,6 +434,7 @@ def add_readset(readset_info):
     # raw sequencing is being added. if it's not the first time the raw_sequencing is being added, the extraction
     # already has raw_seq associated with it.
     # note - using the fast5 and r1 path to identify the raw sequencing dataset.
+    # todo - does extraction need to be returned to here? or will it be updated even if not returned.
     raw_sequencing, extraction = get_raw_sequencing(readset_info, extraction)
     readset = read_in_readset(readset_info)
     raw_sequencing.read_sets.append(readset)

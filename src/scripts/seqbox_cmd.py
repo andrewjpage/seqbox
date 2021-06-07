@@ -1,7 +1,14 @@
 import argparse
 from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, add_project,\
     does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, \
-    does_extraction_already_exist, add_extraction, add_readset
+    does_extraction_already_exist, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch
+
+
+def add_raw_sequencing_batches(args):
+    all_raw_sequencing_batches_info = read_in_as_dict(args.raw_sequencing_batches_inhandle)
+    for raw_sequencing_batch_info in all_raw_sequencing_batches_info:
+        if get_raw_sequencing_batch(raw_sequencing_batch_info['batch_name']) is False:
+            add_raw_sequencing_batch(raw_sequencing_batch_info)
 
 
 def add_readsets(args):
@@ -59,6 +66,8 @@ def run_command(args):
         add_extractions(args=args)
     if args.command == 'add_readsets':
         add_readsets(args=args)
+    if args.command == 'add_raw_sequencing_batches':
+        add_raw_sequencing_batches(args=args)
 
 
 def main():
@@ -82,6 +91,9 @@ def main():
                                                 help='Take a csv of extractions and add to the DB.')
     parser_add_extractions.add_argument('-i', dest='extractions_inhandle',
                                      help='A CSV file containing extractions info', required=True)
+    parser_add_raw_sequencing_batches = subparsers.add_parser('add_raw_sequencing_batches',
+                                                              help='Add information about a raw_sequencing batch')
+    parser_add_raw_sequencing_batches.add_argument('-i', dest='raw_sequencing_batches_inhandle')
     args = parser.parse_args()
     run_command(args)
 

@@ -81,7 +81,6 @@ class ReadSet(db.Model):
 
     read_set_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
     read_set_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
-    batch_id = db.Column(db.Integer, db.ForeignKey("read_set_batch.id"))
 
     # @hybrid_property
     # def read_set_id(self):
@@ -215,6 +214,7 @@ class TilingPcr(db.Model):
 class RawSequencing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
+    raw_sequencing_batch_id = db.Column(db.ForeignKey("raw_sequencing_batch.id"))
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     sequencing_type = db.Column(db.VARCHAR(32), comment="Sequencing type i.e. is it Illumina, nanopore, etc.")
     read_sets = db.relationship("ReadSet", backref="raw_sequencing")
@@ -244,7 +244,7 @@ class RawSequencingIllumina(db.Model):
         return f"RawSequencingIllumina(id={self.id}, path_r1={self.path_r1})"
 
 
-class ReadSetBatch(db.Model):
+class RawSequencingBatch(db.Model):
     """[Define model 'Batch' mapped to table 'batch']
     
     Arguments:
@@ -256,13 +256,14 @@ class ReadSetBatch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.VARCHAR(50))
     date_run = db.Column(db.DATE)
-    instrument = db.Column(db.VARCHAR(64))
+    instrument_model = db.Column(db.VARCHAR(64))
     instrument_name = db.Column(db.VARCHAR(64), comment="For MLW machines, which exact machine was it run on")
     # primer = db.Column(db.VARCHAR(100))
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
     library_prep_method = db.Column(db.VARCHAR(64))
     sequencing_centre = db.Column(db.VARCHAR(64), comment="E.g. Sanger, CGR, MLW, etc.")
-    read_sets = db.relationship("ReadSet", backref="batch")
+    flowcell_type = db.Column(db.VARCHAR(64))
+    raw_sequencings = db.relationship("RawSequencing", backref="raw_sequencing_batch")
 
     def __repr__(self):
         return '<Batch {}>'.format(self.name)

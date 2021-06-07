@@ -1,7 +1,7 @@
 import pprint
 import datetime
 from app import db
-from app.models import Sample, ReadSet, ReadSetIllumina, Mykrobe, ReadSetNanopore, Project, ReadSetBatch, SampleSource
+from app.models import Sample, ReadSet, ReadSetIllumina, Mykrobe, ReadSetNanopore, Project, SampleSource
 
 
 def add_sample():
