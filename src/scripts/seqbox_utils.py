@@ -85,12 +85,14 @@ def get_sample(readset_info):
 
 
 def get_extraction(readset_info):
-    # todo - do i need to add a projec/group name to this? what if two projects extract something with the same
-    #  identifier on the same day?
     matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                      date_extracted=datetime.datetime.strptime(
                                                          readset_info['date_extracted'], '%d/%m/%Y')) \
-        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).all()
+        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
+        .join(SampleSource)\
+        .join(SampleSource.projects)\
+        .filter_by(group_name=readset_info['group_name'])\
+        .all()
     if len(matching_extraction) == 1:
         return matching_extraction[0]
     elif len(matching_extraction) == 0:
@@ -160,7 +162,10 @@ def read_in_sample_info(sample_info):
 
 
 def read_in_sample_source_info(sample_source_info):
-    # todo - sample_source_identifier shouldnt be allowed to be null
+    if sample_source_info['sample_source_identifier'] == '':
+        print(f"sample_source_identifier isn't allowed to be null, check the line which gave rise to "
+              f"{sample_source_info}. Exiting.")
+        sys.exit()
     sample_source = SampleSource(sample_source_identifier=sample_source_info['sample_source_identifier'])
     if sample_source_info['sample_source_type'] != '':
         sample_source.sample_source_type = sample_source_info['sample_source_type']
@@ -237,7 +242,7 @@ def add_sample_source(sample_source_info):
     sample_source.projects = projects
     db.session.add(sample_source)
     db.session.commit()
-    print(f'adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
+    print(f'Adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
 
 
 def add_tiling_pcr(tiling_pcr_info):
@@ -270,8 +275,7 @@ def add_extraction(extraction_info):
 
 
 def get_readset(readset_info):
-    # todo - is there a nicer way to code this?
-    # todo - check readset_info['sequencing_type'] is allowed type
+    # todo - re-code this in a nicer way (dont like matching_readset maybe being refereced before assignment)
     # todo - isn't the path_fastq or path_r1 enough to distinguish it? doesn't need to belong to that group
     if readset_info['sequencing_type'] == 'nanopore':
         matching_readset = ReadSetNanopore.query.filter_by(path_fastq=readset_info['path_fastq']).join(ReadSet).\
@@ -297,7 +301,9 @@ def get_readset(readset_info):
 
 
 def find_matching_raw_sequencing(readset_info):
-    # todo - check that readset_info['sequencing_type'] is an allowed value
+    if readset_info['sequencing_type'] not in allowed_sequencing_types:
+        print(f"sequencing_type {readset_info['sequencing_type']} is not in {allowed_sequencing_types} for this line "
+              f"{readset_info}")
     if readset_info['sequencing_type'] == 'nanopore':
         matching_raw_sequencing = RawSequencingNanopore.query.filter_by(path_fast5=readset_info['path_fast5']).all()
         return matching_raw_sequencing
@@ -327,7 +333,6 @@ def get_tiling_pcr(tiling_pcr_info):
 
 
 def interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info):
-    print(matching_covid_readset)
     if len(matching_covid_readset) == 0:
         return False
     elif len(matching_covid_readset) == 1:
