@@ -11,11 +11,11 @@ def read_in_as_dict(inhandle):
     # pull in everything from a generator into an honest to goodness iterable.
     info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
     # info is a list of ordered dicts, so convert each one to
-    l = []
+    list_of_lines = []
     for each_dict in info:
         new_info = {x: each_dict[x] for x in each_dict}
-        l.append(new_info)
-    return l
+        list_of_lines.append(new_info)
+    return list_of_lines
 
 
 def check_sample_source_associated_with_project(sample_source, sample_source_info):
@@ -65,7 +65,8 @@ def get_sample_source(sample_info):
         return matching_sample_source[0]
     else:
         print(f"There is more than one matching sample_source with the sample_source_identifier "
-              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, This shouldn't happen. Exiting.")
+              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, This shouldn't happen."
+              f" Exiting.")
 
 
 def get_sample(readset_info):
@@ -141,9 +142,6 @@ def get_projects(info):
                   f"add_projects function.\nExiting now.")
             sys.exit()
     return projects
-
-
-
 
 
 def read_in_sample_info(sample_info):
@@ -300,9 +298,6 @@ def get_readset(readset_info):
         return True
 
 
-
-
-
 def find_matching_raw_sequencing(readset_info):
     # todo - check that readset_info['sequencing_type'] is an allowed value
     if readset_info['sequencing_type'] == 'nanopore':
@@ -409,7 +404,8 @@ def get_raw_sequencing(readset_info, extraction):
         # no matching raw sequencing will be the case for 99.999% of illumina (all illumina?) and most nanopore
         raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
         if raw_sequencing_batch is False:
-            print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+            print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. "
+                  f"Exiting.")
             sys.exit()
         raw_sequencing = read_in_raw_sequencing(readset_info)
         extraction.raw_sequencing.append(raw_sequencing)
@@ -481,12 +477,10 @@ def add_readset(readset_info, covid):
 
     if covid is True:
         tiling_pcr = get_tiling_pcr(readset_info)
-
         if tiling_pcr is False:
             print(f"There is no TilingPcr record for sample {readset_info['sample_identifier']} PCRed on "
                   f"{readset_info['date_pcred']} by group {readset_info['group_name']}. You need to add this. Exiting.")
             sys.exit()
-
         extraction.tiling_pcrs.append(tiling_pcr)
         tiling_pcr.raw_sequencings.append(raw_sequencing)
 
