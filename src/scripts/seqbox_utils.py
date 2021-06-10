@@ -89,23 +89,20 @@ def does_sample_already_exist(sample_info):
         return True
 
 
-def does_extraction_already_exist(extraction_info):
-    matching_extraction = Extraction.query.filter_by(extraction_identifier=extraction_info['extraction_identifier'],
-                                                     date_extracted=datetime.datetime.strptime(extraction_info['date_extracted'], '%d/%m/%Y'))\
-        .join(Sample).filter_by(sample_identifier=extraction_info['sample_identifier']).all()
-    if len(matching_extraction) == 0:
+def get_extraction(readset_info):
+    # todo - do i need to add a projec/group name to this? what if two projects extract something with the same
+    #  identifier on the same day?
+    matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
+                                                     date_extracted=datetime.datetime.strptime(
+                                                         readset_info['date_extracted'], '%d/%m/%Y')) \
+        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).all()
+    if len(matching_extraction) == 1:
+        return matching_extraction[0]
+    elif len(matching_extraction) == 0:
         return False
-    elif len(matching_extraction) == 1:
-        print(f"There is already an extraction for sample {extraction_info['sample_identifier']} in the db for "
-              f"{extraction_info['date_extracted']} with extraction id {extraction_info['extraction_identifier']}. "
-              f"Is this the second extract you did for this sample on this day? If so, increment the extraction id and "
-              f"re-upload.")
     else:
-        print(f"There is more than one extraction for for sample {extraction_info['sample_identifier']} in the db for "
-              f"{extraction_info['date_extracted']} with extraction id {extraction_info['extraction_identifier']}. This"
-              f" shouldn't happen, exiting.")
+        print(f"More than one Extraction match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
-
 
 
 def add_project(project_info):
@@ -265,6 +262,11 @@ def add_sample_source(sample_source_info):
 
 def add_tiling_pcr(tiling_pcr_info):
     extraction = get_extraction(tiling_pcr_info)
+    if extraction is False:
+        print(f"No Extraction match for {tiling_pcr_info['sample_identifier']}, extracted on "
+              f"{tiling_pcr_info['date_extracted']} for extraction id {tiling_pcr_info['extraction_identifier']} "
+              f"need to add that extract and re-run. Exiting.")
+        sys.exit()
     tiling_pcr = read_in_tiling_pcr(tiling_pcr_info)
     extraction.tiling_pcrs.append(tiling_pcr)
     db.session.add(tiling_pcr)
@@ -339,25 +341,6 @@ def find_matching_raw_sequencing(readset_info):
     print('Only "nanopore" and "illumina" are currently supported sequencing_type values, please check and re-run. '
           'Exiting.')
     sys.exit()
-
-
-def get_extraction(readset_info):
-    # todo - do i need to add a projec/group name to this? what if two projects extract something with the same
-    #  identifier on the same day?
-    matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                     date_extracted=datetime.datetime.strptime(
-                                                         readset_info['date_extracted'], '%d/%m/%Y')) \
-        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).all()
-    if len(matching_extraction) == 1:
-        return matching_extraction[0]
-    elif len(matching_extraction) == 0:
-        print(f"No Extraction match for {readset_info['sample_identifier']}, extracted on "
-              f"{readset_info['date_extracted']} for extraction id {readset_info['extraction_identifier']} need to add "
-              f"that extract and re-run. Exiting.")
-        sys.exit()
-    else:
-        print(f"More than one Extraction match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
-        sys.exit()
 
 
 def get_tiling_pcr(tiling_pcr_info):
@@ -503,6 +486,11 @@ def add_readset(readset_info, covid):
     # get the information on the DNA extraction which was sequenced, from the CSV file, return an instance of the
     # Extraction class
     extraction = get_extraction(readset_info)
+    if extraction is False:
+        print(f"No Extraction match for {readset_info['sample_identifier']}, extracted on "
+              f"{readset_info['date_extracted']} for extraction id {readset_info['extraction_identifier']} need to add "
+              f"that extract and re-run. Exiting.")
+        sys.exit()
     # need to pass extraction in here because need to link raw_sequencing to extract if this is the first time
     # raw sequencing is being added. if it's not the first time the raw_sequencing is being added, the extraction
     # already has raw_seq associated with it.

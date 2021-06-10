@@ -1,7 +1,7 @@
 import argparse
 from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, add_project,\
     does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, \
-    does_extraction_already_exist, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
+    get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_covid_readset
 
 
@@ -24,6 +24,11 @@ def add_covid_readsets(args):
     for covid_readset_info in all_covid_readsets_info:
         if get_covid_readset(covid_readset_info) is False:
             add_readset(readset_info=covid_readset_info, covid=True)
+        else:
+            print(f"There is already an extraction for sample {covid_readset_info['sample_identifier']} in the db for "
+                  f"{covid_readset_info['date_extracted']} with extraction id "
+                  f"{covid_readset_info['extraction_identifier']}. Is this the second extract you did for this sample "
+                  f"on this day? If so, increment the extraction id and re-upload.")
 
 
 def add_readsets(args):
@@ -36,7 +41,7 @@ def add_readsets(args):
 def add_extractions(args):
     all_extractions_info = read_in_as_dict(args.extractions_inhandle)
     for extraction_info in all_extractions_info:
-        if does_extraction_already_exist(extraction_info) is False:
+        if get_extraction(extraction_info) is False:
             add_extraction(extraction_info)
 
 
