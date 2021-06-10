@@ -19,8 +19,6 @@ def read_in_as_dict(inhandle):
 
 
 def check_sample_source_associated_with_project(sample_source, sample_source_info):
-    # todo - check that this new way of caling this function makes a new relationship between an existing sample source
-    #  and project.
     # todo - maybe just get rid of this pathway, and have a different seqbox_cmd function for if you want to add a new
     #  relationship between an existing sample source and project
     # sample_source_info is a line from the input csv

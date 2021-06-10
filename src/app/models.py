@@ -290,8 +290,6 @@ class SampleSource(db.Model):
                                                            "does the sample source identifier identify? is it a patient"
                                                            "or a visit (like tyvac/strataa), or a sampling location for"
                                                            " an environmental sample")
-    # todo - how do we handle multiple picks from same plate?
-    # projects = db.relationship("Project", secondary="sample_source_project", backref=db.backref("projects"))
     projects = db.relationship("Project", secondary="sample_source_project", backref="sample_source")
     samples = db.relationship("Sample", backref="sample_source")
     latitude = db.Column(db.Float(), comment="Latitude of sample source if known")

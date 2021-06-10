@@ -16,3 +16,8 @@ not the sample itself
 * we have raw sequencing class because what if we want to re-basecall the
 same sequencing run?
 * raw_sequencing_batch name has to be unique across all projects/groups
+* How to handle multiple picks from same sample?
+    * Multiple picks should be added as new samples, related to the same
+    sample source of course. Ideally, the sample identifier will make it
+    easy to see that they're multiple picks. E.g. BMD671-1, BMD671-2.
+    
