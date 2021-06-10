@@ -472,7 +472,6 @@ def add_readset(readset_info, covid):
     # todo - does extraction need to be returned to here? or will it be updated even if not returned.
     raw_sequencing, extraction = get_raw_sequencing(readset_info, extraction)
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
-    print("blah bs")
     if raw_sequencing_batch is False:
         print(f"No RawSequencing match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
         sys.exit()
@@ -493,6 +492,7 @@ def add_readset(readset_info, covid):
 
     db.session.add(raw_sequencing)
     db.session.commit()
+    print(f"Adding read set {readset_info['sample_identifier']} to the database.")
 
     # todo - need to set read_set_name in the db, after this readset has been added to the db.
     # todo - need to handle sequencing_batch
