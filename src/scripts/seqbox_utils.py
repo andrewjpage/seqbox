@@ -71,22 +71,21 @@ def does_sample_source_already_exist(sample_source_info):
         return False
 
 
-def does_sample_already_exist(sample_info):
-    # this function checks if this sample identifier has already been used by this group, and if so,
-    # returns True, if not it returns false
-    # the aim of this query is to get a list of all the sample identifiers belonging to a specific group
-    # this does a join of sample and projects (via magic), and the filters by the group_name
-    # https://stackoverflow.com/questions/40699642/how-to-query-many-to-many-sqlalchemy
-    matching_sample = Sample.query.with_entities(Sample.sample_identifier).\
-        filter_by(sample_identifier=sample_info['sample_identifier']).join(SampleSource).join(SampleSource.projects)\
-        .filter_by(group_name=sample_info['group_name'])\
-        .distinct().all()
+def get_sample(readset_info):
+    matching_sample = Sample.query. \
+        filter_by(sample_identifier=readset_info['sample_identifier']) \
+        .join(SampleSource) \
+        .join(SampleSource.projects) \
+        .filter_by(group_name=readset_info['group_name']).distinct().all()
     if len(matching_sample) == 0:
         return False
     elif len(matching_sample) == 1:
-        print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group "
-              f"{sample_info['group_name']}")
-        return True
+        return matching_sample[0]
+    else:
+        print(f"There is more than one matching sample with the sample_identifier "
+              f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, This shouldn't happen. "
+              f"Exiting.")
+        sys.exit()
 
 
 def get_extraction(readset_info):
@@ -277,6 +276,11 @@ def add_tiling_pcr(tiling_pcr_info):
 
 def add_extraction(extraction_info):
     sample = get_sample(extraction_info)
+    if sample is False:
+        print(f"There is no matching sample with the sample_source_identifier "
+              f"{extraction_info['sample_identifier']} for group {extraction_info['group_name']}, please add using "
+              f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
+        sys.exit()
     extraction = read_in_extraction(extraction_info)
     sample.extractions.append(extraction)
     db.session.add(extraction)
@@ -284,7 +288,8 @@ def add_extraction(extraction_info):
     db.session.commit()
 
 
-def does_readset_already_exist(readset_info):
+def get_readset(readset_info):
+    # todo - is there a nicer way to code this?
     # todo - check readset_info['sequencing_type'] is allowed type
     # todo - isn't the path_fastq or path_r1 enough to distinguish it? doesn't need to belong to that group
     if readset_info['sequencing_type'] == 'nanopore':
@@ -310,23 +315,7 @@ def does_readset_already_exist(readset_info):
         return True
 
 
-def get_sample(readset_info):
-    matching_sample = Sample.query. \
-        filter_by(sample_identifier=readset_info['sample_identifier']) \
-        .join(SampleSource) \
-        .join(SampleSource.projects) \
-        .filter_by(group_name=readset_info['group_name']).all()
-    if len(matching_sample) == 0:
-        print(f"There is no matching sample with the sample_source_identifier "
-              f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, please add using "
-              f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
-        sys.exit()
-    elif len(matching_sample) == 1:
-        return matching_sample[0]
-    else:
-        print(f"There is more than one matching sample with the sample_identifier "
-              f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, This shouldn't happen. "
-              f"Exiting.")
+
 
 
 def find_matching_raw_sequencing(readset_info):

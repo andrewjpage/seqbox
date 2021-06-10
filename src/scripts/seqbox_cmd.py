@@ -1,8 +1,8 @@
 import argparse
-from seqbox_utils import read_in_as_dict, does_sample_already_exist, add_sample, add_project,\
+from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, \
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
-    get_tiling_pcr, add_tiling_pcr, get_covid_readset
+    get_tiling_pcr, add_tiling_pcr, get_covid_readset, get_readset, get_sample
 
 
 def add_tiling_pcrs(args):
@@ -34,7 +34,7 @@ def add_covid_readsets(args):
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     for readset_info in all_readsets_info:
-        if does_readset_already_exist(readset_info) is False:
+        if get_readset(readset_info) is False:
             add_readset(readset_info=readset_info, covid=False)
 
 
@@ -48,8 +48,11 @@ def add_extractions(args):
 def add_samples(args):
     all_samples_info = read_in_as_dict(args.samples_inhandle)
     for sample_info in all_samples_info:
-        if does_sample_already_exist(sample_info) is False:
+        if get_sample(sample_info) is False:
             add_sample(sample_info)
+        else:
+            print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group "
+                  f"{sample_info['group_name']}")
         # if check_if_sample_exists(sample_info['sample_identifier'], sample_info['group']) is False:
 
 
