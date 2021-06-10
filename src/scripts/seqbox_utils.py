@@ -19,6 +19,10 @@ def read_in_as_dict(inhandle):
 
 
 def check_sample_source_associated_with_project(sample_source, sample_source_info):
+    # todo - check that this new way of caling this function makes a new relationship between an existing sample source
+    #  and project.
+    # todo - maybe just get rid of this pathway, and have a different seqbox_cmd function for if you want to add a new
+    #  relationship between an existing sample source and project
     # sample_source_info is a line from the input csv
     # sample_source is the corresponding entry from the DB
     # get the projects from the input file as set
@@ -49,26 +53,19 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
     db.session.commit()
 
 
-def does_sample_source_already_exist(sample_source_info):
-    # this function checks is a sample source with the specified identifier already exists for this group
-    # sample_source is joined to projects by automagic (via sample_source_project)
-    # SampleSource.query.with_entities(SampleSource.sample_source_identifier).join(SampleSource.projects)\
-    all_sample_sources_for_this_group = \
-        SampleSource.query.join(SampleSource.projects)\
-        .filter_by(group_name=sample_source_info['group_name']) \
-        .distinct()
-    # can't help but feel this block could be replaced by sql, but dont know the sql/sqlalchemy for it.
-    # make a dictionary of {sample_source_identifier : sample_source db record}
-    all_sample_sources_for_this_group = {x.sample_source_identifier: x for x in all_sample_sources_for_this_group}
-    # if our sample_source is in the db for this group already
-    if sample_source_info['sample_source_identifier'] in all_sample_sources_for_this_group:
-        # we need to check if the project we're entering it with here is associated with it in the database
-        check_sample_source_associated_with_project(all_sample_sources_for_this_group[sample_source_info['sample_source_identifier']], sample_source_info)
-        print(f"This sample source ({sample_source_info['sample_source_identifier']}) already exists in the database "
-              f"for the group {sample_source_info['group_name']}")
-        return True
-    else:
+def get_sample_source(sample_info):
+    # want to find whether this sample_source is already part of this project
+    matching_sample_source = SampleSource.query.\
+        filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
+        .join(SampleSource.projects)\
+        .filter_by(group_name=sample_info['group_name']).all()
+    if len(matching_sample_source) == 0:
         return False
+    elif len(matching_sample_source) == 1:
+        return matching_sample_source[0]
+    else:
+        print(f"There is more than one matching sample_source with the sample_source_identifier "
+              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, This shouldn't happen. Exiting.")
 
 
 def get_sample(readset_info):
@@ -146,24 +143,7 @@ def get_projects(info):
     return projects
 
 
-def get_sample_source(sample_info):
-    # want to find whether this sample_source is already part of this project
-    matching_sample_source = SampleSource.query.\
-        filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
-        .join(SampleSource.projects)\
-        .filter_by(group_name=sample_info['group_name']).all()
-    if len(matching_sample_source) == 0:
-        print(f"There is no matching sample_source with the sample_source_identifier "
-              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, please add using "
-              f"python seqbox_cmd.py add_sample_source and then re-run this command. Exiting.")
-        sys.exit()
-    elif len(matching_sample_source) == 1:
-        return matching_sample_source[0]
-    else:
-        print(f"There is more than one matching sample_source with the sample_source_identifier "
-              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, This shouldn't happen. Exiting.")
-    # for x in matching_sample_source:
-    #     print(x.sample_source_identifier, [y.group_name for y in x.projects])
+
 
 
 def read_in_sample_info(sample_info):
@@ -237,6 +217,11 @@ def add_sample(sample_info):
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     # print(sample_info)
     sample_source = get_sample_source(sample_info)
+    if sample_source is False:
+        print(f"There is no matching sample_source with the sample_source_identifier "
+              f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, please add using "
+              f"python seqbox_cmd.py add_sample_source and then re-run this command. Exiting.")
+        sys.exit()
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
     sample_source.samples.append(sample)
