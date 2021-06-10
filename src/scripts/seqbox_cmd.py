@@ -18,6 +18,10 @@ def add_tiling_pcrs(args):
 def add_raw_sequencing_batches(args):
     all_raw_sequencing_batches_info = read_in_as_dict(args.raw_sequencing_batches_inhandle)
     for raw_sequencing_batch_info in all_raw_sequencing_batches_info:
+        if raw_sequencing_batch_info['sequencing_type'] not in allowed_sequencing_types:
+            print(f"sequencing_type {raw_sequencing_batch_info['sequencing_type']} is not in {allowed_sequencing_types}"
+                  f" for this line {raw_sequencing_batch_info}. Exiting.")
+            sys.exit()
         if get_raw_sequencing_batch(raw_sequencing_batch_info['batch_name']) is False:
             add_raw_sequencing_batch(raw_sequencing_batch_info)
 
@@ -37,10 +41,6 @@ def add_covid_readsets(args):
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     for readset_info in all_readsets_info:
-        if readset_info['sequencing_type'] not in allowed_sequencing_types:
-            print(f"sequencing_type {readset_info['sequencing_type']} is not in {allowed_sequencing_types} for this "
-                  f"line {readset_info}. Exiting.")
-            sys.exit()
         if get_readset(readset_info) is False:
             add_readset(readset_info=readset_info, covid=False)
 

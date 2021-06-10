@@ -277,12 +277,17 @@ def add_extraction(extraction_info):
 def get_readset(readset_info):
     # todo - re-code this in a nicer way (dont like matching_readset maybe being refereced before assignment)
     # todo - isn't the path_fastq or path_r1 enough to distinguish it? doesn't need to belong to that group
-    if readset_info['sequencing_type'] == 'nanopore':
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+    if raw_sequencing_batch is False:
+        print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. "
+              f"Exiting.")
+        sys.exit()
+    if raw_sequencing_batch.sequencing_type == 'nanopore':
         matching_readset = ReadSetNanopore.query.filter_by(path_fastq=readset_info['path_fastq']).join(ReadSet).\
             join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects).\
             filter_by(group_name=readset_info['group_name'])\
             .distinct().all()
-    elif readset_info['sequencing_type'] == 'illumina':
+    elif raw_sequencing_batch.sequencing_type == 'illumina':
         matching_readset = ReadSetIllumina.query.filter_by(path_r1=readset_info['path_r1']).join(ReadSet).\
             join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects). \
             filter_by(group_name=readset_info['group_name']) \
@@ -291,29 +296,27 @@ def get_readset(readset_info):
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
-        if readset_info['sequencing_type'] == 'nanopore':
+        if raw_sequencing_batch.sequencing_type == 'nanopore':
             print(f"This readset ({readset_info['path_fastq']}) already exists in the database for the group "
                   f"{readset_info['group_name']}. Not adding it to the database.")
-        elif readset_info['sequencing_type'] == 'illumina':
+        elif raw_sequencing_batch.sequencing_type == 'illumina':
             print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
                   f"{readset_info['group_name']}. Not adding it to the database.")
         return True
 
 
 def find_matching_raw_sequencing(readset_info):
-    if readset_info['sequencing_type'] not in allowed_sequencing_types:
-        print(f"sequencing_type {readset_info['sequencing_type']} is not in {allowed_sequencing_types} for this line "
-              f"{readset_info}")
-    if readset_info['sequencing_type'] == 'nanopore':
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+    if raw_sequencing_batch is False:
+        print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. "
+              f"Exiting.")
+        sys.exit()
+    if raw_sequencing_batch.sequencing_type == 'nanopore':
         matching_raw_sequencing = RawSequencingNanopore.query.filter_by(path_fast5=readset_info['path_fast5']).all()
         return matching_raw_sequencing
-    elif readset_info['sequencing_type'] == 'illumina':
+    elif raw_sequencing_batch.sequencing_type == 'illumina':
         matching_raw_sequencing = RawSequencingIllumina.query.filter_by(path_r1=readset_info['path_r1']).all()
         return matching_raw_sequencing
-
-    print('Only "nanopore" and "illumina" are currently supported sequencing_type values, please check and re-run. '
-          'Exiting.')
-    sys.exit()
 
 
 def get_tiling_pcr(tiling_pcr_info):
@@ -332,14 +335,14 @@ def get_tiling_pcr(tiling_pcr_info):
         sys.exit()
 
 
-def interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info):
+def interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch):
     if len(matching_covid_readset) == 0:
         return False
     elif len(matching_covid_readset) == 1:
-        if covid_sequencing_info['sequencing_type'] == 'nanopore':
+        if raw_sequencing_batch.sequencing_type == 'nanopore':
             print(f"This readset ({covid_sequencing_info['path_fastq']}) already exists in the database for the group "
                   f"{covid_sequencing_info['group_name']}. Not adding it to the database.")
-        elif covid_sequencing_info['sequencing_type'] == 'illumina':
+        elif raw_sequencing_batch.sequencing_type == 'illumina':
             print(f"This readset ({covid_sequencing_info['path_r1']}) already exists in the database for the group "
                   f"{covid_sequencing_info['group_name']}. Not adding it to the database.")
         return True
@@ -348,22 +351,27 @@ def interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info)
 
 
 def get_covid_readset(covid_sequencing_info):
+    raw_sequencing_batch = get_raw_sequencing_batch(covid_sequencing_info['batch'])
+    if raw_sequencing_batch is False:
+        print(f"No RawSequencingBatch match for {covid_sequencing_info['batch']}, need to add that batch and re-run. "
+              f"Exiting.")
+        sys.exit()
     # todo - check that sequencing type is permissible.
-    if covid_sequencing_info['sequencing_type'] == 'nanopore':
+    if raw_sequencing_batch.sequencing_type == 'nanopore':
         matching_covid_readset = ReadSetNanopore.query.filter_by(path_fastq=covid_sequencing_info['path_fastq'])\
             .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
             .join(SampleSource.projects)\
             .filter_by(group_name=covid_sequencing_info['group_name'])\
             .distinct().all()
-        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info)
+        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch)
         return result
-    elif covid_sequencing_info['sequencing_type'] == 'illumina':
+    elif raw_sequencing_batch.sequencing_type == 'illumina':
         matching_covid_readset = ReadSetIllumina.query.filter_by(path_r1=covid_sequencing_info['path_r1'])\
             .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
             .join(SampleSource.projects) \
             .filter_by(group_name=covid_sequencing_info['group_name']) \
             .distinct().all()
-        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info)
+        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch)
         return result
     print('this shouldnt run')
 
@@ -377,6 +385,7 @@ def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
     raw_sequencing_batch.library_prep_method = raw_sequencing_batch_info['library_prep_method']
     raw_sequencing_batch.sequencing_centre = raw_sequencing_batch_info['sequencing_centre']
     raw_sequencing_batch.flowcell_type = raw_sequencing_batch_info['flowcell_type']
+    raw_sequencing_batch.sequencing_type = raw_sequencing_batch_info['sequencing_type']
     return raw_sequencing_batch
 
 
@@ -423,16 +432,16 @@ def get_raw_sequencing(readset_info, extraction):
 
 def read_in_raw_sequencing(readset_info):
     raw_sequencing = RawSequencing()
-
-    # todo - readset_info['sequencing_type'] shouldnt be able to be empty
-    # todo - should throw error if sequencing_type isn't in allowed types
-    if readset_info['sequencing_type'] != '':
-        raw_sequencing.sequencing_type = readset_info['sequencing_type']
-    if readset_info['sequencing_type'] == 'illumina':
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+    if raw_sequencing_batch is False:
+        print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. "
+              f"Exiting.")
+        sys.exit()
+    if raw_sequencing_batch.sequencing_type == 'illumina':
         raw_sequencing.raw_sequencing_illumina = RawSequencingIllumina()
         raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
         raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r2']
-    if readset_info['sequencing_type'] == 'nanopore':
+    if raw_sequencing_batch.sequencing_type == 'nanopore':
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
         raw_sequencing.raw_sequencing_nanopore.path_fast5 = readset_info['path_fast5']
         # raw_sequencing.raw_sequencing_nanopore.append(raw_sequencing_nanopore)
@@ -443,12 +452,17 @@ def read_in_raw_sequencing(readset_info):
 def read_in_readset(readset_info):
     readset = ReadSet()
     readset.read_set_filename = readset_info['readset_filename']
-    if readset_info['sequencing_type'] == 'nanopore':
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+    if raw_sequencing_batch is False:
+        print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. "
+              f"Exiting.")
+        sys.exit()
+    if raw_sequencing_batch.sequencing_type == 'nanopore':
         readset.read_set_nanopore = ReadSetNanopore()
         readset.read_set_nanopore.path_fastq = readset_info['path_fastq']
         readset.read_set_nanopore.basecaller = readset_info['basecaller']
         # readset.nanopore_read_sets.append(read_set_nanopore)
-    elif readset_info['sequencing_type'] == 'illumina':
+    elif raw_sequencing_batch.sequencing_type == 'illumina':
         readset.read_set_illumina = ReadSetIllumina()
         readset.read_set_illumina.path_r1 = readset_info['path_r1']
         readset.read_set_illumina.path_r2 = readset_info['path_r2']

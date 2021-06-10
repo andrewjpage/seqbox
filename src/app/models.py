@@ -220,7 +220,6 @@ class RawSequencing(db.Model):
     tiling_pcr_id = db.Column(db.ForeignKey("tiling_pcr.id"))
 
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
-    sequencing_type = db.Column(db.VARCHAR(32), comment="Sequencing type i.e. is it Illumina, nanopore, etc.")
 
     read_sets = db.relationship("ReadSet", backref="raw_sequencing")
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
@@ -261,6 +260,7 @@ class RawSequencingBatch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.VARCHAR(50))
     date_run = db.Column(db.DATE)
+    sequencing_type = db.Column(db.VARCHAR(64))
     instrument_model = db.Column(db.VARCHAR(64))
     instrument_name = db.Column(db.VARCHAR(64), comment="For MLW machines, which exact machine was it run on")
     # primer = db.Column(db.VARCHAR(100))
