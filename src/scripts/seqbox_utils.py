@@ -356,7 +356,6 @@ def get_covid_readset(covid_sequencing_info):
         print(f"No RawSequencingBatch match for {covid_sequencing_info['batch']}, need to add that batch and re-run. "
               f"Exiting.")
         sys.exit()
-    # todo - check that sequencing type is permissible.
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         matching_covid_readset = ReadSetNanopore.query.filter_by(path_fastq=covid_sequencing_info['path_fastq'])\
             .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
@@ -482,7 +481,6 @@ def add_readset(readset_info, covid):
     # raw sequencing is being added. if it's not the first time the raw_sequencing is being added, the extraction
     # already has raw_seq associated with it.
     # note - using the fast5 and r1 path to identify the raw sequencing dataset.
-    # todo - does extraction need to be returned to here? or will it be updated even if not returned.
     raw_sequencing, extraction = get_raw_sequencing(readset_info, extraction)
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
     if raw_sequencing_batch is False:
@@ -504,7 +502,4 @@ def add_readset(readset_info, covid):
     db.session.add(raw_sequencing)
     db.session.commit()
     print(f"Adding read set {readset_info['sample_identifier']} to the database.")
-
     # todo - need to set read_set_name in the db, after this readset has been added to the db.
-    # todo - need to handle sequencing_batch
-    # todo = need a flag in the input CSV, is this tiling PCR protocol True/False if it's true, then
