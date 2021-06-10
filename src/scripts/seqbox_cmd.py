@@ -1,6 +1,6 @@
 import argparse
 from seqbox_utils import read_in_as_dict, add_sample, add_project,\
-    does_sample_source_already_exist, add_sample_source, query_projects, does_readset_already_exist, \
+    get_sample_source, add_sample_source, query_projects, \
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_covid_readset, get_readset, get_sample, check_sample_source_associated_with_project
 
@@ -59,7 +59,7 @@ def add_samples(args):
 def add_sample_sources(args):
     all_sample_source_info = read_in_as_dict(args.sample_sources_inhandle)
     for sample_source_info in all_sample_source_info:
-        sample_source = does_sample_source_already_exist(sample_source_info)
+        sample_source = get_sample_source(sample_source_info)
         if sample_source is False:
             add_sample_source(sample_source_info)
         else:
