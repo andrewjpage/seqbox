@@ -155,7 +155,6 @@ class Mykrobe(db.Model):
 
     def __repr__(self):
         return f'<Mykrobe {self.id}, {self.read_set_id}, {self.mykrobe_version}, {self.species})'
-
     # from here https://stackoverflow.com/questions/57040784/sqlalchemy-foreign-key-to-multiple-tables
     # alternative ways of doing it https://stackoverflow.com/questions/7844460/foreign-key-to-multiple-tables
 
@@ -175,7 +174,6 @@ class Sample(db.Model):
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which processed the sample.")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     extractions = db.relationship("Extraction", backref="sample")
-
 
     def __repr__(self):
         return f"Sample({self.id}, {self.sample_identifier}, {self.species})"
