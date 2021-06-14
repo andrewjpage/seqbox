@@ -20,4 +20,8 @@ same sequencing run?
     * Multiple picks should be added as new samples, related to the same
     sample source of course. Ideally, the sample identifier will make it
     easy to see that they're multiple picks. E.g. BMD671-1, BMD671-2.
-    
+* currently assuming that whenever you have new raw sequencing, 
+you are also adding a new readset as well.
+* if you add a new readset with the same raw sequencing 
+(identified by the extraction information), then only the new readset
+is added (and it is linked to the same raw_sequencing record)

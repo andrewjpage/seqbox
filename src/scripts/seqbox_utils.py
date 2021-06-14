@@ -1,9 +1,15 @@
 import csv
 import sys
+import yaml
 import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr
+
+
+def read_in_config(config_inhandle):
+    with open(config_inhandle) as fi:
+        return yaml.safe_load(fi)
 
 
 def read_in_as_dict(inhandle):
@@ -424,6 +430,8 @@ def get_raw_sequencing(readset_info, extraction):
     elif len(matching_raw_tech_sequencing) == 1:
         # if there is already a raw_sequencing record (i.e. this is another basecalling run of the same raw_sequencing
         # data), then extraction is already assocaited with the raw sequencing, so don't need to add.
+        # we use the matching_raw_tech_sequencing[0].raw_sequencing because the find_matching_raw_sequencing() query
+        # returns an Illumina/NanoporeRawSequencing class.
         return matching_raw_tech_sequencing[0].raw_sequencing, extraction
     else:
         print("this shouldnt happen blkjha")
@@ -468,7 +476,7 @@ def read_in_readset(readset_info):
     return readset
 
 
-def add_readset(readset_info, covid):
+def add_readset(readset_info, covid, config):
     # get the information on the DNA extraction which was sequenced, from the CSV file, return an instance of the
     # Extraction class
     extraction = get_extraction(readset_info)
@@ -501,5 +509,12 @@ def add_readset(readset_info, covid):
 
     db.session.add(raw_sequencing)
     db.session.commit()
+    # todo - maybe better to pass in the raw_sequencing and read_set classes, rather than readset_info?
+    add_to_filestructure(readset_info, config)
     print(f"Adding read set {readset_info['sample_identifier']} to the database.")
     # todo - need to set read_set_name in the db, after this readset has been added to the db.
+
+
+def add_to_filestructure(readset_info, config):
+
+    pass

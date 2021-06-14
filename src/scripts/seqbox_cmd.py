@@ -3,7 +3,8 @@ import argparse
 from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
-    get_tiling_pcr, add_tiling_pcr, get_covid_readset, get_readset, get_sample, check_sample_source_associated_with_project
+    get_tiling_pcr, add_tiling_pcr, get_covid_readset, get_readset, get_sample, \
+    check_sample_source_associated_with_project, read_in_config
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
 
@@ -28,9 +29,10 @@ def add_raw_sequencing_batches(args):
 
 def add_covid_readsets(args):
     all_covid_readsets_info = read_in_as_dict(args.covid_readsets_inhandle)
+    seqbox_config = read_in_config(args.seqbox_config)
     for covid_readset_info in all_covid_readsets_info:
         if get_covid_readset(covid_readset_info) is False:
-            add_readset(readset_info=covid_readset_info, covid=True)
+            add_readset(readset_info=covid_readset_info, covid=True, config=seqbox_config)
         else:
             print(f"There is already an extraction for sample {covid_readset_info['sample_identifier']} in the db for "
                   f"{covid_readset_info['date_extracted']} with extraction id "
@@ -40,9 +42,10 @@ def add_covid_readsets(args):
 
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
+    seqbox_config = read_in_config(args.seqbox_config)
     for readset_info in all_readsets_info:
         if get_readset(readset_info) is False:
-            add_readset(readset_info=readset_info, covid=False)
+            add_readset(readset_info=readset_info, covid=False, config=seqbox_config)
 
 
 def add_extractions(args):
@@ -128,6 +131,8 @@ def main():
                                                       help='Take a csv of readsets and add to the DB.')
     parser_add_readsets.add_argument('-i', dest='readsets_inhandle',
                                            help='A CSV file containing read_sets info', required=True)
+    parser_add_readsets.add_argument('-c', dest='seqbox_config',
+                                     help='The path to a seqbox_config file.', required=True)
     parser_add_extractions = subparsers.add_parser('add_extractions',
                                                 help='Take a csv of extractions and add to the DB.')
     parser_add_extractions.add_argument('-i', dest='extractions_inhandle',
@@ -141,6 +146,8 @@ def main():
     parser_add_covid_readsets = subparsers.add_parser('add_covid_readsets',
                                                    help='Add information about a tiling PCR run')
     parser_add_covid_readsets.add_argument('-i', dest='covid_readsets_inhandle')
+    parser_add_covid_readsets.add_argument('-c', dest='seqbox_config',
+                                     help='The path to a seqbox_config file.', required=True)
     args = parser.parse_args()
     run_command(args)
 
