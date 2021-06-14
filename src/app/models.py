@@ -310,17 +310,23 @@ class Project(db.Model):
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
-    project_name = db.Column(db.VARCHAR(32), comment="You can think about this as 'what study got ethics for this "
+    groups_id = db.Column(db.ForeignKey("groups.id"))
+    project_name = db.Column(db.VARCHAR(64), comment="You can think about this as 'what study got ethics for this "
                                                      "sample to be taken'")
-    group_name = db.Column(db.VARCHAR(60), comment="The name of the group running this project (again, think about"
-                                                   "this in context of ethics permission).")
     date_added = db.Column(db.DATETIME, default=datetime.utcnow)
-    institution = db.Column(db.VARCHAR(60), comment="The name of the institution running this project.")
+
     project_details = db.Column(db.VARCHAR(160))
-    __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
+    # __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
+    # todo - add in a constraint somehow so that project_name is unique within group
 
     def __repr__(self):
         return f"Project(id: {self.id}, details: {self.project_name})"
 
 
+class Groups(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    group_name = db.Column(db.VARCHAR(60), comment="The name of the group running this project (again, think about"
+                                                   "this in context of ethics permission).")
+    institution = db.Column(db.VARCHAR(60), comment="The name of the institution where this group work.")
+    projects = db.relationship("Project", backref="groups")
 

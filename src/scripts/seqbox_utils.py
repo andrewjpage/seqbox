@@ -4,7 +4,7 @@ import yaml
 import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
-    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr
+    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups
 
 
 def read_in_config(config_inhandle):
@@ -62,6 +62,7 @@ def get_sample_source(sample_info):
     matching_sample_source = SampleSource.query.\
         filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
         .join(SampleSource.projects)\
+        .join(Groups)\
         .filter_by(group_name=sample_info['group_name']).all()
     if len(matching_sample_source) == 0:
         return False
@@ -78,6 +79,7 @@ def get_sample(readset_info):
         filter_by(sample_identifier=readset_info['sample_identifier']) \
         .join(SampleSource) \
         .join(SampleSource.projects) \
+        .join(Groups) \
         .filter_by(group_name=readset_info['group_name']).distinct().all()
     if len(matching_sample) == 0:
         return False
@@ -96,7 +98,8 @@ def get_extraction(readset_info):
                                                          readset_info['date_extracted'], '%d/%m/%Y')) \
         .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
         .join(SampleSource)\
-        .join(SampleSource.projects)\
+        .join(SampleSource.projects) \
+        .join(Groups) \
         .filter_by(group_name=readset_info['group_name'])\
         .all()
     if len(matching_extraction) == 1:
@@ -109,8 +112,14 @@ def get_extraction(readset_info):
 
 
 def add_project(project_info):
-    project = Project(project_name=project_info['project_name'], group_name=project_info['group_name'],
-                      institution=project_info['institution'], project_details=project_info['project_details'])
+    # todo - add get group to add project
+    group = get_group(project_info)
+    if group is False:
+        print(f"No group {project_info['group_name']} from institution {project_info['institution']}. You need to add "
+              f"this group. Exiting.")
+        sys.exit()
+    project = Project(project_name=project_info['project_name'], project_details=project_info['project_details'])
+    group.projects.append(project)
     db.session.add(project)
     db.session.commit()
 
@@ -119,8 +128,9 @@ def query_projects(info, project_name):
     # query_projects differs from does_project_already_exist because query_projects returns an error if it can't
     # find match, while does_project_already_exist returns false
     # combine with does_project_already_exist
-    matching_projects = Project.query.filter_by(project_name=project_name,
-                                                group_name=info['group_name']).all()
+    matching_projects = Project.query.filter_by(project_name=project_name).join(Groups)\
+        .filter_by(group_name=info['group_name'], institution=info['institution']).all()
+
     if len(matching_projects) == 0:
         # need this to have the `,` so that can evaluate the return correctly for the elif section
         return False,
@@ -205,6 +215,15 @@ def read_in_extraction(extraction_info):
     return extraction
 
 
+def read_in_group(group_info):
+    group = Groups()
+    assert group_info['group_name'] != ''
+    assert group_info['institution'] != ''
+    group.group_name = group_info['group_name']
+    group.institution = group_info['institution']
+    return group
+
+
 def read_in_tiling_pcr(tiling_pcr_info):
     tiling_pcr = TilingPcr()
     if tiling_pcr_info['date_pcred'] != '':
@@ -266,6 +285,14 @@ def add_tiling_pcr(tiling_pcr_info):
           f"{tiling_pcr_info['date_pcred']} PCR id {tiling_pcr_info['pcr_identifier']} to the database.")
 
 
+def add_group(group_info):
+
+    group = read_in_group(group_info)
+    db.session.add(group)
+    db.session.commit()
+    print(f"Adding group {group_info['group_name']} from {group_info['institution']} to database.")
+
+
 def add_extraction(extraction_info):
     sample = get_sample(extraction_info)
     if sample is False:
@@ -290,13 +317,15 @@ def get_readset(readset_info):
         sys.exit()
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         matching_readset = ReadSetNanopore.query.filter_by(path_fastq=readset_info['path_fastq']).join(ReadSet).\
-            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects).\
-            filter_by(group_name=readset_info['group_name'])\
+            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects)\
+            .join(Groups)\
+            .filter_by(group_name=readset_info['group_name'])\
             .distinct().all()
     elif raw_sequencing_batch.sequencing_type == 'illumina':
         matching_readset = ReadSetIllumina.query.filter_by(path_r1=readset_info['path_r1']).join(ReadSet).\
-            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects). \
-            filter_by(group_name=readset_info['group_name']) \
+            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects) \
+            .join(Groups) \
+            .filter_by(group_name=readset_info['group_name']) \
             .distinct().all()
     # print(matching_readset)
     if len(matching_readset) == 0:
@@ -341,6 +370,21 @@ def get_tiling_pcr(tiling_pcr_info):
         sys.exit()
 
 
+def get_group(group_info):
+    print(group_info)
+    matching_group = Groups.query.filter_by(group_name=group_info['group_name'], institution=group_info['institution'])\
+        .all()
+    print(matching_group)
+    if len(matching_group) == 0:
+        return False
+    elif len(matching_group) == 1:
+        return matching_group[0]
+    else:
+        print(f"More than one match for {group_info['group_name']} from {group_info['institution']}. Shouldn't happen, "
+              f"exiting.")
+        sys.exit()
+
+
 def interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch):
     if len(matching_covid_readset) == 0:
         return False
@@ -366,6 +410,7 @@ def get_covid_readset(covid_sequencing_info):
         matching_covid_readset = ReadSetNanopore.query.filter_by(path_fastq=covid_sequencing_info['path_fastq'])\
             .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
             .join(SampleSource.projects)\
+            .join(Groups) \
             .filter_by(group_name=covid_sequencing_info['group_name'])\
             .distinct().all()
         result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch)
@@ -374,6 +419,7 @@ def get_covid_readset(covid_sequencing_info):
         matching_covid_readset = ReadSetIllumina.query.filter_by(path_r1=covid_sequencing_info['path_r1'])\
             .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
             .join(SampleSource.projects) \
+            .join(Groups) \
             .filter_by(group_name=covid_sequencing_info['group_name']) \
             .distinct().all()
         result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch)

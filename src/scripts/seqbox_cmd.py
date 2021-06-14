@@ -4,9 +4,19 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_covid_readset, get_readset, get_sample, \
-    check_sample_source_associated_with_project, read_in_config
+    check_sample_source_associated_with_project, read_in_config, get_group, add_group
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
+
+
+def add_groups(args):
+    all_groups_info = read_in_as_dict(args.groups_inhandle)
+    for group_info in all_groups_info:
+        if get_group(group_info) is False:
+            add_group(group_info)
+        else:
+            print(f"Group {group_info['group_name']} already exists for {group_info['institution']}. Not adding this "
+                  f"group.")
 
 
 def add_tiling_pcrs(args):
@@ -112,6 +122,8 @@ def run_command(args):
         add_tiling_pcrs(args=args)
     if args.command == 'add_covid_readsets':
         add_covid_readsets(args=args)
+    if args.command == 'add_groups':
+        add_groups(args=args)
 
 
 def main():
@@ -148,6 +160,8 @@ def main():
     parser_add_covid_readsets.add_argument('-i', dest='covid_readsets_inhandle')
     parser_add_covid_readsets.add_argument('-c', dest='seqbox_config',
                                      help='The path to a seqbox_config file.', required=True)
+    parser_add_groups = subparsers.add_parser('add_groups', help='Add a new group.')
+    parser_add_groups.add_argument('-i', dest='groups_inhandle')
     args = parser.parse_args()
     run_command(args)
 
