@@ -371,10 +371,8 @@ def get_tiling_pcr(tiling_pcr_info):
 
 
 def get_group(group_info):
-    print(group_info)
     matching_group = Groups.query.filter_by(group_name=group_info['group_name'], institution=group_info['institution'])\
         .all()
-    print(matching_group)
     if len(matching_group) == 0:
         return False
     elif len(matching_group) == 1:
@@ -562,5 +560,12 @@ def add_readset(readset_info, covid, config):
 
 
 def add_to_filestructure(readset_info, config):
-
+    '''
+    1. Check that input files exist
+    2. get seqbox_id-filename for this sample
+    3. check that output dir exists (make it if not)
+        a. will be /Users/flashton/Dropbox/non-project/test_seqbox_data/Core/[seqbox_id]-filename/
+    4. link the fastq to the output_dir
+    '''
     pass
+
