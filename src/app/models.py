@@ -71,7 +71,7 @@ class ReadSet(db.Model):
     # the Sequence won't work until port to postgres
     seqbox_id = db.Column(db.Integer, db.Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to "
                                                                         "uniquely identify this read set")
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
                                                           "Illumina data)")
     read_set_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
@@ -104,9 +104,9 @@ class ReadSetIllumina(db.Model):
     #                                                          ondelete="set null"), nullable=True, comment="")
     # illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_read_set", passive_updates=True,
     #                                                                     passive_deletes=True))
-    path_r1 = db.Column(db.VARCHAR(60))
-    path_r2 = db.Column(db.VARCHAR(60))
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    path_r1 = db.Column(db.VARCHAR(250))
+    path_r2 = db.Column(db.VARCHAR(250))
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
         return f"ReadSetIllumina({self.id}, {self.path_r1})"
@@ -115,8 +115,8 @@ class ReadSetIllumina(db.Model):
 class ReadSetNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
-    path_fastq = db.Column(db.VARCHAR(60))
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    path_fastq = db.Column(db.VARCHAR(250))
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     basecaller = db.Column(db.VARCHAR(60))
 
     # nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade",
@@ -170,7 +170,7 @@ class Sample(db.Model):
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")
     year_collected = db.Column(db.Integer, comment="year this was collected")
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which processed the sample.")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     extractions = db.relationship("Extraction", backref="sample")
@@ -189,8 +189,8 @@ class Extraction(db.Model):
     extraction_machine = db.Column(db.VARCHAR(60), comment="E.g. QiaSymphony, manual")
     extraction_kit = db.Column(db.VARCHAR(60), comment="E.g. Qiasymphony Minikit")
     what_was_extracted = db.Column(db.VARCHAR(60), comment="E.g. DNA, RNA")
-    date_extracted = db.Column(db.DATETIME, comment="Date this extract was done")
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    date_extracted = db.Column(db.DateTime, comment="Date this extract was done")
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which did the DNA extraction.")
     raw_sequencing = db.relationship("RawSequencing", backref="extraction")
     tiling_pcrs = db.relationship("TilingPcr", backref="extraction")
@@ -203,8 +203,8 @@ class TilingPcr(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
     number_of_cycles = db.Column(db.Integer, comment="Number of PCR cycles")
-    date_pcred = db.Column(db.DATETIME, comment="Date this PCR was done")
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    date_pcred = db.Column(db.DateTime, comment="Date this PCR was done")
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
     raw_sequencings = db.relationship("RawSequencing", backref="tiling_pcr")
@@ -232,7 +232,7 @@ class RawSequencing(db.Model):
 class RawSequencingNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id"))
-    path_fast5 = db.Column(db.VARCHAR(96))
+    path_fast5 = db.Column(db.VARCHAR(250))
 
     def __repr__(self):
         return f"RawSequencingNanopore(id={self.id}, path_fast5={self.path_fast5})"
@@ -241,8 +241,8 @@ class RawSequencingNanopore(db.Model):
 class RawSequencingIllumina(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id"))
-    path_r1 = db.Column(db.VARCHAR(96))
-    path_r2 = db.Column(db.VARCHAR(96))
+    path_r1 = db.Column(db.VARCHAR(250))
+    path_r2 = db.Column(db.VARCHAR(250))
 
     def __repr__(self):
         return f"RawSequencingIllumina(id={self.id}, path_r1={self.path_r1})"
@@ -264,7 +264,7 @@ class RawSequencingBatch(db.Model):
     instrument_model = db.Column(db.VARCHAR(64))
     instrument_name = db.Column(db.VARCHAR(64), comment="For MLW machines, which exact machine was it run on")
     # primer = db.Column(db.VARCHAR(100))
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     library_prep_method = db.Column(db.VARCHAR(64))
     sequencing_centre = db.Column(db.VARCHAR(64), comment="E.g. Sanger, CGR, MLW, etc.")
     flowcell_type = db.Column(db.VARCHAR(64))
@@ -313,7 +313,7 @@ class Project(db.Model):
     groups_id = db.Column(db.ForeignKey("groups.id"))
     project_name = db.Column(db.VARCHAR(64), comment="You can think about this as 'what study got ethics for this "
                                                      "sample to be taken'")
-    date_added = db.Column(db.DATETIME, default=datetime.utcnow)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
 
     project_details = db.Column(db.VARCHAR(160))
     # __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
