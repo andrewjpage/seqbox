@@ -1,3 +1,4 @@
+import os
 import csv
 import sys
 import yaml
@@ -331,13 +332,14 @@ def get_readset(readset_info):
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
+        # todo - the error/info printing needs to be moved out of this function.
         if raw_sequencing_batch.sequencing_type == 'nanopore':
             print(f"This readset ({readset_info['path_fastq']}) already exists in the database for the group "
                   f"{readset_info['group_name']}. Not adding it to the database.")
         elif raw_sequencing_batch.sequencing_type == 'illumina':
             print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
                   f"{readset_info['group_name']}. Not adding it to the database.")
-        return True
+        return matching_readset[0]
 
 
 def find_matching_raw_sequencing(readset_info):
@@ -554,12 +556,12 @@ def add_readset(readset_info, covid, config):
     db.session.add(raw_sequencing)
     db.session.commit()
     # todo - maybe better to pass in the raw_sequencing and read_set classes, rather than readset_info?
-    add_to_filestructure(readset_info, config)
+    add_readset_to_filestructure(readset_info, config)
     print(f"Adding read set {readset_info['sample_identifier']} to the database.")
     # todo - need to set read_set_name in the db, after this readset has been added to the db.
 
 
-def add_to_filestructure(readset_info, config):
+def add_readset_to_filestructure(readset_info, config):
     '''
     1. Check that input files exist
     2. get seqbox_id-filename for this sample
@@ -567,5 +569,35 @@ def add_to_filestructure(readset_info, config):
         a. will be /Users/flashton/Dropbox/non-project/test_seqbox_data/Core/[seqbox_id]-filename/
     4. link the fastq to the output_dir
     '''
-    pass
+    # readset returned here is actually a nanopore or illumina readset
+    # rather than check the readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type
+    readset = get_readset(readset_info)
+    if readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
+        assert os.path.isfile(readset_info['path_fastq'])
+        assert os.path.isfile(readset_info['path_fast5'])
+    elif readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
+        assert os.path.isfile(readset_info['path_r1'])
+        assert os.path.isfile(readset_info['path_r2'])
+    projects = readset.readset.raw_sequencing.extraction.sample.sample_source.projects#.group.group_name
+    group_names = [x.groups.group_name for x in projects]
+    # a sample can only belong to one project, so this assertion should always be true.
+    assert len(set(group_names)) == 1
+    group_name = group_names[0]
+    group_dir = os.path.join(config['seqbox_directory'], group_name)
+    if not os.path.isdir(group_dir):
+        os.mkdir(group_dir)
+    readset_dir = os.path.join(group_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}")
+    if not os.path.isdir(readset_dir):
+        os.mkdir(readset_dir)
+    if readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
+        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}.fastq")
+        if not os.path.isfile(output_readset_fastq_path):
+            os.symlink(readset_info['path_fastq'], output_readset_fastq_path)
+    elif readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
+        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}_R1.fastq")
+        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}_R2.fastq")
+        os.symlink(readset_info['path_r1'], output_readset_r1_fastq_path)
+        os.symlink(readset_info['path_r2'], output_readset_r1_fastq_path)
+    # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.seqbox_id}-{readset.readset.read_set_filename}")
+
 
