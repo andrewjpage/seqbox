@@ -5,7 +5,7 @@ import yaml
 import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
-    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups
+    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr
 
 
 def read_in_config(config_inhandle):
@@ -126,12 +126,8 @@ def add_project(project_info):
 
 
 def query_projects(info, project_name):
-    # query_projects differs from does_project_already_exist because query_projects returns an error if it can't
-    # find match, while does_project_already_exist returns false
-    # combine with does_project_already_exist
     matching_projects = Project.query.filter_by(project_name=project_name).join(Groups)\
         .filter_by(group_name=info['group_name'], institution=info['institution']).all()
-
     if len(matching_projects) == 0:
         # need this to have the `,` so that can evaluate the return correctly for the elif section
         return False,
@@ -238,6 +234,21 @@ def read_in_tiling_pcr(tiling_pcr_info):
     return tiling_pcr
 
 
+def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
+    covid_confirmatory_pcr = CovidConfirmatoryPcr()
+    if covid_confirmatory_pcr_info['date_pcred'] != '':
+        covid_confirmatory_pcr.date_pcred = datetime.datetime.strptime(covid_confirmatory_pcr_info['date_pcred'], '%d/%m/%Y')
+    if covid_confirmatory_pcr_info['pcr_identifier'] != '':
+        covid_confirmatory_pcr.pcr_identifier = covid_confirmatory_pcr_info['pcr_identifier']
+    if covid_confirmatory_pcr_info['protocol'] != '':
+        covid_confirmatory_pcr.protocol = covid_confirmatory_pcr_info['protocol']
+    if covid_confirmatory_pcr_info['ct'] == '':
+        covid_confirmatory_pcr.ct = None
+    else:
+        covid_confirmatory_pcr.ct = covid_confirmatory_pcr_info['ct']
+    return covid_confirmatory_pcr
+
+
 def add_sample(sample_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
@@ -286,8 +297,23 @@ def add_tiling_pcr(tiling_pcr_info):
           f"{tiling_pcr_info['date_pcred']} PCR id {tiling_pcr_info['pcr_identifier']} to the database.")
 
 
-def add_group(group_info):
+def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
+    extraction = get_extraction(covid_confirmatory_pcr_info)
+    if extraction is False:
+        print(f"No Extraction match for {covid_confirmatory_pcr_info['sample_identifier']}, extracted on "
+              f"{covid_confirmatory_pcr_info['date_extracted']} for extraction id "
+              f"{covid_confirmatory_pcr_info['extraction_identifier']} "
+              f"need to add that extract and re-run. Exiting.")
+        sys.exit()
+    covid_confirmatory_pcr = read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
+    extraction.covid_confirmatory_pcrs.append(covid_confirmatory_pcr)
+    db.session.add(covid_confirmatory_pcr)
+    db.session.commit()
+    print(f"Adding confirmatory PCR for sample {covid_confirmatory_pcr_info['sample_identifier']} run on "
+          f"{covid_confirmatory_pcr_info['date_pcred']} PCR id {covid_confirmatory_pcr_info['pcr_identifier']} to the database.")
 
+
+def add_group(group_info):
     group = read_in_group(group_info)
     db.session.add(group)
     db.session.commit()
@@ -369,6 +395,23 @@ def get_tiling_pcr(tiling_pcr_info):
     else:
         print(f"More than one match for {tiling_pcr_info['sample_identifier']} on date {tiling_pcr_info['date_run']} "
               f"with pcr_identifier {tiling_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
+        sys.exit()
+
+
+def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
+    matching_covid_confirmatory_pcr = CovidConfirmatoryPcr.query.filter_by(
+        pcr_identifier=covid_confirmatory_pcr_info['pcr_identifier'],
+        date_pcred=datetime.datetime.strptime(covid_confirmatory_pcr_info['date_pcred'], '%d/%m/%Y'))\
+        .join(Extraction).join(Sample).filter_by(sample_identifier=covid_confirmatory_pcr_info['sample_identifier'])\
+        .all()
+    if len(matching_covid_confirmatory_pcr) == 0:
+        return False
+    elif len(matching_covid_confirmatory_pcr) == 1:
+        return matching_covid_confirmatory_pcr[0]
+    else:
+        print(f"More than one match for {covid_confirmatory_pcr_info['sample_identifier']} on date"
+              f" {covid_confirmatory_pcr_info['date_run']} with pcr_identifier "
+              f"{covid_confirmatory_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
 
 

@@ -4,7 +4,9 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_covid_readset, get_readset, get_sample, \
-    check_sample_source_associated_with_project, read_in_config, get_group, add_group
+    check_sample_source_associated_with_project, read_in_config, get_group, add_group, get_covid_confirmatory_pcr, \
+    add_covid_confirmatory_pcr
+
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
 
@@ -105,6 +107,13 @@ def add_projects(args):
                   f"exists, no action will be taken")
 
 
+def add_covid_confirmatory_pcrs(args):
+    all_covid_confirmatory_pcrs_info = read_in_as_dict(args.covid_confirmatory_pcrs_inhandle)
+    for covid_confirmatory_pcr_info in all_covid_confirmatory_pcrs_info:
+        if get_covid_confirmatory_pcr(covid_confirmatory_pcr_info) is False:
+            add_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
+
+
 def run_command(args):
     if args.command == 'add_projects':
         add_projects(args=args)
@@ -124,6 +133,8 @@ def run_command(args):
         add_covid_readsets(args=args)
     if args.command == 'add_groups':
         add_groups(args=args)
+    if args.command == 'add_covid_confirmatory_pcr':
+        add_covid_confirmatory_pcrs(args=args)
 
 
 def main():
@@ -162,6 +173,8 @@ def main():
                                      help='The path to a seqbox_config file.', required=True)
     parser_add_groups = subparsers.add_parser('add_groups', help='Add a new group.')
     parser_add_groups.add_argument('-i', dest='groups_inhandle')
+    parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcr', help='Add some covid confirmatory pcrs.')
+    parser_add_covid_confirmatory_pcr.add_argument('-i', dest='covid_confirmatory_pcrs_inhandle')
     args = parser.parse_args()
     run_command(args)
 

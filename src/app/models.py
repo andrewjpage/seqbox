@@ -194,6 +194,7 @@ class Extraction(db.Model):
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which did the DNA extraction.")
     raw_sequencing = db.relationship("RawSequencing", backref="extraction")
     tiling_pcrs = db.relationship("TilingPcr", backref="extraction")
+    covid_confirmatory_pcrs = db.relationship("CovidConfirmatoryPcr", backref="extraction")
 
     def __repr__(self):
         return f"Extraction(id={self.id}, sample.id={self.sample_id}, date_extracted={self.date_extracted})"
@@ -330,3 +331,14 @@ class Groups(db.Model):
     institution = db.Column(db.VARCHAR(60), comment="The name of the institution where this group work.")
     projects = db.relationship("Project", backref="groups")
 
+
+class CovidConfirmatoryPcr(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # link to extraction
+    extraction_id = db.Column(db.ForeignKey("extraction.id"))
+    ct = db.Column(db.Numeric, comment="Ct value of the confirmatory PCR")
+    protocol = db.Column(db.VARCHAR(60), comment="What is the name/identifier of the assay? E.g. CDC v1")
+    date_pcred = db.Column(db.DateTime, comment="Date this PCR was done")
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
+                                                   "same day.")
