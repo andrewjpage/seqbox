@@ -601,11 +601,13 @@ def add_readset(readset_info, covid, config):
         extraction.tiling_pcrs.append(tiling_pcr)
         tiling_pcr.raw_sequencings.append(raw_sequencing)
 
+    add_readset_to_filestructure(readset_info, config)
     db.session.add(raw_sequencing)
     db.session.commit()
+    print(f"Added read set {readset_info['sample_identifier']} to the database.")
     # todo - maybe better to pass in the raw_sequencing and read_set classes, rather than readset_info?
-    add_readset_to_filestructure(readset_info, config)
-    print(f"Adding read set {readset_info['sample_identifier']} to the database.")
+
+
     # todo - need to set read_set_name in the db, after this readset has been added to the db.
 
 
@@ -645,7 +647,7 @@ def add_readset_to_filestructure(readset_info, config):
         output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}_R1.fastq")
         output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}_R2.fastq")
         os.symlink(readset_info['path_r1'], output_readset_r1_fastq_path)
-        os.symlink(readset_info['path_r2'], output_readset_r1_fastq_path)
+        os.symlink(readset_info['path_r2'], output_readset_r2_fastq_path)
     # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.seqbox_id}-{readset.readset.read_set_filename}")
 
 
