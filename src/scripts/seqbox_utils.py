@@ -21,7 +21,12 @@ def read_in_as_dict(inhandle):
     list_of_lines = []
     for each_dict in info:
         new_info = {x: each_dict[x] for x in each_dict}
-        list_of_lines.append(new_info)
+        # sometimes excel saves blank lines, so only take lines where the lenght of the set of teh values is > 1
+        # it will be 1 where they are all blank i.e. ''
+        if len(set(new_info.values())) > 1:
+            list_of_lines.append(new_info)
+        else:
+            print(f'This line not being processed - {new_info}')
     return list_of_lines
 
 
@@ -330,8 +335,8 @@ def add_extraction(extraction_info):
     extraction = read_in_extraction(extraction_info)
     sample.extractions.append(extraction)
     db.session.add(extraction)
-    print(f"Adding {extraction_info['sample_identifier']} extraction on {extraction_info['date_extracted']} to the DB")
     db.session.commit()
+    print(f"Adding {extraction_info['sample_identifier']} extraction on {extraction_info['date_extracted']} to the DB")
 
 
 def get_readset(readset_info):
@@ -642,5 +647,7 @@ def add_readset_to_filestructure(readset_info, config):
         os.symlink(readset_info['path_r1'], output_readset_r1_fastq_path)
         os.symlink(readset_info['path_r2'], output_readset_r1_fastq_path)
     # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.seqbox_id}-{readset.readset.read_set_filename}")
+
+
 
 

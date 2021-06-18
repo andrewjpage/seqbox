@@ -65,6 +65,10 @@ def add_extractions(args):
     for extraction_info in all_extractions_info:
         if get_extraction(extraction_info) is False:
             add_extraction(extraction_info)
+        else:
+            print(f"This extraction ({extraction_info['sample_identifier']}, {extraction_info['extraction_identifier']})"
+                  f" on {extraction_info['date_extracted']} already exists in the database for the group "
+                  f"{extraction_info['group_name']}")
 
 
 def add_samples(args):
@@ -135,6 +139,9 @@ def run_command(args):
         add_groups(args=args)
     if args.command == 'add_covid_confirmatory_pcr':
         add_covid_confirmatory_pcrs(args=args)
+    if args.command == 'get_covid_todo_list':
+        print('currently need to get covid todo list through direct sql query. sorry!')
+        sys.exit()
 
 
 def main():
@@ -175,6 +182,9 @@ def main():
     parser_add_groups.add_argument('-i', dest='groups_inhandle')
     parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcr', help='Add some covid confirmatory pcrs.')
     parser_add_covid_confirmatory_pcr.add_argument('-i', dest='covid_confirmatory_pcrs_inhandle')
+
+    parser_get_covid_todo_list = subparsers.add_parser('get_covid_todo_list', help='Get COVID-seq todo list.')
+
     args = parser.parse_args()
     run_command(args)
 
