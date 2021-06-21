@@ -3,7 +3,7 @@ import argparse
 from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
-    get_tiling_pcr, add_tiling_pcr, get_covid_readset, get_readset, get_sample, \
+    get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, read_in_config, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr
 
@@ -39,25 +39,22 @@ def add_raw_sequencing_batches(args):
             add_raw_sequencing_batch(raw_sequencing_batch_info)
 
 
-def add_covid_readsets(args):
-    all_covid_readsets_info = read_in_as_dict(args.covid_readsets_inhandle)
-    seqbox_config = read_in_config(args.seqbox_config)
-    for covid_readset_info in all_covid_readsets_info:
-        if get_covid_readset(covid_readset_info) is False:
-            add_readset(readset_info=covid_readset_info, covid=True, config=seqbox_config)
-        else:
-            print(f"There is already an extraction for sample {covid_readset_info['sample_identifier']} in the db for "
-                  f"{covid_readset_info['date_extracted']} with extraction id "
-                  f"{covid_readset_info['extraction_identifier']}. Is this the second extract you did for this sample "
-                  f"on this day? If so, increment the extraction id and re-upload.")
-
-
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     seqbox_config = read_in_config(args.seqbox_config)
+    print(args.covid)
     for readset_info in all_readsets_info:
         if get_readset(readset_info) is False:
             add_readset(readset_info=readset_info, covid=False, config=seqbox_config)
+
+
+def add_nanopore_default_readsets(args):
+    #todo - add check that same sample only run on the same batch once
+    all_nanopore_default_readsets_info = read_in_as_dict(args.nanopore_default_readsets_inhandle)
+    seqbox_config = read_in_config(args.seqbox_config)
+    for nanopore_default_readset_info in all_nanopore_default_readsets_info:
+        if get_readset(nanopore_default_readset_info) is False:
+            add_readset(readset_info=nanopore_default_readset_info, covid=False, config=seqbox_config)
 
 
 def add_extractions(args):
@@ -129,12 +126,12 @@ def run_command(args):
         add_extractions(args=args)
     if args.command == 'add_readsets':
         add_readsets(args=args)
+    if args.command == 'add_nanopore_default_readsets':
+        add_nanopore_default_readsets(args=args)
     if args.command == 'add_raw_sequencing_batches':
         add_raw_sequencing_batches(args=args)
     if args.command == 'add_tiling_pcrs':
         add_tiling_pcrs(args=args)
-    if args.command == 'add_covid_readsets':
-        add_covid_readsets(args=args)
     if args.command == 'add_groups':
         add_groups(args=args)
     if args.command == 'add_covid_confirmatory_pcr':
@@ -157,27 +154,31 @@ def main():
                                                       help='Take a csv of sample sources and add to the DB.')
     parser_add_sample_sources.add_argument('-i', dest='sample_sources_inhandle',
                                            help='A CSV file containing sample_source info', required=True)
+    parser_add_raw_sequencing_batches = subparsers.add_parser('add_raw_sequencing_batches',
+                                                              help='Add information about a raw_sequencing batch')
+    parser_add_raw_sequencing_batches.add_argument('-i', dest='raw_sequencing_batches_inhandle')
     parser_add_readsets = subparsers.add_parser('add_readsets',
                                                       help='Take a csv of readsets and add to the DB.')
     parser_add_readsets.add_argument('-i', dest='readsets_inhandle',
                                            help='A CSV file containing read_sets info', required=True)
     parser_add_readsets.add_argument('-c', dest='seqbox_config',
                                      help='The path to a seqbox_config file.', required=True)
+    parser_add_readsets.add_argument('-s', dest='covid', action='store_true', default=False,
+                                     help='The path to a seqbox_config file.')
+    parser_add_nanopore_default_readsets = subparsers.add_parser('add_nanopore_default_readsets',
+                                                help='Take a csv of nanopore default organised readsets and add to the '
+                                                     'DB.')
+    parser_add_nanopore_default_readsets.add_argument('-i', dest='nanopore_default_readsets_inhandle',
+                                     help='A CSV file containing read_sets info', required=True)
+    parser_add_nanopore_default_readsets.add_argument('-c', dest='seqbox_config',
+                                     help='The path to a seqbox_config file.', required=True)
     parser_add_extractions = subparsers.add_parser('add_extractions',
                                                 help='Take a csv of extractions and add to the DB.')
     parser_add_extractions.add_argument('-i', dest='extractions_inhandle',
                                      help='A CSV file containing extractions info', required=True)
-    parser_add_raw_sequencing_batches = subparsers.add_parser('add_raw_sequencing_batches',
-                                                              help='Add information about a raw_sequencing batch')
-    parser_add_raw_sequencing_batches.add_argument('-i', dest='raw_sequencing_batches_inhandle')
     parser_add_tiling_pcrs = subparsers.add_parser('add_tiling_pcrs',
                                                               help='Add information about a tiling PCR run')
     parser_add_tiling_pcrs.add_argument('-i', dest='tiling_pcrs_inhandle')
-    parser_add_covid_readsets = subparsers.add_parser('add_covid_readsets',
-                                                   help='Add information about a tiling PCR run')
-    parser_add_covid_readsets.add_argument('-i', dest='covid_readsets_inhandle')
-    parser_add_covid_readsets.add_argument('-c', dest='seqbox_config',
-                                     help='The path to a seqbox_config file.', required=True)
     parser_add_groups = subparsers.add_parser('add_groups', help='Add a new group.')
     parser_add_groups.add_argument('-i', dest='groups_inhandle')
     parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcr', help='Add some covid confirmatory pcrs.')

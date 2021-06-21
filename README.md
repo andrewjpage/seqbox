@@ -26,3 +26,15 @@ you are also adding a new readset as well.
 * if you add a new readset with the same raw sequencing 
 (identified by the extraction information), then only the new readset
 is added (and it is linked to the same raw_sequencing record)
+* `add_readsets` is for when you want to specify the path to
+the fastqs, `add_nanopore_default_readsets` is for when you 
+want to pass the barcodes and the directory name. Seqbox will
+assume that the data is organised in the default nanopore
+output way.
+* in the batch upload, if going to do the add_readsets then 
+batch_directory is not used. It is there for if going to use
+add_nanopore_default_readsets upload, which requires to 
+know the batch_directory.
+* the same sample should only be run once on each batch. i.e.
+don't run the same sample on multiple barcodes on the same
+batch.

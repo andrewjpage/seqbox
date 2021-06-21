@@ -270,7 +270,7 @@ class RawSequencingBatch(db.Model):
     sequencing_centre = db.Column(db.VARCHAR(64), comment="E.g. Sanger, CGR, MLW, etc.")
     flowcell_type = db.Column(db.VARCHAR(64))
     raw_sequencings = db.relationship("RawSequencing", backref="raw_sequencing_batch")
-    batch_directory = db.Column(db.VARCHAR(64))
+    batch_directory = db.Column(db.VARCHAR(128))
 
     def __repr__(self):
         return '<Batch {}>'.format(self.name)

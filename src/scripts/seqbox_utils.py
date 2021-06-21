@@ -403,67 +403,25 @@ def get_group(group_info):
         sys.exit()
 
 
-def interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch):
-    if len(matching_covid_readset) == 0:
-        return False
-    elif len(matching_covid_readset) == 1:
-        if raw_sequencing_batch.sequencing_type == 'nanopore':
-            print(f"This readset ({covid_sequencing_info['path_fastq']}) already exists in the database for the group "
-                  f"{covid_sequencing_info['group_name']}. Not adding it to the database.")
-        elif raw_sequencing_batch.sequencing_type == 'illumina':
-            print(f"This readset ({covid_sequencing_info['path_r1']}) already exists in the database for the group "
-                  f"{covid_sequencing_info['group_name']}. Not adding it to the database.")
-        return True
-    else:
-        print('this shouldnt happen')
-
-
-def get_covid_readset(covid_sequencing_info):
-    raw_sequencing_batch = get_raw_sequencing_batch(covid_sequencing_info['batch'])
-    if raw_sequencing_batch is False:
-        print(f"No RawSequencingBatch match for {covid_sequencing_info['batch']}, need to add that batch and re-run. "
-              f"Exiting.")
-        sys.exit()
-    if raw_sequencing_batch.sequencing_type == 'nanopore':
-        matching_covid_readset = ReadSetNanopore.query.filter_by(path_fastq=covid_sequencing_info['path_fastq'])\
-            .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
-            .join(SampleSource.projects)\
-            .join(Groups) \
-            .filter_by(group_name=covid_sequencing_info['group_name'])\
-            .distinct().all()
-        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch)
-        return result
-    elif raw_sequencing_batch.sequencing_type == 'illumina':
-        matching_covid_readset = ReadSetIllumina.query.filter_by(path_r1=covid_sequencing_info['path_r1'])\
-            .join(ReadSet).join(RawSequencing).join(TilingPcr).join(Extraction).join(Sample).join(SampleSource)\
-            .join(SampleSource.projects) \
-            .join(Groups) \
-            .filter_by(group_name=covid_sequencing_info['group_name']) \
-            .distinct().all()
-        result = interpret_covid_readset_query(matching_covid_readset, covid_sequencing_info, raw_sequencing_batch)
-        return result
-    print('this shouldnt run')
-
-
 def get_readset(readset_info):
-    # todo - re-code this in a nicer way (dont like matching_readset maybe being refereced before assignment)
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
     if raw_sequencing_batch is False:
         print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. "
               f"Exiting.")
         sys.exit()
-    if raw_sequencing_batch.sequencing_type == 'nanopore':
-        matching_readset = ReadSetNanopore.query.filter_by(path_fastq=readset_info['path_fastq']).join(ReadSet).\
-            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects)\
-            .join(Groups)\
-            .filter_by(group_name=readset_info['group_name'])\
-            .distinct().all()
-    elif raw_sequencing_batch.sequencing_type == 'illumina':
-        matching_readset = ReadSetIllumina.query.filter_by(path_r1=readset_info['path_r1']).join(ReadSet).\
-            join(RawSequencing).join(Extraction).join(Sample).join(SampleSource).join(SampleSource.projects) \
-            .join(Groups) \
-            .filter_by(group_name=readset_info['group_name']) \
-            .distinct().all()
+    read_set_type = None
+    if raw_sequencing_batch.sequencing_type == 'illumina':
+        read_set_type = ReadSetIllumina
+    elif raw_sequencing_batch.sequencing_type == 'nanopore':
+        read_set_type = ReadSetNanopore
+    # todo - is this going to be a slow query when read_set_ill/nano get big?
+    matching_readset = read_set_type.query.join(ReadSet).\
+        join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch']).join(Extraction)\
+        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource)\
+        .join(SampleSource.projects).join(Groups)\
+        .filter_by(group_name=readset_info['group_name'])\
+        .distinct().all()
+
     # print(matching_readset)
     if len(matching_readset) == 0:
         return False
