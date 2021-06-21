@@ -40,3 +40,6 @@ don't run the same sample on multiple barcodes on the same
 batch.
 * if you're adding a covid readset, need to include the `-s` flag
 (stands for SARS-CoV-2, `-c` already taken)
+* add readsets expects to find a single fastq in the barcode
+directory. need to combine the fastqs if the basecaller makes 
+multiple.

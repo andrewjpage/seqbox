@@ -42,7 +42,6 @@ def add_raw_sequencing_batches(args):
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     seqbox_config = read_in_config(args.seqbox_config)
-    print()
     for readset_info in all_readsets_info:
         if get_readset(readset_info) is False:
             add_readset(readset_info=readset_info, covid=args.covid, config=seqbox_config,
