@@ -607,7 +607,7 @@ def add_readset_to_filestructure(readset, config):
     elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
         assert os.path.isfile(readset.read_set_illumina.path_r1)
         assert os.path.isfile(readset.read_set_illumina.path_r2)
-    projects = readset.raw_sequencing.extraction.sample.sample_source.projects#.group.group_name
+    projects = readset.raw_sequencing.extraction.sample.sample_source.projects
     group_names = [x.groups.group_name for x in projects]
     # a sample can only belong to one project, so this assertion should always be true.
     assert len(set(group_names)) == 1
@@ -615,16 +615,19 @@ def add_readset_to_filestructure(readset, config):
     group_dir = os.path.join(config['seqbox_directory'], group_name)
     if not os.path.isdir(group_dir):
         os.mkdir(group_dir)
-    readset_dir = os.path.join(group_dir, f"{readset.seqbox_id}-{readset.read_set_filename}")
+    sample_name = readset.raw_sequencing.extraction.sample.sample_identifier
+    readset_dir = os.path.join(group_dir, f"{readset.seqbox_id}-{sample_name}")
     if not os.path.isdir(readset_dir):
         os.mkdir(readset_dir)
     if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
-        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.seqbox_id}-{readset.read_set_filename}.fastq")
+        # todo - need to handle fastq.gz or non-gzipped
+        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.seqbox_id}-{sample_name}.fastq")
         if not os.path.isfile(output_readset_fastq_path):
             os.symlink(readset.read_set_nanopore.path_fastq, output_readset_fastq_path)
     elif readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
-        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}_R1.fastq")
-        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{readset.readset.read_set_filename}_R2.fastq")
+        # todo - need to handle fastq.gz or non-gzipped
+        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R1.fastq")
+        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R2.fastq")
         os.symlink(readset.read_set_illumina.path_r1, output_readset_r1_fastq_path)
         os.symlink(readset.read_set_illumina.path_r2, output_readset_r2_fastq_path)
     # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.seqbox_id}-{readset.readset.read_set_filename}")
