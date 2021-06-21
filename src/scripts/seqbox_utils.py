@@ -533,7 +533,7 @@ def read_in_readset(readset_info):
     return readset
 
 
-def add_readset(readset_info, covid, config):
+def add_readset(readset_info, covid, config, nanopore_default):
     # get the information on the DNA extraction which was sequenced, from the CSV file, return an instance of the
     # Extraction class
     extraction = get_extraction(readset_info)
@@ -564,12 +564,12 @@ def add_readset(readset_info, covid, config):
         extraction.tiling_pcrs.append(tiling_pcr)
         tiling_pcr.raw_sequencings.append(raw_sequencing)
 
-    add_readset_to_filestructure(readset_info, config)
+    # todo - maybe better to pass in the raw_sequencing and read_set classes, rather than readset_info?
+    if nanopore_default is False:
+        add_readset_to_filestructure(readset_info, config)
     db.session.add(raw_sequencing)
     db.session.commit()
     print(f"Added read set {readset_info['sample_identifier']} to the database.")
-    # todo - maybe better to pass in the raw_sequencing and read_set classes, rather than readset_info?
-
 
     # todo - need to set read_set_name in the db, after this readset has been added to the db.
 

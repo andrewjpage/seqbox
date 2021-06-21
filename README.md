@@ -38,3 +38,5 @@ know the batch_directory.
 * the same sample should only be run once on each batch. i.e.
 don't run the same sample on multiple barcodes on the same
 batch.
+* if you're adding a covid readset, need to include the `-s` flag
+(stands for SARS-CoV-2, `-c` already taken)

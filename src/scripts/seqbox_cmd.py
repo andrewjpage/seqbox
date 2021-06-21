@@ -42,19 +42,11 @@ def add_raw_sequencing_batches(args):
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     seqbox_config = read_in_config(args.seqbox_config)
-    print(args.covid)
+    print()
     for readset_info in all_readsets_info:
         if get_readset(readset_info) is False:
-            add_readset(readset_info=readset_info, covid=False, config=seqbox_config)
-
-
-def add_nanopore_default_readsets(args):
-    #todo - add check that same sample only run on the same batch once
-    all_nanopore_default_readsets_info = read_in_as_dict(args.nanopore_default_readsets_inhandle)
-    seqbox_config = read_in_config(args.seqbox_config)
-    for nanopore_default_readset_info in all_nanopore_default_readsets_info:
-        if get_readset(nanopore_default_readset_info) is False:
-            add_readset(readset_info=nanopore_default_readset_info, covid=False, config=seqbox_config)
+            add_readset(readset_info=readset_info, covid=args.covid, config=seqbox_config,
+                        nanopore_default=args.nanopore_default)
 
 
 def add_extractions(args):
@@ -164,14 +156,10 @@ def main():
     parser_add_readsets.add_argument('-c', dest='seqbox_config',
                                      help='The path to a seqbox_config file.', required=True)
     parser_add_readsets.add_argument('-s', dest='covid', action='store_true', default=False,
-                                     help='The path to a seqbox_config file.')
-    parser_add_nanopore_default_readsets = subparsers.add_parser('add_nanopore_default_readsets',
-                                                help='Take a csv of nanopore default organised readsets and add to the '
-                                                     'DB.')
-    parser_add_nanopore_default_readsets.add_argument('-i', dest='nanopore_default_readsets_inhandle',
-                                     help='A CSV file containing read_sets info', required=True)
-    parser_add_nanopore_default_readsets.add_argument('-c', dest='seqbox_config',
-                                     help='The path to a seqbox_config file.', required=True)
+                                     help='Are these readsets SARS-CoV-2?')
+    parser_add_readsets.add_argument('-n', dest='nanopore_default', action='store_true', default=False,
+                                     help='Are the data for these readsets arranged in nanopore default format? Need to'
+                                          ' follow a different template for the inhandle.')
     parser_add_extractions = subparsers.add_parser('add_extractions',
                                                 help='Take a csv of extractions and add to the DB.')
     parser_add_extractions.add_argument('-i', dest='extractions_inhandle',
