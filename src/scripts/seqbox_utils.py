@@ -511,10 +511,11 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
         readset.read_set_nanopore = ReadSetNanopore()
         if nanopore_default is False:
             # todo - also need to change the fast5 path done as part of read_in_raw_sequencing
+            assert readset_info['path_fastq'].endswith('fastq.gz')
             readset.read_set_nanopore.path_fastq = readset_info['path_fastq']
             readset.read_set_filename = readset_info['readset_filename']
         elif nanopore_default is True:
-            path = os.path.join(raw_sequencing_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq*')
+            path = os.path.join(raw_sequencing_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq.gz')
             fastqs = glob.glob(path)
             # todo - this way of setting read_set_filename is shitty and fragile
             readset.read_set_filename = os.path.basename(fastqs[0]).split('.')[0]
@@ -530,6 +531,8 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
         # readset.nanopore_read_sets.append(read_set_nanopore)
     elif raw_sequencing_batch.sequencing_type == 'illumina':
         readset.read_set_illumina = ReadSetIllumina()
+        assert readset_info['path_r1'].endswith('fastq.gz')
+        assert readset_info['path_r2'].endswith('fastq.gz')
         readset.read_set_illumina.path_r1 = readset_info['path_r1']
         readset.read_set_illumina.path_r2 = readset_info['path_r2']
     return readset
@@ -620,14 +623,12 @@ def add_readset_to_filestructure(readset, config):
     if not os.path.isdir(readset_dir):
         os.mkdir(readset_dir)
     if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
-        # todo - need to handle fastq.gz or non-gzipped
-        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.seqbox_id}-{sample_name}.fastq")
+        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.seqbox_id}-{sample_name}.fastq.gz")
         if not os.path.isfile(output_readset_fastq_path):
             os.symlink(readset.read_set_nanopore.path_fastq, output_readset_fastq_path)
     elif readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
-        # todo - need to handle fastq.gz or non-gzipped
-        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R1.fastq")
-        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R2.fastq")
+        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R1.fastq.gz")
+        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R2.fastq.gz")
         os.symlink(readset.read_set_illumina.path_r1, output_readset_r1_fastq_path)
         os.symlink(readset.read_set_illumina.path_r2, output_readset_r2_fastq_path)
     # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.seqbox_id}-{readset.readset.read_set_filename}")

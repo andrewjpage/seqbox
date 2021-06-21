@@ -43,3 +43,5 @@ batch.
 * add readsets expects to find a single fastq in the barcode
 directory. need to combine the fastqs if the basecaller makes 
 multiple.
+* all the input fastqs for both nanopore and illumina need to 
+be gzipped.
