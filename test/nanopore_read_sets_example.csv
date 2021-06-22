@@ -1,0 +1,6 @@
+﻿sample_identifier,date_extracted,extraction_identifier,group_name,readset_filename,path_fastq,path_fast5,data_storage_device,batch,basecaller
+ASH001,01/06/2021,1,GordonGroup,SEQ_A,/path/to/SEQ_A.fastq.gz,/path/to/SEQ_A.fast5,mlw-gpu1,batch2,guppy v4 HAC
+ASH002,01/06/2021,1,GordonGroup,SEQ_B,/path/to/SEQ_B.fastq.gz,/path/to/SEQ_B.fast5,mlw-gpu1,batch2,guppy v4 HAC
+ASH003,01/06/2021,2,GordonGroup,SEQ_C,/path/to/SEQ_C.fastq.gz,/path/to/SEQ_C.fast5,mlw-gpu1,batch2,guppy v4 HAC
+ASH002,01/06/2021,1,GordonGroup,SEQ_B_v2,/path/to/SEQ_B_v2.fastq.gz,/path/to/SEQ_B_v2.fast5,mlw-gpu1,batch2,guppy v4 HAC
+ASH001,01/06/2021,1,GordonGroup,SEQ_A,/path/to/SEQ_A_superHAC.fastq.gz,/path/to/SEQ_A.fast5,mlw-gpu1,batch2,guppy v5 SuperHAC

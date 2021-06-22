@@ -1,0 +1,4 @@
+﻿batch_name,date_run,sequencing_type,instrument_model,instrument_name,library_prep_method,sequencing_centre,flowcell_type
+batch1,20/05/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
+batch2,02/06/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
+batch3,03/06/2021,illumina,MiSeq,new_miseq,Nextera Flex,MLW,Normal

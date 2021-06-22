@@ -1,0 +1,2 @@
+﻿sample_identifier,date_extracted,extraction_identifier,date_pcred,pcr_identifier,group_name,readset_filename,path_fastq,path_fast5,data_storage_device,batch,basecaller
+CP001,05/06/2021,1,07/06/2021,1,Core,CP001-1,/path/to/CP001-1.fastq.gz,/path/to/CP001-1.fast5,mlw-gpu1,batch1,guppy v4 HAC

@@ -1,0 +1,13 @@
+﻿sample_identifier,date_extracted,extraction_identifier,group_name,readset_filename,path_r1,path_r2,data_storage_device,batch
+CMT15I,01/06/2021,1,Core,sample1,/Users/flashton/Dropbox/non-project/test_input_data/illumina_batch/sample1_1.fastq.gz,/Users/flashton/Dropbox/non-project/test_input_data/illumina_batch/sample1_2.fastq.gz,local,batch1
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,

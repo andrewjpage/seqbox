@@ -1,0 +1,4 @@
+﻿batch_name,date_run,sequencing_type,instrument_model,instrument_name,library_prep_method,sequencing_centre,flowcell_type
+batch1,20/05/2021,illumina,MiSeq,mlw_miseq,flex,MLW,miseq
+,,,,,,,
+,,,,,,,
