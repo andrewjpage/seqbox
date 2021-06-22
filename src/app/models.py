@@ -69,8 +69,9 @@ class ReadSet(db.Model):
                                   db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"),
                                   nullable=True)
     # the Sequence won't work until port to postgres
-    seqbox_id = db.Column(db.Integer, db.Sequence("seqbox_id"), comment="SeqBox id, incrementing integer id to "
-                                                                        "uniquely identify this read set")
+    readset_identifier = db.Column(db.Integer, db.Sequence("readset_identifier"), comment="ReadSet identifier id, " 
+                                                                        "incrementing integer id to uniquely identify "
+                                                                                          "this read set")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
                                                           "Illumina data)")
@@ -87,7 +88,7 @@ class ReadSet(db.Model):
     #     return self.illumina_read_set_id or self.nanopore_read_set_id
 
     def __repr__(self):
-        return f"ReadSet(id: {self.id}, seqbox_id: {self.seqbox_id}, read_set_filename: {self.read_set_filename})"
+        return f"ReadSet(id: {self.id}, readset_identifier: {self.readset_identifier}, read_set_filename: {self.read_set_filename})"
 
 
 class ReadSetIllumina(db.Model):
@@ -136,7 +137,7 @@ class Mykrobe(db.Model):
     read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id", onupdate="cascade",
                                                       ondelete="set null"), nullable=True)
     id = db.Column(db.Integer, primary_key=True)
-    # seqbox_id = db.Column(db.Integer, db.ForeignKey("illumina_read_set.seqbox_id", onupdate="cascade",
+    # readset_identifier = db.Column(db.Integer, db.ForeignKey("illumina_read_set.readset_identifier", onupdate="cascade",
     # ondelete="set null"), nullable=True)
     mykrobe_version = db.Column(db.VARCHAR(50))
     phylo_grp = db.Column(db.VARCHAR(60))

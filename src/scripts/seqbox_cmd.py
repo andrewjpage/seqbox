@@ -46,6 +46,13 @@ def add_readsets(args):
         if get_readset(readset_info) is False:
             add_readset(readset_info=readset_info, covid=args.covid, config=seqbox_config,
                         nanopore_default=args.nanopore_default)
+        else:
+            if 'path_fastq' in readset_info:
+                print(f"This readset ({readset_info['path_fastq']}) already exists in the database for the group "
+                      f"{readset_info['group_name']}. Not adding it to the database.")
+            elif 'path_r1' in readset_info:
+                print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
+                      f"{readset_info['group_name']}. Not adding it to the database.")
 
 
 def add_extractions(args):

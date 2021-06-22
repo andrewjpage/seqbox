@@ -120,7 +120,6 @@ def get_extraction(readset_info):
 
 
 def add_project(project_info):
-    # todo - add get group to add project
     group = get_group(project_info)
     if group is False:
         print(f"No group {project_info['group_name']} from institution {project_info['institution']}. You need to add "
@@ -405,18 +404,9 @@ def get_readset(readset_info):
         .join(SampleSource.projects).join(Groups)\
         .filter_by(group_name=readset_info['group_name'])\
         .distinct().all()
-
-    # print(matching_readset)
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
-        # todo - the error/info printing needs to be moved out of this function.
-        if raw_sequencing_batch.sequencing_type == 'nanopore':
-            print(f"This readset ({readset_info['path_fastq']}) already exists in the database for the group "
-                  f"{readset_info['group_name']}. Not adding it to the database.")
-        elif raw_sequencing_batch.sequencing_type == 'illumina':
-            print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
-                  f"{readset_info['group_name']}. Not adding it to the database.")
         return matching_readset[0]
 
 
@@ -500,6 +490,8 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
                 print(f'More than one fast5 found in {path}. Exiting.')
                 sys.exit()
         elif nanopore_default is False:
+            assert readset_info['path_fast5'].endswith('fast5')
+            assert os.path.isfile(readset_info['path_fast5'])
             raw_sequencing.raw_sequencing_nanopore.path_fast5 = readset_info['path_fast5']
         # raw_sequencing.raw_sequencing_nanopore.append(raw_sequencing_nanopore)
     return raw_sequencing
@@ -510,7 +502,6 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         readset.read_set_nanopore = ReadSetNanopore()
         if nanopore_default is False:
-            # todo - also need to change the fast5 path done as part of read_in_raw_sequencing
             assert readset_info['path_fastq'].endswith('fastq.gz')
             readset.read_set_nanopore.path_fastq = readset_info['path_fastq']
             readset.read_set_filename = readset_info['readset_filename']
@@ -544,11 +535,6 @@ def add_readset(readset_info, covid, config, nanopore_default):
     # 2. get the extraction
     # 3. get teh raw_sequencing
     #    a. if the raw sequencing doesn't already exist, make it and add it to extraction.
-    # todo = need to handle the nanopore_default in this function, which means making full paths for the fastq in the
-    #  readset and the fast5 in the raw sequencing, if nanopore_default is True. Use the batch_dir in the
-    #  raw_sequencing_batch
-    # get the information on the DNA extraction which was sequenced, from the CSV file, return an instance of the
-    # Extraction class
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
     if raw_sequencing_batch is False:
         print(f"No RawSequencing match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
@@ -584,32 +570,32 @@ def add_readset(readset_info, covid, config, nanopore_default):
                 sys.exit()
             # and add the raw_sequencing to the extraction
             extraction.raw_sequencing.append(raw_sequencing)
-
+    # after having either got the raw_sequencing if this is a re-basecalled set, or read in the raw_sequencing if
+    #  it isnt, it's time to read in the readset.
     readset = read_in_readset(readset_info, nanopore_default, raw_sequencing_batch)
     raw_sequencing.read_sets.append(readset)
-
+    # add the readset to the filestructure
     add_readset_to_filestructure(readset, config)
+    # todo - how does this add statement act if raw_sequencing already exists? need a test which checks this.
     db.session.add(raw_sequencing)
     db.session.commit()
     print(f"Added read set {readset_info['sample_identifier']} to the database.")
-    # todo - need to set read_set_name in the db, after this readset has been added to the db.
 
 
 def add_readset_to_filestructure(readset, config):
     '''
     1. Check that input files exist
-    2. get seqbox_id-filename for this sample
+    2. get readset_identifier-filename for this sample
     3. check that output dir exists (make it if not)
-        a. will be /Users/flashton/Dropbox/non-project/test_seqbox_data/Core/[seqbox_id]-filename/
+        a. will be /Users/flashton/Dropbox/non-project/test_seqbox_data/Core/[readset_identifier]-filename/
     4. link the fastq to the output_dir
     '''
     if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
         assert os.path.isfile(readset.read_set_nanopore.path_fastq)
-        #  todo - what doing with fast5?
-        # assert os.path.isfile(readset_info['path_fast5'])
     elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
         assert os.path.isfile(readset.read_set_illumina.path_r1)
         assert os.path.isfile(readset.read_set_illumina.path_r2)
+    # data is going to be stored in a directory with the group name, so need to get the group name of this readset.
     projects = readset.raw_sequencing.extraction.sample.sample_source.projects
     group_names = [x.groups.group_name for x in projects]
     # a sample can only belong to one project, so this assertion should always be true.
@@ -618,20 +604,21 @@ def add_readset_to_filestructure(readset, config):
     group_dir = os.path.join(config['seqbox_directory'], group_name)
     if not os.path.isdir(group_dir):
         os.mkdir(group_dir)
+    # going to name the linked file with the sample name and readset_identifier
     sample_name = readset.raw_sequencing.extraction.sample.sample_identifier
-    readset_dir = os.path.join(group_dir, f"{readset.seqbox_id}-{sample_name}")
+    readset_dir = os.path.join(group_dir, f"{readset.readset_identifier}-{sample_name}")
     if not os.path.isdir(readset_dir):
         os.mkdir(readset_dir)
     if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
-        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.seqbox_id}-{sample_name}.fastq.gz")
+        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}.fastq.gz")
         if not os.path.isfile(output_readset_fastq_path):
             os.symlink(readset.read_set_nanopore.path_fastq, output_readset_fastq_path)
-    elif readset.readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
-        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R1.fastq.gz")
-        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset.seqbox_id}-{sample_name}_R2.fastq.gz")
+    elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
+        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R1.fastq.gz")
+        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R2.fastq.gz")
         os.symlink(readset.read_set_illumina.path_r1, output_readset_r1_fastq_path)
         os.symlink(readset.read_set_illumina.path_r2, output_readset_r2_fastq_path)
-    # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.seqbox_id}-{readset.readset.read_set_filename}")
+    # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.readset_identifier}-{readset.readset.read_set_filename}")
 
 
 
