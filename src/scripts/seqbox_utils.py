@@ -57,7 +57,8 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
                 # add it to the projects assocaited with this sample source
                 sample_source.projects.append(p[1])
             else:
-                print(f"Project {project_name} from group {sample_source_info['group_name']} "
+                print(f"Checking that sample source is associated with project. "
+                      f"Project {project_name} from group {sample_source_info['group_name']} "
                       f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
                       f"add_projects function.\nExiting now.")
                 sys.exit()
@@ -77,7 +78,8 @@ def get_sample_source(sample_info):
     elif len(matching_sample_source) == 1:
         return matching_sample_source[0]
     else:
-        print(f"There is more than one matching sample_source with the sample_source_identifier "
+        print(f"Trying to get sample_source. "
+              f"There is more than one matching sample_source with the sample_source_identifier "
               f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, This shouldn't happen."
               f" Exiting.")
 
@@ -94,7 +96,7 @@ def get_sample(readset_info):
     elif len(matching_sample) == 1:
         return matching_sample[0]
     else:
-        print(f"There is more than one matching sample with the sample_identifier "
+        print(f"Trying to get sample. There is more than one matching sample with the sample_identifier "
               f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, This shouldn't happen. "
               f"Exiting.")
         sys.exit()
@@ -115,20 +117,24 @@ def get_extraction(readset_info):
     elif len(matching_extraction) == 0:
         return False
     else:
-        print(f"More than one Extraction match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
+        print(f"Trying to get extraction. "
+              f"More than one Extraction match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
 
 
 def add_project(project_info):
     group = get_group(project_info)
     if group is False:
-        print(f"No group {project_info['group_name']} from institution {project_info['institution']}. You need to add "
+        print(f"Trying to get group to add project. "
+              f"No group {project_info['group_name']} from institution {project_info['institution']}. You need to add "
               f"this group. Exiting.")
         sys.exit()
     project = Project(project_name=project_info['project_name'], project_details=project_info['project_details'])
     group.projects.append(project)
     db.session.add(project)
     db.session.commit()
+    print(f"Added project {project_info['project_name']} to group {project_info['group_name']} at "
+          f"{project_info['institution']}.")
 
 
 def query_projects(info, project_name):
@@ -141,7 +147,8 @@ def query_projects(info, project_name):
         s = matching_projects[0]
         return True, s
     else:
-        print(f"There is already more than one project called {project_name} from {info['group_name']} at "
+        print(f"Querying projects. "
+              f"There is already more than one project called {project_name} from {info['group_name']} at "
               f"{info['institution']} in the database, this shouldn't happen.\nExiting.")
         sys.exit()
 
@@ -156,7 +163,7 @@ def get_projects(info):
         if p[0] is True:
             projects.append(p[1])
         elif p[0] is False:
-            print(f"Project {project_name} from group {info['group_name']} "
+            print(f"Getting projects. Project {project_name} from group {info['group_name']} "
                   f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
                   f"add_projects function.\nExiting now.")
             sys.exit()
@@ -182,7 +189,8 @@ def read_in_sample_info(sample_info):
 
 def read_in_sample_source_info(sample_source_info):
     if sample_source_info['sample_source_identifier'] == '':
-        print(f"sample_source_identifier isn't allowed to be null, check the line which gave rise to "
+        print(f"Reading in sample_source_info. "
+              f"sample_source_identifier isn't allowed to be null, check the line which gave rise to "
               f"{sample_source_info}. Exiting.")
         sys.exit()
     sample_source = SampleSource(sample_source_identifier=sample_source_info['sample_source_identifier'])
@@ -262,16 +270,16 @@ def add_sample(sample_info):
     # print(sample_info)
     sample_source = get_sample_source(sample_info)
     if sample_source is False:
-        print(f"There is no matching sample_source with the sample_source_identifier "
+        print(f"Adding sample. There is no matching sample_source with the sample_source_identifier "
               f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, please add using "
               f"python seqbox_cmd.py add_sample_source and then re-run this command. Exiting.")
         sys.exit()
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
     sample_source.samples.append(sample)
-    print(f"Adding sample {sample_info['sample_identifier']}")
     db.session.add(sample)
     db.session.commit()
+    print(f"Adding sample {sample_info['sample_identifier']}")
 
 
 def add_sample_source(sample_source_info):
@@ -285,13 +293,13 @@ def add_sample_source(sample_source_info):
     sample_source.projects = projects
     db.session.add(sample_source)
     db.session.commit()
-    print(f'Adding {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
+    print(f'Adding sample_source {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
 
 
 def add_tiling_pcr(tiling_pcr_info):
     extraction = get_extraction(tiling_pcr_info)
     if extraction is False:
-        print(f"No Extraction match for {tiling_pcr_info['sample_identifier']}, extracted on "
+        print(f"Adding tiling PCR. No Extraction match for {tiling_pcr_info['sample_identifier']}, extracted on "
               f"{tiling_pcr_info['date_extracted']} for extraction id {tiling_pcr_info['extraction_identifier']} "
               f"need to add that extract and re-run. Exiting.")
         sys.exit()
@@ -306,7 +314,8 @@ def add_tiling_pcr(tiling_pcr_info):
 def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     extraction = get_extraction(covid_confirmatory_pcr_info)
     if extraction is False:
-        print(f"No Extraction match for {covid_confirmatory_pcr_info['sample_identifier']}, extracted on "
+        print(f"Adding covid confirmatory PCR. "
+              f"No Extraction match for {covid_confirmatory_pcr_info['sample_identifier']}, extracted on "
               f"{covid_confirmatory_pcr_info['date_extracted']} for extraction id "
               f"{covid_confirmatory_pcr_info['extraction_identifier']} "
               f"need to add that extract and re-run. Exiting.")
@@ -329,7 +338,7 @@ def add_group(group_info):
 def add_extraction(extraction_info):
     sample = get_sample(extraction_info)
     if sample is False:
-        print(f"There is no matching sample with the sample_source_identifier "
+        print(f"Adding extraction. There is no matching sample with the sample_source_identifier "
               f"{extraction_info['sample_identifier']} for group {extraction_info['group_name']}, please add using "
               f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
         sys.exit()
@@ -351,7 +360,8 @@ def get_tiling_pcr(tiling_pcr_info):
     elif len(matching_tiling_pcr) == 0:
         return False
     else:
-        print(f"More than one match for {tiling_pcr_info['sample_identifier']} on date {tiling_pcr_info['date_run']} "
+        print(f"Getting tiling PCR. More than one match for {tiling_pcr_info['sample_identifier']} on date "
+              f"{tiling_pcr_info['date_run']} "
               f"with pcr_identifier {tiling_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
 
@@ -367,7 +377,8 @@ def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     elif len(matching_covid_confirmatory_pcr) == 1:
         return matching_covid_confirmatory_pcr[0]
     else:
-        print(f"More than one match for {covid_confirmatory_pcr_info['sample_identifier']} on date"
+        print(f"Getting covid confirmatory PCR. "
+              f"More than one match for {covid_confirmatory_pcr_info['sample_identifier']} on date"
               f" {covid_confirmatory_pcr_info['date_run']} with pcr_identifier "
               f"{covid_confirmatory_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
@@ -381,7 +392,8 @@ def get_group(group_info):
     elif len(matching_group) == 1:
         return matching_group[0]
     else:
-        print(f"More than one match for {group_info['group_name']} from {group_info['institution']}. Shouldn't happen, "
+        print(f"Getting group. "
+              f"More than one match for {group_info['group_name']} from {group_info['institution']}. Shouldn't happen, "
               f"exiting.")
         sys.exit()
 
@@ -389,8 +401,8 @@ def get_group(group_info):
 def get_readset(readset_info):
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
     if raw_sequencing_batch is False:
-        print(f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. "
-              f"Exiting.")
+        print(f"Getting readset. "
+              f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
         sys.exit()
     read_set_type = None
     if raw_sequencing_batch.sequencing_type == 'illumina':
@@ -428,7 +440,7 @@ def add_raw_sequencing_batch(raw_sequencing_batch_info):
     raw_sequencing_batch = read_in_raw_sequencing_batch_info(raw_sequencing_batch_info)
     db.session.add(raw_sequencing_batch)
     db.session.commit()
-    print(f"Added batch {raw_sequencing_batch_info['batch_name']} to the database.")
+    print(f"Added raw sequencing batch {raw_sequencing_batch_info['batch_name']} to the database.")
 
 
 def get_raw_sequencing_batch(batch_name):
@@ -438,7 +450,7 @@ def get_raw_sequencing_batch(batch_name):
     elif len(matching_raw_seq_batch) == 0:
         return False
     else:
-        print(f"More than one match for {batch_name}. Shouldn't happen, exiting.")
+        print(f"Getting raw_sequencing batch. More than one match for {batch_name}. Shouldn't happen, exiting.")
         sys.exit()
 
 
@@ -467,7 +479,8 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch):
         # returns an Illumina/NanoporeRawSequencing class.
         return matching_raw_sequencing[0].raw_sequencing
     else:
-        print("this shouldnt happen blkjha")
+        print(f"Getting raw_sequencing, more than one match in {readset_info['batch']} for sample "
+              f"{readset_info['sample_identifier']} from group {readset_info['group_name']}. This shouldn't happen.")
 
 
 def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batch_directory):
@@ -513,10 +526,10 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
             if len(fastqs) == 1:
                 readset.read_set_nanopore.path_fastq = fastqs[0]
             elif len(fastqs) == 0:
-                print(f'No fastq found in {path}. Exiting.')
+                print(f'Reading in readset. No fastq found in {path}. Exiting.')
                 sys.exit()
             elif len(fastqs) > 1:
-                print(f'More than one fastq found in {path}. Exiting.')
+                print(f'Reading in readset. More than one fastq found in {path}. Exiting.')
                 sys.exit()
         readset.read_set_nanopore.basecaller = readset_info['basecaller']
         # readset.nanopore_read_sets.append(read_set_nanopore)
@@ -537,7 +550,7 @@ def add_readset(readset_info, covid, config, nanopore_default):
     #    a. if the raw sequencing doesn't already exist, make it and add it to extraction.
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
     if raw_sequencing_batch is False:
-        print(f"No RawSequencing match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+        print(f"Adding readset. No RawSequencing match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
         sys.exit()
     # get raw sequencing
     raw_sequencing = get_raw_sequencing(readset_info, raw_sequencing_batch)
@@ -552,7 +565,7 @@ def add_readset(readset_info, covid, config, nanopore_default):
             # if the sample is covid, we need to get the tiling pcr record
             tiling_pcr = get_tiling_pcr(readset_info)
             if tiling_pcr is False:
-                print(f"There is no TilingPcr record for sample {readset_info['sample_identifier']} PCRed on "
+                print(f"Adding readset. There is no TilingPcr record for sample {readset_info['sample_identifier']} PCRed on "
                       f"{readset_info['date_pcred']} by group {readset_info['group_name']}. You need to add this. "
                       f"Exiting.")
                 sys.exit()
@@ -564,7 +577,7 @@ def add_readset(readset_info, covid, config, nanopore_default):
             # if it's not covid, don't need the tiling pcr part, so just get the extractions
             extraction = get_extraction(readset_info)
             if extraction is False:
-                print(f"No Extraction match for {readset_info['sample_identifier']}, extracted on "
+                print(f"Adding readset. No Extraction match for {readset_info['sample_identifier']}, extracted on "
                       f"{readset_info['date_extracted']} for extraction id {readset_info['extraction_identifier']} need to add "
                       f"that extract and re-run. Exiting.")
                 sys.exit()
@@ -579,7 +592,7 @@ def add_readset(readset_info, covid, config, nanopore_default):
     # todo - how does this add statement act if raw_sequencing already exists? need a test which checks this.
     db.session.add(raw_sequencing)
     db.session.commit()
-    print(f"Added read set {readset_info['sample_identifier']} to the database.")
+    print(f"Added readset {readset_info['sample_identifier']} to the database.")
 
 
 def add_readset_to_filestructure(readset, config):
@@ -618,6 +631,7 @@ def add_readset_to_filestructure(readset, config):
         output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R2.fastq.gz")
         os.symlink(readset.read_set_illumina.path_r1, output_readset_r1_fastq_path)
         os.symlink(readset.read_set_illumina.path_r2, output_readset_r2_fastq_path)
+    print(f"Added readset to filestructure {readset.readset_identifier}-{sample_name} to {group_dir}")
     # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.readset_identifier}-{readset.readset.read_set_filename}")
 
 

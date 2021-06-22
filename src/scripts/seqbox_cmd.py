@@ -124,8 +124,6 @@ def run_command(args):
         add_extractions(args=args)
     if args.command == 'add_readsets':
         add_readsets(args=args)
-    if args.command == 'add_nanopore_default_readsets':
-        add_nanopore_default_readsets(args=args)
     if args.command == 'add_raw_sequencing_batches':
         add_raw_sequencing_batches(args=args)
     if args.command == 'add_tiling_pcrs':
