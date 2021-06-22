@@ -62,3 +62,8 @@ ii) end to end testing for covid workflow
 2. Test that not adding in duplicates of anything.
 
     a. `run_test_02.sh`
+    
+    b. uploads everything in `01.test_todo_list_query` dir **twice**
+    should return successful uploads for everything once.
+    and then failed uploads for everything the second time round.
+    
