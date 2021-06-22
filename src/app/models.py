@@ -73,15 +73,15 @@ class ReadSet(db.Model):
                                                                         "incrementing integer id to uniquely identify "
                                                                                           "this read set")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    read_set_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
+    readset_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
                                                           "Illumina data)")
-    read_set_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
+    readset_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
                                                       "{read_set_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("read_set", passive_updates=True,
                                                           passive_deletes=True))
 
-    read_set_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
-    read_set_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
+    readset_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
+    readset_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
 
     # @hybrid_property
     # def read_set_id(self):

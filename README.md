@@ -45,3 +45,15 @@ directory. need to combine the fastqs if the basecaller makes
 multiple.
 * all the input fastqs for both nanopore and illumina need to 
 be gzipped.
+
+
+## tests
+
+1. Test that the todo list query is working ok.
+
+    a. `run_test_01.sh`
+
+    b. uploads everything in `01.test_todo_list_query` dir
+    
+    c. run the query in `get_covid_todo_list.sql` and check 
+    that it returns properly ordered todo list.
