@@ -570,7 +570,6 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
 
 
 def add_readset(readset_info, covid, config, nanopore_default):
-    print()
     # this function has three main parts
     # 1. get the raw_sequencing batch
     # 2. get the extraction
@@ -604,8 +603,6 @@ def add_readset(readset_info, covid, config, nanopore_default):
         elif covid is False:
             # if it's not covid, don't need the tiling pcr part, so just get the extractions
             extraction = get_extraction(readset_info)
-            print(readset_info)
-            print(extraction.id)
             if extraction is False:
                 print(f"Adding readset. No Extraction match for {readset_info['sample_identifier']}, extracted on "
                       f"{readset_info['date_extracted']} for extraction id {readset_info['extraction_identifier']} need to add "
