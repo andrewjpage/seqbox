@@ -370,7 +370,10 @@ def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     matching_covid_confirmatory_pcr = CovidConfirmatoryPcr.query.filter_by(
         pcr_identifier=covid_confirmatory_pcr_info['pcr_identifier'],
         date_pcred=datetime.datetime.strptime(covid_confirmatory_pcr_info['date_pcred'], '%d/%m/%Y'))\
-        .join(Extraction).join(Sample).filter_by(sample_identifier=covid_confirmatory_pcr_info['sample_identifier'])\
+        .join(Extraction).filter_by(extraction_identifier=covid_confirmatory_pcr_info['extraction_identifier'],
+                                                     date_extracted=datetime.datetime.strptime(
+                                                         covid_confirmatory_pcr_info['date_extracted'], '%d/%m/%Y')) \
+        .join(Sample).filter_by(sample_identifier=covid_confirmatory_pcr_info['sample_identifier'])\
         .all()
     if len(matching_covid_confirmatory_pcr) == 0:
         return False
@@ -398,7 +401,7 @@ def get_group(group_info):
         sys.exit()
 
 
-def get_readset(readset_info):
+def get_readset(readset_info, covid):
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
     if raw_sequencing_batch is False:
         print(f"Getting readset. "
@@ -410,12 +413,27 @@ def get_readset(readset_info):
     elif raw_sequencing_batch.sequencing_type == 'nanopore':
         readset_type = ReadSetNanopore
     # todo - is this going to be a slow query when readset_ill/nano get big?
-    matching_readset = readset_type.query.join(ReadSet).\
-        join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch']).join(Extraction)\
-        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource)\
-        .join(SampleSource.projects).join(Groups)\
-        .filter_by(group_name=readset_info['group_name'])\
-        .distinct().all()
+    # if the sample isnt covid, then need to match against the extraciton
+    if covid is False:
+        matching_readset = readset_type.query.join(ReadSet).\
+            join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch'])\
+            .join(Extraction).filter_by(date_extracted=readset_info['date_extracted'],
+                                        extraction_identifier=readset_info['extraction_identifier']) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource)\
+            .join(SampleSource.projects).join(Groups)\
+            .filter_by(group_name=readset_info['group_name'])\
+            .distinct().all()
+    # if the sample is covid, then need to match against the tiling pcr
+    elif covid is True:
+        matching_readset = readset_type.query.join(ReadSet). \
+            join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch']) \
+            .join(TilingPcr).filter_by(date_pcred=readset_info['date_pcred'],
+                                       pcr_identifier=readset_info['pcr_identifier']) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource) \
+            .join(SampleSource.projects).join(Groups) \
+            .filter_by(group_name=readset_info['group_name']) \
+            .distinct().all()
+
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
@@ -462,8 +480,13 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch):
         raw_sequencing_type = RawSequencingIllumina
 
     matching_raw_sequencing = raw_sequencing_type.query \
-        .join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch']).join(Extraction) \
-        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource) \
+        .join(RawSequencing)\
+        .join(RawSequencingBatch).filter_by(name=readset_info['batch'])\
+        .join(Extraction).filter_by(extraction_identifier=readset_info['extraction_identifier'],
+                                                     date_extracted=datetime.datetime.strptime(
+                                                         readset_info['date_extracted'], '%d/%m/%Y')) \
+        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
+        .join(SampleSource) \
         .join(SampleSource.projects).join(Groups) \
         .filter_by(group_name=readset_info['group_name']) \
         .distinct().all()
@@ -521,6 +544,9 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
         elif nanopore_default is True:
             path = os.path.join(raw_sequencing_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq.gz')
             fastqs = glob.glob(path)
+            if len(fastqs) == 0:
+                print(f"no files matching this path {path}. Exiting.")
+                sys.exit()
             # todo - this way of setting readset_filename is shitty and fragile
             readset.readset_filename = os.path.basename(fastqs[0]).split('.')[0]
             if len(fastqs) == 1:
@@ -544,6 +570,7 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
 
 
 def add_readset(readset_info, covid, config, nanopore_default):
+    print()
     # this function has three main parts
     # 1. get the raw_sequencing batch
     # 2. get the extraction
@@ -577,6 +604,8 @@ def add_readset(readset_info, covid, config, nanopore_default):
         elif covid is False:
             # if it's not covid, don't need the tiling pcr part, so just get the extractions
             extraction = get_extraction(readset_info)
+            print(readset_info)
+            print(extraction.id)
             if extraction is False:
                 print(f"Adding readset. No Extraction match for {readset_info['sample_identifier']}, extracted on "
                       f"{readset_info['date_extracted']} for extraction id {readset_info['extraction_identifier']} need to add "

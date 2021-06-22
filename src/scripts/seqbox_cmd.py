@@ -43,7 +43,7 @@ def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     seqbox_config = read_in_config(args.seqbox_config)
     for readset_info in all_readsets_info:
-        if get_readset(readset_info) is False:
+        if get_readset(readset_info, args.covid) is False:
             add_readset(readset_info=readset_info, covid=args.covid, config=seqbox_config,
                         nanopore_default=args.nanopore_default)
         else:
@@ -55,7 +55,7 @@ def add_readsets(args):
                       f"{readset_info['group_name']}. Not adding it to the database.")
             elif args.nanopore_default is True:
                 print(f"The readset for sample {readset_info['sample_identifier']} for batch {readset_info['batch']} "
-                      f"is already in the database for group {readset_info['group']}. Not adding it to the database.")
+                      f"is already in the database for group {readset_info['group_name']}. Not adding it to the database.")
 
 
 def add_extractions(args):
@@ -101,8 +101,6 @@ def add_projects(args):
         # always in the dictionary which this function takes
         projects_results = query_projects(project_info, project_info['project_name'])
         if projects_results[0] is False:
-            print(f"Project called {project_info['project_name']} from group "
-                  f"{project_info['group_name']} doesn't exist, creating project in DB")
             add_project(project_info)
         elif projects_results[0] is True:
             print(f"Project called {project_info['project_name']} from group {project_info['group_name']} already "

@@ -45,12 +45,15 @@ directory. need to combine the fastqs if the basecaller makes
 multiple.
 * all the input fastqs for both nanopore and illumina need to 
 be gzipped.
+* if the readset is COVID, it needs the date and pcr identifier of the 
+corresponding tiling pcr. if the readset is not covid, it needs the date and 
+extraction identifier of the corresponding extraction.
 
 
 ## tests
 
 1. Test 1 tests multiple things i) that the todo list query is working ok 
-ii) end to end testing for covid workflow
+ii) end to end testing for covid workflow, nanopore default.
 
     a. `run_test_01.sh`
 
@@ -66,4 +69,16 @@ ii) end to end testing for covid workflow
     b. uploads everything in `01.test_todo_list_query` dir **twice**
     should return successful uploads for everything once.
     and then failed uploads for everything the second time round.
+
+3. Test adding in the multiples of things i.e. same sample source in multiple projects,
+ multiple samples per sample source, multiple extracts per sample, etc.
+
+    a. `run_test_03.sh`
     
+    b. uploads everything in `03.test`
+    
+    c. run queries in `03.test/checking_outputs.sql`
+    
+    
+4. Test that cant add same sample name to different 
+project for same group etc (or whatever the rule is).
