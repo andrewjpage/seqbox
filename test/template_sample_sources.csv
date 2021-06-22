@@ -1,9 +1,0 @@
-﻿sample_source_identifier,sample_source_type,township,city,country,latitude,longitude,projects,group_name,institution
-Patient2,patient,Bangwe,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro; TyVAC,GordonGroup,MLW
-Patient1,patient,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,GordonGroup,MLW
-Patient3,patient,Zingwangwe,Blantyre,Malawi,-15.80526123,35.02232035,TyVAC,GordonGroup,MLW
-Household1,household,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,GordonGroup,MLW
-River1_Site1,river,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,GordonGroup,MLW
-River1_Site2,river,Ndirande,Blantyre,Malawi,-15.80526456,35.02232146,iNTS_enviro,GordonGroup,MLW
-Patient1,patient,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,TyVAC,GordonGroup,MLW
-CovidPatient1,patient,Bangwe,Blantyre,Malawi,-15.80526123,35.02232035,COVIDseq,Core,MLW

@@ -49,7 +49,8 @@ be gzipped.
 
 ## tests
 
-1. Test that the todo list query is working ok.
+1. Test 1 tests multiple things i) that the todo list query is working ok 
+ii) end to end testing for covid workflow
 
     a. `run_test_01.sh`
 
@@ -57,3 +58,7 @@ be gzipped.
     
     c. run the query in `get_covid_todo_list.sql` and check 
     that it returns properly ordered todo list.
+   
+2. Test that not adding in duplicates of anything.
+
+    a. `run_test_02.sh`

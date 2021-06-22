@@ -53,6 +53,9 @@ def add_readsets(args):
             elif 'path_r1' in readset_info:
                 print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
                       f"{readset_info['group_name']}. Not adding it to the database.")
+            elif args.nanopore_default is True:
+                print(f"The readset for sample {readset_info['sample_identifier']} for batch {readset_info['batch']} "
+                      f"is already in the database for group {readset_info['group']}. Not adding it to the database.")
 
 
 def add_extractions(args):
@@ -156,7 +159,7 @@ def main():
     parser_add_readsets = subparsers.add_parser('add_readsets',
                                                       help='Take a csv of readsets and add to the DB.')
     parser_add_readsets.add_argument('-i', dest='readsets_inhandle',
-                                           help='A CSV file containing read_sets info', required=True)
+                                           help='A CSV file containing readsets info', required=True)
     parser_add_readsets.add_argument('-c', dest='seqbox_config',
                                      help='The path to a seqbox_config file.', required=True)
     parser_add_readsets.add_argument('-s', dest='covid', action='store_true', default=False,

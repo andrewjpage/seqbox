@@ -76,19 +76,19 @@ class ReadSet(db.Model):
     readset_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
                                                           "Illumina data)")
     readset_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
-                                                      "{read_set_id}-{sample.sample_identifier}")
-    mykrobes = db.relationship("Mykrobe", backref=backref("read_set", passive_updates=True,
+                                                      "{readset_id}-{sample.sample_identifier}")
+    mykrobes = db.relationship("Mykrobe", backref=backref("readset", passive_updates=True,
                                                           passive_deletes=True))
 
     readset_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
     readset_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
 
     # @hybrid_property
-    # def read_set_id(self):
-    #     return self.illumina_read_set_id or self.nanopore_read_set_id
+    # def readset_id(self):
+    #     return self.illumina_readset_id or self.nanopore_readset_id
 
     def __repr__(self):
-        return f"ReadSet(id: {self.id}, readset_identifier: {self.readset_identifier}, read_set_filename: {self.read_set_filename})"
+        return f"ReadSet(id: {self.id}, readset_identifier: {self.readset_identifier}, readset_filename: {self.readset_filename})"
 
 
 class ReadSetIllumina(db.Model):
@@ -99,11 +99,11 @@ class ReadSetIllumina(db.Model):
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
-    read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
+    readset_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
 
     # illumina_batch = db.Column(db.VARCHAR(50), db.ForeignKey("illumina_batch.id", onupdate="cascade",
     #                                                          ondelete="set null"), nullable=True, comment="")
-    # illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_read_set", passive_updates=True,
+    # illumina_batches = db.relationship("IlluminaBatch", backref=backref("illumina_readset", passive_updates=True,
     #                                                                     passive_deletes=True))
     path_r1 = db.Column(db.VARCHAR(250))
     path_r2 = db.Column(db.VARCHAR(250))
@@ -115,7 +115,7 @@ class ReadSetIllumina(db.Model):
 
 class ReadSetNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
+    readset_id = db.Column(db.Integer, db.ForeignKey("read_set.id"))
     path_fastq = db.Column(db.VARCHAR(250))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     basecaller = db.Column(db.VARCHAR(60))
@@ -134,7 +134,7 @@ class Mykrobe(db.Model):
     Returns:
         [type] -- [description]
     """
-    read_set_id = db.Column(db.Integer, db.ForeignKey("read_set.id", onupdate="cascade",
+    readset_id = db.Column(db.Integer, db.ForeignKey("read_set.id", onupdate="cascade",
                                                       ondelete="set null"), nullable=True)
     id = db.Column(db.Integer, primary_key=True)
     # readset_identifier = db.Column(db.Integer, db.ForeignKey("illumina_read_set.readset_identifier", onupdate="cascade",
@@ -155,7 +155,7 @@ class Mykrobe(db.Model):
     drug = db.Column(db.VARCHAR(90))
 
     def __repr__(self):
-        return f'<Mykrobe {self.id}, {self.read_set_id}, {self.mykrobe_version}, {self.species})'
+        return f'<Mykrobe {self.id}, {self.readset_id}, {self.mykrobe_version}, {self.species})'
     # from here https://stackoverflow.com/questions/57040784/sqlalchemy-foreign-key-to-multiple-tables
     # alternative ways of doing it https://stackoverflow.com/questions/7844460/foreign-key-to-multiple-tables
 
@@ -223,7 +223,7 @@ class RawSequencing(db.Model):
 
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
 
-    read_sets = db.relationship("ReadSet", backref="raw_sequencing")
+    readsets = db.relationship("ReadSet", backref="raw_sequencing")
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
     raw_sequencing_illumina = db.relationship("RawSequencingIllumina", backref="raw_sequencing", uselist=False)
 
