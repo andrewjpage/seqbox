@@ -1,0 +1,9 @@
+﻿sample_identifier,date_pcred,pcr_identifier,date_extracted,extraction_identifier,group_name,barcode,data_storage_device,batch,basecaller
+PTS89D_sample1,,,01/06/2021,1,Core,barcode09,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+PTS89D_sample2,,,01/06/2021,1,Core,barcode10,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+PTS89D_sample2,,,01/06/2021,2,Core,barcode11,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+ABS15I_sample1,,,01/06/2021,1,Core,barcode13,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+ABS1XD_sample1,,,01/06/2021,1,Core,barcode14,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+ABS15J_sample1,,,01/06/2021,1,Core,barcode15,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+ABS15V_sample1,,,01/06/2021,1,Core,barcode16,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+ABS15V_sample2,,,01/06/2021,1,Core,barcode17,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC

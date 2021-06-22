@@ -1,0 +1,12 @@
+set -e
+set -o pipefail
+
+#rm app/pa_seqbox_v2_test.db
+python test/test_no_web.py # creates db
+python src/scripts/seqbox_cmd.py add_groups -i test/03.test/groups.csv
+python src/scripts/seqbox_cmd.py add_projects -i test/03.test/projects.csv
+python src/scripts/seqbox_cmd.py add_sample_sources -i test/03.test/sample_sources.csv
+python src/scripts/seqbox_cmd.py add_samples -i test/03.test/samples.csv
+python src/scripts/seqbox_cmd.py add_extractions -i test/03.test/extraction.csv
+python src/scripts/seqbox_cmd.py add_raw_sequencing_batches -i test/03.test/raw_sequencing_batch.csv
+python src/scripts/seqbox_cmd.py add_readsets -i test/03.test/nanopore_default_readsets.csv -c test/test_seqbox_config.yaml -n
