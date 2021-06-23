@@ -52,7 +52,7 @@ extraction identifier of the corresponding extraction.
 
 ## tests
 
-1. Test 1 tests multiple things i) that the todo list query is working ok 
+1. Nanopore, default, covid. Test 1 tests multiple things i) that the todo list query is working ok 
 ii) end to end testing for covid workflow, nanopore default.
 
     a. `run_test_01.sh`
@@ -62,7 +62,7 @@ ii) end to end testing for covid workflow, nanopore default.
     c. run the query in `get_covid_todo_list.sql` and check 
     that it returns properly ordered todo list.
    
-2. Test that not adding in duplicates of anything.
+2. Nanopore, default, covid. If we add the same records multiple times, what happens?
 
     a. `run_test_02.sh`
     
@@ -70,7 +70,7 @@ ii) end to end testing for covid workflow, nanopore default.
     should return successful uploads for everything once.
     and then failed uploads for everything the second time round.
 
-3. Test adding in the multiples of things i.e. same sample source in multiple projects,
+3. Nanopore, default, not covid. Test adding in the multiples of things i.e. same sample source in multiple projects,
  multiple samples per sample source, multiple extracts per sample, etc.
 
     a. `run_test_03.sh`
@@ -78,7 +78,10 @@ ii) end to end testing for covid workflow, nanopore default.
     b. uploads everything in `03.test`
     
     c. run queries in `03.test/checking_outputs.sql`
-    
-    
-4. Test that cant add same sample name to different 
-project for same group etc (or whatever the rule is).
+       
+4. Illumina, non-covid. Uses same samples/sample sources etc as test_03, but
+with illumina data instead of nanopore.
+
+    a. `run_test_04.sh`
+
+5. Nanopore, not default, non-covid. Same as test_03.

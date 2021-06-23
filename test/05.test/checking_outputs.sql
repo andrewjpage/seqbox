@@ -20,10 +20,11 @@ join project p on ssp.project_id = p.id
 where project_name = any(array['PseudomonasSeq', 'AcinetobacterSeq']);
 
 
-# PTS89D_sample2 should have two extractions, with different extraction identifiers
-select readset_identifier, sample_identifier, extraction_identifier, date_extracted, e.id from read_set_nanopore
+# PTS89D_sample2 should have two extractions, with different extraction identifiers, fastq and fast5 should be filled in.
+select readset_identifier, sample_identifier, extraction_identifier, date_extracted, path_fastq, path_fast5, e.id from read_set_nanopore
 join read_set rs on rs.id = read_set_nanopore.readset_id
 join raw_sequencing r on rs.raw_sequencing_id = r.id
+join raw_sequencing_nanopore rsn on r.id = rsn.raw_sequencing_id
 join extraction e on r.extraction_id = e.id
 join sample s on e.sample_id = s.id
 join sample_source ss on s.sample_source_id = ss.id
