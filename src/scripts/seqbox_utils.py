@@ -418,6 +418,13 @@ def get_readset(readset_info, covid):
     # todo - is this going to be a slow query when readset_ill/nano get big?
     # if the sample isnt covid, then need to match against the extraciton
     # todo - none of the tests here are actually for readset, they're all for rsb and above.
+    # to cover new basecalling runs of same raw sequencing, need to test for whether the fastq is already in the
+    # database.
+    # so - if it's nanopore default, need to construct the fastq path from rsb.batch_dir, barcode, fastq
+    #  (should spin out the get fastq path functionality from add readset to filesystem into sep func)
+    # if it's nanopore, but not default, the fastq path will be in the readset_info.
+    # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
+    #
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet).\
             join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch'])\

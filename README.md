@@ -48,7 +48,13 @@ be gzipped.
 * if the readset is COVID, it needs the date and pcr identifier of the 
 corresponding tiling pcr. if the readset is not covid, it needs the date and 
 extraction identifier of the corresponding extraction.
-
+* nanopore deafult refers to teh structure of the directory wit the input 
+nanopore data.
+* for re-basecalling of same raw data for nanopore, just change the fastq path
+if not nanopore default. if it is nanopore default, then keep the batch_name
+the same, but change the batch dir in the batch upload (this wont work... 
+because there will only be one rsb for each batch name, and hence only one
+rsb.btach_directory)
 
 ## tests
 
