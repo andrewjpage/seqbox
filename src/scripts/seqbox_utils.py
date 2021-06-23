@@ -402,18 +402,22 @@ def get_group(group_info):
 
 
 def get_readset(readset_info, covid):
+    # first, we need to get the batch to see what kind of sequencing it is
     raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
     if raw_sequencing_batch is False:
         print(f"Getting readset. "
               f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
         sys.exit()
     readset_type = None
+    # this is because the readset query is currently generic to sequencing type, so we use this structure to
+    #  cut down on duplicate code (otherwise, would need all of the below for both illumina and nanopore).
     if raw_sequencing_batch.sequencing_type == 'illumina':
         readset_type = ReadSetIllumina
     elif raw_sequencing_batch.sequencing_type == 'nanopore':
         readset_type = ReadSetNanopore
     # todo - is this going to be a slow query when readset_ill/nano get big?
     # if the sample isnt covid, then need to match against the extraciton
+    # todo - none of the tests here are actually for readset, they're all for rsb and above.
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet).\
             join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch'])\
@@ -433,7 +437,7 @@ def get_readset(readset_info, covid):
             .join(SampleSource.projects).join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .distinct().all()
-
+    # if there is no matching readset, return False (l
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:

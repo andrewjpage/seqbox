@@ -83,5 +83,13 @@ ii) end to end testing for covid workflow, nanopore default.
 with illumina data instead of nanopore.
 
     a. `run_test_04.sh`
+    
+    b. run queries in `04.test/checking_outputs.sql`
 
 5. Nanopore, not default, non-covid. Same as test_03.
+
+    a. `run_test_05.sh`
+    
+    b. run queries in `05.test/checking_outputs.sql`
+    
+ 6. test for adding another readset to same raw sequencing.
