@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True, nullable=False)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     # establishes a relationship between User and Post
     # backref adds a new property to the Post class, Post.author will point to a User
@@ -73,6 +74,7 @@ class ReadSetBatch(db.Model):
                                                       ondelete="set null"),
                                         nullable=True)
     readsets = db.relationship("ReadSet", backref="readset_batch")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
 
 class ReadSet(db.Model):
@@ -95,6 +97,7 @@ class ReadSet(db.Model):
 
     readset_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
     readset_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     # @hybrid_property
     # def readset_id(self):
@@ -121,6 +124,7 @@ class ReadSetIllumina(db.Model):
     path_r1 = db.Column(db.VARCHAR(250))
     path_r2 = db.Column(db.VARCHAR(250))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"ReadSetIllumina({self.id}, {self.path_r1})"
@@ -132,6 +136,7 @@ class ReadSetNanopore(db.Model):
     path_fastq = db.Column(db.VARCHAR(250))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     basecaller = db.Column(db.VARCHAR(60))
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     # nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade",
     # ondelete="set null"), nullable=True)
@@ -166,6 +171,7 @@ class Mykrobe(db.Model):
     variants = db.Column(db.VARCHAR(80))
     genes = db.Column(db.VARCHAR(100))
     drug = db.Column(db.VARCHAR(90))
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f'<Mykrobe {self.id}, {self.readset_id}, {self.mykrobe_version}, {self.species})'
@@ -188,6 +194,7 @@ class Sample(db.Model):
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which processed the sample.")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     extractions = db.relationship("Extraction", backref="sample")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"Sample({self.id}, {self.sample_identifier}, {self.species})"
@@ -209,6 +216,7 @@ class Extraction(db.Model):
     raw_sequencing = db.relationship("RawSequencing", backref="extraction")
     tiling_pcrs = db.relationship("TilingPcr", backref="extraction")
     covid_confirmatory_pcrs = db.relationship("CovidConfirmatoryPcr", backref="extraction")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"Extraction(id={self.id}, sample.id={self.sample_id}, date_extracted={self.date_extracted})"
@@ -223,6 +231,7 @@ class TilingPcr(db.Model):
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
     raw_sequencings = db.relationship("RawSequencing", backref="tiling_pcr")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"TilingPcr(id={self.id}, extraction.id={self.extraction_id})"
@@ -239,6 +248,7 @@ class RawSequencing(db.Model):
     readsets = db.relationship("ReadSet", backref="raw_sequencing")
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
     raw_sequencing_illumina = db.relationship("RawSequencingIllumina", backref="raw_sequencing", uselist=False)
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"RawSequencing(id={self.id}, extraction.id={self.extraction_id})"
@@ -248,6 +258,7 @@ class RawSequencingNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id"))
     path_fast5 = db.Column(db.VARCHAR(250))
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"RawSequencingNanopore(id={self.id}, path_fast5={self.path_fast5})"
@@ -258,6 +269,7 @@ class RawSequencingIllumina(db.Model):
     raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id"))
     path_r1 = db.Column(db.VARCHAR(250))
     path_r2 = db.Column(db.VARCHAR(250))
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"RawSequencingIllumina(id={self.id}, path_r1={self.path_r1})"
@@ -286,6 +298,7 @@ class RawSequencingBatch(db.Model):
     raw_sequencings = db.relationship("RawSequencing", backref="raw_sequencing_batch")
     batch_directory = db.Column(db.VARCHAR(128))
     readset_batches = db.relationship("ReadSetBatch", backref="raw_sequencing_batch")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
@@ -318,6 +331,7 @@ class SampleSource(db.Model):
                                                               "district Malawi), large city/metro area")
     location_third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district "
                                                              "(UK/VN), township (MW)")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
 
 class Project(db.Model):
@@ -335,6 +349,7 @@ class Project(db.Model):
     project_details = db.Column(db.VARCHAR(160))
     # __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
     # todo - add in a constraint somehow so that project_name is unique within group
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
         return f"Project(id: {self.id}, details: {self.project_name})"
@@ -346,6 +361,7 @@ class Groups(db.Model):
                                                    "this in context of ethics permission).")
     institution = db.Column(db.VARCHAR(60), comment="The name of the institution where this group work.")
     projects = db.relationship("Project", backref="groups")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
 
 class CovidConfirmatoryPcr(db.Model):
@@ -358,3 +374,4 @@ class CovidConfirmatoryPcr(db.Model):
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")

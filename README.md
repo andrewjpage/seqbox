@@ -56,6 +56,8 @@ the same, but change the batch dir in the batch upload (this wont work...
 because there will only be one rsb for each batch name, and hence only one
 rsb.btach_directory)
 * readset_batch_name and raw sequencing batch namespace is shared across all groups/institutions (i.e. has to be unique)
+* If want to merge a couple of readsets of teh same extract, then need to make a 
+new readset batch, then a bunch of new readsets.
 
 ## tests
 
