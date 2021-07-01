@@ -99,4 +99,6 @@ with illumina data instead of nanopore.
     
     b. run queries in `05.test/checking_outputs.sql`
     
- 6. test for adding another readset to same raw sequencing.
+6. nanopore, default, not covid. test for adding another readset to same raw sequencing.
+
+7. nanopore, not default, not covid. test for adding another readset to same raw sequencing 

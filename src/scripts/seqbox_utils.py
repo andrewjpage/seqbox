@@ -476,7 +476,7 @@ def get_readset(readset_info, covid):
             .distinct().all()
     # if the sample is covid, then need to match against the tiling pcr
     elif covid is True:
-        matching_readset = readset_type.query.join(ReadSet). \
+        matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name']) \
             .join(RawSequencing) \
             .join(TilingPcr).filter_by(date_pcred=readset_info['date_pcred'],
@@ -594,10 +594,7 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
     return raw_sequencing
 
 
-
-
-
-def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
+def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readset_batch):
     readset = ReadSet()
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         readset.readset_nanopore = ReadSetNanopore()
@@ -606,7 +603,7 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
             readset.readset_nanopore.path_fastq = readset_info['path_fastq']
             readset.readset_filename = readset_info['readset_filename']
         elif nanopore_default is True:
-            path = os.path.join(raw_sequencing_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq.gz')
+            path = os.path.join(readset_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq.gz')
             fastqs = glob.glob(path)
             if len(fastqs) == 0:
                 print(f"no files matching this path {path}. Exiting.")
@@ -621,8 +618,6 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
             elif len(fastqs) > 1:
                 print(f'Reading in readset. More than one fastq found in {path}. Exiting.')
                 sys.exit()
-        readset.readset_nanopore.basecaller = readset_info['basecaller']
-        # readset.nanopore_readsets.append(readset_nanopore)
         return readset
     elif raw_sequencing_batch.sequencing_type == 'illumina':
         readset.readset_illumina = ReadSetIllumina()
@@ -688,7 +683,7 @@ def add_readset(readset_info, covid, config, nanopore_default):
 
     # after having either got the raw_sequencing if this is a re-basecalled set, or read in the raw_sequencing if
     #  it isnt, it's time to read in the readset.
-    readset = read_in_readset(readset_info, nanopore_default, raw_sequencing_batch)
+    readset = read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readset_batch)
     # print(dir(readset))
     readset_batch.readsets.append(readset)
     raw_sequencing.readsets.append(readset)
@@ -729,11 +724,16 @@ def add_readset_to_filestructure(readset, config):
         os.mkdir(readset_dir)
     if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
         output_readset_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}.fastq.gz")
-        if not os.path.isfile(output_readset_fastq_path):
+        if os.path.isfile(output_readset_fastq_path):
+            print(f"{output_readset_fastq_path} already exists. Exiting.")
+            sys.exit()
+        else:
             os.symlink(readset.readset_nanopore.path_fastq, output_readset_fastq_path)
     elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
         output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R1.fastq.gz")
         output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R2.fastq.gz")
+
+        assert os.path.isfile(output_readset_r2_fastq_path) is False
         os.symlink(readset.readset_illumina.path_r1, output_readset_r1_fastq_path)
         os.symlink(readset.readset_illumina.path_r2, output_readset_r2_fastq_path)
     print(f"Added readset to filestructure {readset.readset_identifier}-{sample_name} to {group_dir}")
