@@ -748,9 +748,6 @@ def check_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     if covid_confirmatory_pcr_info['protocol'].strip() == '':
         print(f'protocol column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit()
-    if covid_confirmatory_pcr_info['ct'].strip() == '':
-        print(f'ct column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
 
 
 def check_tiling_pcr(tiling_pcr_info):
