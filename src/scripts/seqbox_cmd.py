@@ -5,7 +5,7 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, read_in_config, get_group, add_group, get_covid_confirmatory_pcr, \
-    add_covid_confirmatory_pcr
+    add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -39,6 +39,13 @@ def add_raw_sequencing_batches(args):
             add_raw_sequencing_batch(raw_sequencing_batch_info)
 
 
+def add_readset_batches(args):
+    all_readset_batches_info = read_in_as_dict(args.readset_batches_inhandle)
+    for readset_batch_info in all_readset_batches_info:
+        if get_readset_batch(readset_batch_info) is False:
+            add_readset_batch(readset_batch_info)
+
+
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     seqbox_config = read_in_config(args.seqbox_config)
@@ -54,7 +61,7 @@ def add_readsets(args):
                 print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
                       f"{readset_info['group_name']}. Not adding it to the database.")
             elif args.nanopore_default is True:
-                print(f"The readset for sample {readset_info['sample_identifier']} for batch {readset_info['batch']} "
+                print(f"The readset for sample {readset_info['sample_identifier']} for batch {readset_info['readset_batch_name']} "
                       f"is already in the database for group {readset_info['group_name']}. Not adding it to the database.")
 
 
@@ -123,6 +130,8 @@ def run_command(args):
         add_samples(args=args)
     if args.command == 'add_extractions':
         add_extractions(args=args)
+    if args.command == 'add_readset_batches':
+        add_readset_batches(args=args)
     if args.command == 'add_readsets':
         add_readsets(args=args)
     if args.command == 'add_raw_sequencing_batches':
@@ -176,8 +185,9 @@ def main():
     parser_add_groups.add_argument('-i', dest='groups_inhandle')
     parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcr', help='Add some covid confirmatory pcrs.')
     parser_add_covid_confirmatory_pcr.add_argument('-i', dest='covid_confirmatory_pcrs_inhandle')
-
     parser_get_covid_todo_list = subparsers.add_parser('get_covid_todo_list', help='Get COVID-seq todo list.')
+    parser_add_readset_batches = subparsers.add_parser('add_readset_batches', help='Add a readset batch')
+    parser_add_readset_batches.add_argument('-i', dest='readset_batches_inhandle')
 
     args = parser.parse_args()
     run_command(args)

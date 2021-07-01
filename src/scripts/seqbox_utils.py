@@ -6,7 +6,8 @@ import yaml
 import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
-    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr
+    Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
+    ReadSetBatch
 
 
 def read_in_config(config_inhandle):
@@ -135,6 +136,18 @@ def add_project(project_info):
     db.session.commit()
     print(f"Added project {project_info['project_name']} to group {project_info['group_name']} at "
           f"{project_info['institution']}.")
+
+
+def add_readset_batch(readset_batch_info):
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_batch_info['raw_sequencing_batch_name'])
+    if raw_sequencing_batch is False:
+        print(f"Trying to get raw sequencing batch to add read set batch. "
+              f"No raw sequencing batch {readset_batch_info['raw_sequencing_batch_name']}. You need to add "
+              f"this raw sequencing batch. Exiting.")
+        sys.exit()
+    readset_batch = read_in_readset_batch(readset_batch_info)
+    raw_sequencing_batch.readset_batches.append(readset_batch)
+    db.session.commit()
 
 
 def query_projects(info, project_name):
@@ -387,6 +400,19 @@ def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
         sys.exit()
 
 
+def get_readset_batch(readset_batch_info):
+    matching_readset_batch = ReadSetBatch.query.filter_by(name=readset_batch_info['readset_batch_name']).all()
+    if len(matching_readset_batch) == 0:
+        return False
+    elif len(matching_readset_batch) == 1:
+        return matching_readset_batch[0]
+    else:
+        print(f"Getting readset batch. "
+              f"More than one match for {readset_batch_info['readset_batch_name']}. "
+              f"Shouldn't happen, exiting.")
+        sys.exit()
+
+
 def get_group(group_info):
     matching_group = Groups.query.filter_by(group_name=group_info['group_name'], institution=group_info['institution'])\
         .all()
@@ -402,15 +428,28 @@ def get_group(group_info):
 
 
 def get_readset(readset_info, covid):
-    # first, we need to get the batch to see what kind of sequencing it is
-    raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
-    if raw_sequencing_batch is False:
-        print(f"Getting readset. "
-              f"No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+    # first we get the readset batch so that we can get the raw sequencing batch so that we can get the sequencing type
+    readset_batch = get_readset_batch(readset_info)
+    if readset_batch is False:
+        print(
+            f"Getting readset. No ReadSetBatch match for {readset_info['readset_batch_name']}, need to add that batch "
+            f"and re-run. Exiting.")
         sys.exit()
+    # this get_raw_sequencing_batch is probably superfluous, because the readset_batch should be guaranteed to have
+    #  a raw_seuqencing_batch attribute, and can then just be replaced with an assertion that it's true
+    #  but will leave it in for now.
+    # assert isinstance(readset_batch.raw_sequencing_batch, RawSequencingBatch)
+    # then,  we need to get the batch to see what kind of sequencing it is
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_batch.raw_sequencing_batch.name)
+    if raw_sequencing_batch is False:
+        print(
+            f"Getting readset. No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+        sys.exit()
+
     readset_type = None
     # this is because the readset query is currently generic to sequencing type, so we use this structure to
     #  cut down on duplicate code (otherwise, would need all of the below for both illumina and nanopore).
+    # can probably just do this with readset_batch.raw_sequencing_batch.sequencing_type == 'illumina'
     if raw_sequencing_batch.sequencing_type == 'illumina':
         readset_type = ReadSetIllumina
     elif raw_sequencing_batch.sequencing_type == 'nanopore':
@@ -426,8 +465,9 @@ def get_readset(readset_info, covid):
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
     #
     if covid is False:
-        matching_readset = readset_type.query.join(ReadSet).\
-            join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch'])\
+        matching_readset = readset_type.query.join(ReadSet)\
+            .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
+            .join(RawSequencing) \
             .join(Extraction).filter_by(date_extracted=readset_info['date_extracted'],
                                         extraction_identifier=readset_info['extraction_identifier']) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource)\
@@ -437,10 +477,12 @@ def get_readset(readset_info, covid):
     # if the sample is covid, then need to match against the tiling pcr
     elif covid is True:
         matching_readset = readset_type.query.join(ReadSet). \
-            join(RawSequencing).join(RawSequencingBatch).filter_by(name=readset_info['batch']) \
+            .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name']) \
+            .join(RawSequencing) \
             .join(TilingPcr).filter_by(date_pcred=readset_info['date_pcred'],
                                        pcr_identifier=readset_info['pcr_identifier']) \
-            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
+            .join(SampleSource) \
             .join(SampleSource.projects).join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .distinct().all()
@@ -463,6 +505,14 @@ def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
     raw_sequencing_batch.sequencing_type = raw_sequencing_batch_info['sequencing_type']
     raw_sequencing_batch.batch_directory = raw_sequencing_batch_info['batch_directory']
     return raw_sequencing_batch
+
+
+def read_in_readset_batch(readset_batch_info):
+    readset_batch = ReadSetBatch()
+    readset_batch.name = readset_batch_info['readset_batch_name']
+    readset_batch.batch_directory = readset_batch_info['readset_batch_dir']
+    readset_batch.basecaller = readset_batch_info['basecaller']
+    return readset_batch
 
 
 def add_raw_sequencing_batch(raw_sequencing_batch_info):
@@ -492,7 +542,7 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch):
 
     matching_raw_sequencing = raw_sequencing_type.query \
         .join(RawSequencing)\
-        .join(RawSequencingBatch).filter_by(name=readset_info['batch'])\
+        .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name)\
         .join(Extraction).filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                      date_extracted=datetime.datetime.strptime(
                                                          readset_info['date_extracted'], '%d/%m/%Y')) \
@@ -544,6 +594,9 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
     return raw_sequencing
 
 
+
+
+
 def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch):
     readset = ReadSet()
     if raw_sequencing_batch.sequencing_type == 'nanopore':
@@ -586,12 +639,22 @@ def add_readset(readset_info, covid, config, nanopore_default):
     # 2. get the extraction
     # 3. get teh raw_sequencing
     #    a. if the raw sequencing doesn't already exist, make it and add it to extraction.
-    raw_sequencing_batch = get_raw_sequencing_batch(readset_info['batch'])
+    readset_batch = get_readset_batch(readset_info)
+    if readset_batch is False:
+        print(
+            f"Adding readset. No ReadSetBatch match for {readset_info['readset_batch_name']}, need to add that batch "
+            f"and re-run. Exiting.")
+        sys.exit()
+    # this get_raw_sequencing_batch is probably superfluous, because the readset_batch should be guaranteed to have
+    #  a raw_seuqencing_batch attribute, and can then just be replaced with an assertion that it's true
+    #  but will leave it in for now.
+    # assert isinstance(readset_batch.raw_sequencing_batch, RawSequencingBatch)
+    raw_sequencing_batch = get_raw_sequencing_batch(readset_batch.raw_sequencing_batch.name)
     if raw_sequencing_batch is False:
-        print(f"Adding readset. No RawSequencing match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+        print(f"Adding readset. No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
         sys.exit()
     # get raw sequencing
-    raw_sequencing = get_raw_sequencing(readset_info, raw_sequencing_batch)
+    raw_sequencing = get_raw_sequencing(readset_info, readset_batch.raw_sequencing_batch)
     # raw_sequencing will only be True if this is a re-basecalled readset
     if raw_sequencing is False:
         # if it's false, means need to add raw sequencing
@@ -621,10 +684,13 @@ def add_readset(readset_info, covid, config, nanopore_default):
                 sys.exit()
             # and add the raw_sequencing to the extraction
             extraction.raw_sequencing.append(raw_sequencing)
+
+
     # after having either got the raw_sequencing if this is a re-basecalled set, or read in the raw_sequencing if
     #  it isnt, it's time to read in the readset.
     readset = read_in_readset(readset_info, nanopore_default, raw_sequencing_batch)
     # print(dir(readset))
+    readset_batch.readsets.append(readset)
     raw_sequencing.readsets.append(readset)
     # add the readset to the filestructure
     add_readset_to_filestructure(readset, config)

@@ -63,10 +63,25 @@ def load_user(id):
     return User.query.get(int(id))
 
 
+class ReadSetBatch(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.VARCHAR(60), comment="Name of readset batch.")
+    batch_directory = db.Column(db.VARCHAR(128), comment="Original directory where readset batch stored.")
+    basecaller = db.Column(db.VARCHAR(60), comment="Basecaller used to generate sequence data.")
+    raw_sequencing_batch_id = db.Column(db.Integer,
+                                        db.ForeignKey("raw_sequencing_batch.id", onupdate="cascade",
+                                                      ondelete="set null"),
+                                        nullable=True)
+    readsets = db.relationship("ReadSet", backref="readset_batch")
+
+
 class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.Integer,
                                   db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"),
+                                  nullable=True)
+    readset_batch_id = db.Column(db.Integer,
+                                  db.ForeignKey("read_set_batch.id", onupdate="cascade", ondelete="set null"),
                                   nullable=True)
     # the Sequence won't work until port to postgres
     readset_identifier = db.Column(db.Integer, db.Sequence("readset_identifier"), comment="ReadSet identifier id, " 
@@ -272,6 +287,7 @@ class RawSequencingBatch(db.Model):
     flowcell_type = db.Column(db.VARCHAR(64))
     raw_sequencings = db.relationship("RawSequencing", backref="raw_sequencing_batch")
     batch_directory = db.Column(db.VARCHAR(128))
+    readset_batches = db.relationship("ReadSetBatch", backref="raw_sequencing_batch")
 
     def __repr__(self):
         return '<Batch {}>'.format(self.name)
