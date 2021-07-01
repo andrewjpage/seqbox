@@ -80,15 +80,14 @@ class ReadSetBatch(db.Model):
 class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.Integer,
-                                  db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"),
-                                  nullable=True)
+                                  db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"))
     readset_batch_id = db.Column(db.Integer,
-                                  db.ForeignKey("read_set_batch.id", onupdate="cascade", ondelete="set null"),
-                                  nullable=True)
+                                  db.ForeignKey("read_set_batch.id", onupdate="cascade", ondelete="set null"))
     # the Sequence won't work until port to postgres
-    readset_identifier = db.Column(db.Integer, db.Sequence("readset_identifier"), comment="ReadSet identifier id, " 
-                                                                        "incrementing integer id to uniquely identify "
-                                                                                          "this read set")
+    readset_identifier = db.Column(db.Integer, db.Sequence("readset_identifier"), comment="ReadSet identifier id, "
+                                                                                          "incrementing integer id to "
+                                                                                          "uniquely identify this read "
+                                                                                          "set")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     readset_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
                                                       "{readset_id}-{sample.sample_identifier}")
@@ -98,6 +97,7 @@ class ReadSet(db.Model):
     readset_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
     readset_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
+    data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
 
     # @hybrid_property
     # def readset_id(self):
@@ -209,6 +209,7 @@ class Extraction(db.Model):
                                                           "it needs to be 2 (and so on).")
     extraction_machine = db.Column(db.VARCHAR(60), comment="E.g. QiaSymphony, manual")
     extraction_kit = db.Column(db.VARCHAR(60), comment="E.g. Qiasymphony Minikit")
+    extraction_from = db.Column(db.VARCHAR(60), comment="E.g. plate sweep, isolate, whole sample")
     what_was_extracted = db.Column(db.VARCHAR(60), comment="E.g. DNA, RNA")
     date_extracted = db.Column(db.DateTime, comment="Date this extract was done")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
@@ -242,9 +243,7 @@ class RawSequencing(db.Model):
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
     raw_sequencing_batch_id = db.Column(db.ForeignKey("raw_sequencing_batch.id"))
     tiling_pcr_id = db.Column(db.ForeignKey("tiling_pcr.id"))
-
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
-
     readsets = db.relationship("ReadSet", backref="raw_sequencing")
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
     raw_sequencing_illumina = db.relationship("RawSequencingIllumina", backref="raw_sequencing", uselist=False)
