@@ -470,8 +470,10 @@ def get_readset(readset_info, covid):
             .join(RawSequencing) \
             .join(Extraction).filter_by(date_extracted=readset_info['date_extracted'],
                                         extraction_identifier=readset_info['extraction_identifier']) \
-            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']).join(SampleSource)\
-            .join(SampleSource.projects).join(Groups)\
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
+            .join(SampleSource)\
+            .join(SampleSource.projects)\
+            .join(Groups)\
             .filter_by(group_name=readset_info['group_name'])\
             .distinct().all()
     # if the sample is covid, then need to match against the tiling pcr
@@ -481,9 +483,11 @@ def get_readset(readset_info, covid):
             .join(RawSequencing) \
             .join(TilingPcr).filter_by(date_pcred=readset_info['date_pcred'],
                                        pcr_identifier=readset_info['pcr_identifier']) \
+            .join(Extraction)\
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
-            .join(SampleSource.projects).join(Groups) \
+            .join(SampleSource.projects) \
+            .join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .distinct().all()
     # if there is no matching readset, return False (l
@@ -533,24 +537,38 @@ def get_raw_sequencing_batch(batch_name):
         sys.exit()
 
 
-def get_raw_sequencing(readset_info, raw_sequencing_batch):
+def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
     raw_sequencing_type = None
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         raw_sequencing_type = RawSequencingNanopore
     elif raw_sequencing_batch.sequencing_type == 'illumina':
         raw_sequencing_type = RawSequencingIllumina
 
-    matching_raw_sequencing = raw_sequencing_type.query \
-        .join(RawSequencing)\
-        .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name)\
-        .join(Extraction).filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                     date_extracted=datetime.datetime.strptime(
-                                                         readset_info['date_extracted'], '%d/%m/%Y')) \
-        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
-        .join(SampleSource) \
-        .join(SampleSource.projects).join(Groups) \
-        .filter_by(group_name=readset_info['group_name']) \
-        .distinct().all()
+    if covid is True:
+        matching_raw_sequencing = raw_sequencing_type.query \
+            .join(RawSequencing) \
+            .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
+            .join(Extraction)\
+            .join(TilingPcr).filter_by(pcr_identifier=readset_info['pcr_identifier'],
+                                        date_pcred=datetime.datetime.strptime(
+                                            readset_info['date_pcred'], '%d/%m/%Y')) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
+            .join(SampleSource) \
+            .join(SampleSource.projects).join(Groups) \
+            .filter_by(group_name=readset_info['group_name']) \
+            .distinct().all()
+    elif covid is False:
+        matching_raw_sequencing = raw_sequencing_type.query \
+            .join(RawSequencing)\
+            .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name)\
+            .join(Extraction).filter_by(extraction_identifier=readset_info['extraction_identifier'],
+                                                         date_extracted=datetime.datetime.strptime(
+                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
+            .join(SampleSource) \
+            .join(SampleSource.projects).join(Groups) \
+            .filter_by(group_name=readset_info['group_name']) \
+            .distinct().all()
 
     if len(matching_raw_sequencing) == 0:
         # no matching raw sequencing will be the case for 99.999% of illumina (all illumina?) and most nanopore
@@ -601,15 +619,12 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
         if nanopore_default is False:
             assert readset_info['path_fastq'].endswith('fastq.gz')
             readset.readset_nanopore.path_fastq = readset_info['path_fastq']
-            readset.readset_filename = readset_info['readset_filename']
         elif nanopore_default is True:
             path = os.path.join(readset_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq.gz')
             fastqs = glob.glob(path)
             if len(fastqs) == 0:
                 print(f"no files matching this path {path}. Exiting.")
                 sys.exit()
-            # todo - this way of setting readset_filename is shitty and fragile
-            readset.readset_filename = os.path.basename(fastqs[0]).split('.')[0]
             if len(fastqs) == 1:
                 readset.readset_nanopore.path_fastq = fastqs[0]
             elif len(fastqs) == 0:
@@ -649,7 +664,7 @@ def add_readset(readset_info, covid, config, nanopore_default):
         print(f"Adding readset. No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
         sys.exit()
     # get raw sequencing
-    raw_sequencing = get_raw_sequencing(readset_info, readset_batch.raw_sequencing_batch)
+    raw_sequencing = get_raw_sequencing(readset_info, readset_batch.raw_sequencing_batch, covid)
     # raw_sequencing will only be True if this is a re-basecalled readset
     if raw_sequencing is False:
         # if it's false, means need to add raw sequencing
@@ -737,7 +752,6 @@ def add_readset_to_filestructure(readset, config):
         os.symlink(readset.readset_illumina.path_r1, output_readset_r1_fastq_path)
         os.symlink(readset.readset_illumina.path_r2, output_readset_r2_fastq_path)
     print(f"Added readset to filestructure {readset.readset_identifier}-{sample_name} to {group_dir}")
-    # if not os.path.isdir(f"{config['seqbox_directory']}/{readset.readset.readset_identifier}-{readset.readset.readset_filename}")
 
 
 

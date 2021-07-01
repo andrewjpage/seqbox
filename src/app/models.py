@@ -88,8 +88,6 @@ class ReadSet(db.Model):
                                                                         "incrementing integer id to uniquely identify "
                                                                                           "this read set")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    readset_filename = db.Column(db.VARCHAR(60), comment="what is the filename of the read set (without R1/R2 for "
-                                                          "Illumina data)")
     readset_name = db.Column(db.VARCHAR(60), comment="the full name of this read set i.e. "
                                                       "{readset_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("readset", passive_updates=True,
@@ -103,7 +101,7 @@ class ReadSet(db.Model):
     #     return self.illumina_readset_id or self.nanopore_readset_id
 
     def __repr__(self):
-        return f"ReadSet(id: {self.id}, readset_identifier: {self.readset_identifier}, readset_filename: {self.readset_filename})"
+        return f"ReadSet(id: {self.id}, readset_identifier: {self.readset_identifier}"
 
 
 class ReadSetIllumina(db.Model):

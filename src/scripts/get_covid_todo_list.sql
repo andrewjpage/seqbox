@@ -1,5 +1,5 @@
 select sample.sample_identifier, e.extraction_identifier, DATE(e.date_extracted), ccp.pcr_identifier, DATE(ccp.date_pcred),
-       ccp.ct, tp.pcr_identifier, DATE(tp.date_pcred), rsb.name, r.readset_identifier, r.readset_filename
+       ccp.ct, tp.pcr_identifier, DATE(tp.date_pcred), rsb.name, r.readset_identifier
 from sample
 left join extraction e on sample.id = e.sample_id
 left join covid_confirmatory_pcr ccp on e.id = ccp.extraction_id
