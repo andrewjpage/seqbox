@@ -195,6 +195,7 @@ class Sample(db.Model):
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which processed the sample.")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     extractions = db.relationship("Extraction", backref="sample")
+    pcr_results = db.relationship("PcrResult", backref="sample")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
@@ -375,4 +376,25 @@ class CovidConfirmatoryPcr(db.Model):
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
+
+
+class PcrResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sample_id = db.Column(db.ForeignKey("sample.id"))
+    pcr_result = db.Column(db.VARCHAR(60), comment="Was the test positive or negative")
+    ct = db.Column(db.Numeric, comment="Was the test positive or negative")
+    date_pcred = db.Column(db.DateTime, comment="Date this PCR was done")
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
+    institution = db.Column(db.VARCHAR(60), comment="Which institution did this PCR?")
+    pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
+                                                   "same day.")
+    pcr_assay_id = db.Column(db.ForeignKey("pcr_assay.id"))
+
+
+class PcrAssay(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    assay_name = db.Column(db.VARCHAR(60), comment="What is the name/identifier of the assay? E.g. sars-cov-2 CDC v1")
+    pcr_results = db.relationship("PcrResult", backref="pcr_assay")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")

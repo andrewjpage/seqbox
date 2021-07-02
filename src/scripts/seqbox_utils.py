@@ -7,7 +7,7 @@ import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
-    ReadSetBatch
+    ReadSetBatch, PcrResult, PcrAssay
 
 
 def read_in_config(config_inhandle):
@@ -278,6 +278,22 @@ def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     return covid_confirmatory_pcr
 
 
+def read_in_pcr_result(pcr_result_info):
+    check_pcr_result(pcr_result_info)
+    pcr_result = PcrResult()
+    if pcr_result_info['date_pcred'] != '':
+        pcr_result.date_pcred = datetime.datetime.strptime(pcr_result_info['date_pcred'], '%d/%m/%Y')
+    if pcr_result_info['pcr_identifier'] != '':
+        pcr_result.pcr_identifier = pcr_result_info['pcr_identifier']
+    if pcr_result_info['ct'] == '':
+        pcr_result.ct = None
+    else:
+        pcr_result.ct = pcr_result_info['ct']
+    if pcr_result_info['result'] != '':
+        pcr_result.pcr_result = pcr_result_info['result']
+    return pcr_result
+
+
 def add_sample(sample_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
@@ -350,6 +366,31 @@ def add_group(group_info):
     print(f"Adding group {group_info['group_name']} from {group_info['institution']} to database.")
 
 
+def add_pcr_assay(pcr_assay_info):
+    pcr_assay = PcrAssay()
+    assert pcr_assay_info['assay_name'].strip() != ''
+    pcr_assay.assay_name = pcr_assay_info['assay_name']
+    db.session.add(pcr_assay)
+    db.session.commit()
+    print(f"Adding pcr_assay {pcr_assay_info['assay_name']} to database.")
+
+
+def add_pcr_result(pcr_result_info):
+    check_pcr_result(pcr_result_info)
+    pcr_result = read_in_pcr_result(pcr_result_info)
+    assay = get_pcr_assay(pcr_result_info)
+    assay.pcr_results.append(pcr_result)
+    sample = get_sample(pcr_result_info)
+    if sample is False:
+        print(f"Adding pcr result, cant find sample for this result:\n{pcr_result_info}\nExiting.")
+        sys.exit()
+    sample.pcr_results.append(pcr_result)
+    db.session.add(pcr_result)
+    db.session.commit()
+    print(f"Adding pcr_result for {pcr_result_info['sample_identifier']}, assay {pcr_result_info['assay_name']} to "
+          f"database.")
+
+
 def add_extraction(extraction_info):
     sample = get_sample(extraction_info)
     if sample is False:
@@ -399,6 +440,42 @@ def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
               f"More than one match for {covid_confirmatory_pcr_info['sample_identifier']} on date"
               f" {covid_confirmatory_pcr_info['date_run']} with pcr_identifier "
               f"{covid_confirmatory_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
+        sys.exit()
+
+
+def get_pcr_assay(pcr_assay_info):
+    # matching_pcr_result = PcrResult
+    matching_pcr_assay = PcrAssay.query.filter_by(assay_name=pcr_assay_info['assay_name']).all()
+    if len(matching_pcr_assay) == 0:
+        return False
+    elif len(matching_pcr_assay) == 1:
+        return matching_pcr_assay[0]
+    else:
+        print(f"Getting pcr assay. Within getting pcr_result. "
+              f"More than one match in the db for {pcr_assay_info['assay']}. "
+              f"Shouldn't happen, exiting.")
+        sys.exit()
+
+
+def get_pcr_result(pcr_result_info):
+    assay = get_pcr_assay(pcr_result_info)
+    if assay is False:
+        print(f"There is no pcr assay called {pcr_result_info['assay']} in the database, please add it and re-run. "
+              f"Exiting.")
+        sys.exit()
+    matching_pcr_result = PcrResult.query.filter_by(date_pcred=pcr_result_info['date_pcred'],
+                                                    pcr_identifier=pcr_result_info['pcr_identifier'])\
+        .join(PcrAssay).filter_by(assay_name=pcr_result_info['assay_name'])\
+        .join(Sample).filter_by(sample_identifier=pcr_result_info['sample_identifier']).all()
+    if len(matching_pcr_result) == 0:
+        return False
+    elif len(matching_pcr_result) == 1:
+        return matching_pcr_result[0]
+    else:
+        print(f"Getting pcr result."
+              f"More than one match in the db for {pcr_result_info['sample_identifier']}, running the "
+              f"{pcr_result_info['assay']} test, on {pcr_result_info['date_pcred']} "
+              f"Shouldn't happen, exiting.")
         sys.exit()
 
 
@@ -783,6 +860,28 @@ def check_tiling_pcr(tiling_pcr_info):
         print(f'number_of_cycles column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
         sys.exit()
 
+
+def check_pcr_result(pcr_result_info):
+    if pcr_result_info['sample_identifier'].strip() == '':
+        print(f'sample_identifier column should not be empty. it is for \n{pcr_result_info}\nExiting.')
+        sys.exit()
+    if pcr_result_info['date_pcred'].strip() == '':
+        print(f'date_pcred column should not be empty. it is for \n{pcr_result_info}\nExiting.')
+        sys.exit()
+    if pcr_result_info['pcr_identifier'].strip() == '':
+        print(f'pcr_identifier column should not be empty. it is for \n{pcr_result_info}\nExiting.')
+        sys.exit()
+    if pcr_result_info['group_name'].strip() == '':
+        print(f'group_name column should not be empty. it is for \n{pcr_result_info}\nExiting.')
+        sys.exit()
+    if pcr_result_info['assay_name'].strip() == '':
+        print(f'protocol column should not be empty. it is for \n{pcr_result_info}\nExiting.')
+        sys.exit()
+    if pcr_result_info['result'].strip() == '':
+        print(f'result column should not be empty. it is for \n{pcr_result_info}\nExiting.')
+        sys.exit()
+
+        
 
 def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid):
     if readset_info['data_storage_device'].strip() == '':

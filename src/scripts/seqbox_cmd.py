@@ -5,7 +5,8 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, read_in_config, get_group, add_group, get_covid_confirmatory_pcr, \
-    add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch
+    add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
+    add_pcr_assay
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -121,6 +122,21 @@ def add_covid_confirmatory_pcrs(args):
             add_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
 
 
+def add_pcr_results(args):
+    all_pcr_results_info = read_in_as_dict(args.pcr_results_inhandle)
+    for pcr_result_info in all_pcr_results_info:
+        if get_pcr_result(pcr_result_info) is False:
+            add_pcr_result(pcr_result_info)
+
+
+def add_pcr_assays(args):
+    all_pcr_assays_info = read_in_as_dict(args.pcr_assays_inhandle)
+    # print(all_pcr_assays_info)
+    for pcr_assay in all_pcr_assays_info:
+        if get_pcr_assay(pcr_assay) is False:
+            add_pcr_assay(pcr_assay)
+
+
 def run_command(args):
     if args.command == 'add_projects':
         add_projects(args=args)
@@ -140,11 +156,15 @@ def run_command(args):
         add_tiling_pcrs(args=args)
     if args.command == 'add_groups':
         add_groups(args=args)
-    if args.command == 'add_covid_confirmatory_pcr':
+    if args.command == 'add_covid_confirmatory_pcrs':
         add_covid_confirmatory_pcrs(args=args)
     if args.command == 'get_covid_todo_list':
         print('currently need to get covid todo list through direct sql query. sorry!')
         sys.exit()
+    if args.command == 'add_pcr_results':
+        add_pcr_results(args=args)
+    if args.command == 'add_pcr_assays':
+        add_pcr_assays(args=args)
 
 
 def main():
@@ -183,8 +203,12 @@ def main():
     parser_add_tiling_pcrs.add_argument('-i', dest='tiling_pcrs_inhandle')
     parser_add_groups = subparsers.add_parser('add_groups', help='Add a new group.')
     parser_add_groups.add_argument('-i', dest='groups_inhandle')
-    parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcr', help='Add some covid confirmatory pcrs.')
+    parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcrs', help='Add some covid confirmatory pcrs.')
     parser_add_covid_confirmatory_pcr.add_argument('-i', dest='covid_confirmatory_pcrs_inhandle')
+    parser_add_pcr_result = subparsers.add_parser('add_pcr_results', help='Add some PCR results')
+    parser_add_pcr_result.add_argument('-i', dest='pcr_results_inhandle')
+    parser_add_pcr_assay = subparsers.add_parser('add_pcr_assays', help='Add a PCR assay')
+    parser_add_pcr_assay.add_argument('-i', dest='pcr_assays_inhandle')
     parser_get_covid_todo_list = subparsers.add_parser('get_covid_todo_list', help='Get COVID-seq todo list.')
     parser_add_readset_batches = subparsers.add_parser('add_readset_batches', help='Add a readset batch')
     parser_add_readset_batches.add_argument('-i', dest='readset_batches_inhandle')

@@ -1,0 +1,3 @@
+﻿raw_sequencing_batch_name,readset_batch_name,readset_batch_dir,basecaller
+20210601_1134_DK-111231_0_FAO09894_ba56ad3,20210601_1134_DK-111231_0_FAO09894_ba56ad3,/Users/flashton/Dropbox/non-project/test_input_data/20210601_1134_DK-111231_0_FAO09894_ba56ad3,guppy v4 HAC
+20210601_1134_DK-111231_0_FAO09894_ba56ad3,20210601_1134_DK-111231_0_FAO09894_ba56ad3_guppy_v5,/Users/flashton/Dropbox/non-project/test_input_data/20210601_1134_DK-111231_0_FAO09894_ba56ad3_guppy_v5,guppy_v5 sup
