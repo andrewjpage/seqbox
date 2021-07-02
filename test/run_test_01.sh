@@ -5,7 +5,7 @@ set -o pipefail
 python test/test_no_web.py # creates db
 python src/scripts/seqbox_cmd.py add_groups -i test/01.test_todo_list_query/groups.csv
 python src/scripts/seqbox_cmd.py add_projects -i test/01.test_todo_list_query/projects.csv
-python src/scripts/seqbox_cmd.py add_pcr_assays -i test/templates/template_pcr_assay.csv 
+python src/scripts/seqbox_cmd.py add_pcr_assays -i test/01.test_todo_list_query/pcr_assay.csv 
 python src/scripts/seqbox_cmd.py add_sample_sources -i test/01.test_todo_list_query/sample_sources.csv
 python src/scripts/seqbox_cmd.py add_samples -i test/01.test_todo_list_query/samples.csv
 python src/scripts/seqbox_cmd.py add_pcr_results -i test/01.test_todo_list_query/pcr_results.csv

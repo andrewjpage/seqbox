@@ -3,24 +3,30 @@ local sequence management lightweight tools
 
 ## Database notes
 
+### groups
+
+* Group name should not have any spaces in because it's used for file path.
+
+### sample_source
 * sample_source_identifier needs to be unique within a group
     * confirm this with the PI, Brigitte says that many of the older TB studies 
     and some of the COM studies don't go through PreLink.
 * if you add an existing sample_source_identifier associated with a different 
 project then that sample_source_identifier will be associated
 with that project.
+
+### projects
 * projects (and hence samples, sample sources, etc) can't be 
 shared between groups
 * projects is an attribute of sample_source because it's the 
 sample source which is the primary thing enrolled in the project,
 not the sample itself
-* we have raw sequencing class because what if we want to re-basecall the
-same sequencing run?
+
+###read set batch/raw sequencing batch
 * raw_sequencing_batch name has to be unique across all projects/groups
-* How to handle multiple picks from same sample?
-    * Multiple picks should be added as new samples, related to the same
-    sample source of course. Ideally, the sample identifier will make it
-    easy to see that they're multiple picks. E.g. BMD671-1, BMD671-2.
+* readset_batch_name and raw sequencing batch namespace is shared across all groups/institutions (i.e. has to be unique)
+
+### readset/raw sequencing
 * currently assuming that whenever you have new raw sequencing, 
 you are also adding a new readset as well.
 * if you add a new readset with the same raw sequencing 
@@ -38,22 +44,31 @@ know the batch_directory.
 * the same sample should only be run once on each batch. i.e.
 don't run the same sample on multiple barcodes on the same
 batch.
-* if you're adding a covid readset, need to include the `-s` flag
-(stands for SARS-CoV-2, `-c` already taken)
 * add readsets expects to find a single fastq in the barcode
 directory. need to combine the fastqs if the basecaller makes 
 multiple.
 * all the input fastqs for both nanopore and illumina need to 
 be gzipped.
+* if the readset is not covid, it needs the date and 
+extraction identifier of the corresponding extraction.
+
+### COVID
+* if you're adding a covid readset, need to include the `-s` flag
+(stands for SARS-CoV-2, `-c` already taken)
 * if the readset is COVID, it needs the date and pcr identifier of the 
 corresponding tiling pcr. if the readset is not covid, it needs the date and 
 extraction identifier of the corresponding extraction.
-* nanopore deafult refers to teh structure of the directory wit the input 
-nanopore data.
-* readset_batch_name and raw sequencing batch namespace is shared across all groups/institutions (i.e. has to be unique)
+
+### multiple picks
+* How to handle multiple picks from same sample?
+    * Multiple picks should be added as new samples, related to the same
+    sample source of course. Ideally, the sample identifier will make it
+    easy to see that they're multiple picks. E.g. BMD671-1, BMD671-2.
+
+### merging
+
 * If want to merge a couple of readsets of teh same extract, then need to make a 
 new readset batch, then a bunch of new readsets.
-* Group name should not have any spaces in because it's used for file path.
 
 ## tests
 

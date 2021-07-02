@@ -27,6 +27,12 @@ def read_in_as_dict(inhandle):
         # it will be 1 where they are all blank i.e. ''
         if len(set(new_info.values())) > 1:
             list_of_lines.append(new_info)
+        # because pcr assay only has one value, need to add this check
+        elif len(set(new_info.values())) == 1:
+            if list(set(new_info.values()))[0] == '':
+                pass
+            else:
+                list_of_lines.append(new_info)
         else:
             pass
             # print(f'This line not being processed - {new_info}')
@@ -198,6 +204,12 @@ def read_in_sample_info(sample_info):
         sample.month_collected = sample_info['month_collected']
     if sample_info['year_collected'] != '':
         sample.year_collected = sample_info['year_collected']
+    if sample_info['day_received'] != '':
+        sample.day_received = sample_info['day_received']
+    if sample_info['month_received'] != '':
+        sample.month_received = sample_info['month_received']
+    if sample_info['year_received'] != '':
+        sample.year_received = sample_info['year_received']
     return sample
 
 
@@ -460,7 +472,7 @@ def get_pcr_assay(pcr_assay_info):
 def get_pcr_result(pcr_result_info):
     assay = get_pcr_assay(pcr_result_info)
     if assay is False:
-        print(f"There is no pcr assay called {pcr_result_info['assay']} in the database, please add it and re-run. "
+        print(f"There is no pcr assay called {pcr_result_info['assay_name']} in the database, please add it and re-run. "
               f"Exiting.")
         sys.exit()
     matching_pcr_result = PcrResult.query.filter_by(date_pcred=pcr_result_info['date_pcred'],
@@ -880,7 +892,12 @@ def check_pcr_result(pcr_result_info):
     if pcr_result_info['result'].strip() == '':
         print(f'result column should not be empty. it is for \n{pcr_result_info}\nExiting.')
         sys.exit()
-
+    allowable_results = {'Negative', 'Negative - Followup', 'Positive - Followup', 'Positive',
+                         'Indeterminate'}
+    if pcr_result_info['result'] not in allowable_results:
+        print(f'result column should contain one of these results {allowable_results}. '
+              f'it doesnt for \n{pcr_result_info}\nExiting.')
+        sys.exit()
         
 
 def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid):
@@ -1047,7 +1064,7 @@ def add_readset_to_filestructure(readset, config):
     # data is going to be stored in a directory with the group name, so need to get the group name of this readset.
     projects = readset.raw_sequencing.extraction.sample.sample_source.projects
     group_names = [x.groups.group_name for x in projects]
-    # a sample can only belong to one project, so this assertion should always be true.
+    # a sample can only belong to one group, so this assertion should always be true.
     assert len(set(group_names)) == 1
     group_name = group_names[0]
     group_dir = os.path.join(config['seqbox_directory'], group_name)

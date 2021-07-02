@@ -131,7 +131,6 @@ def add_pcr_results(args):
 
 def add_pcr_assays(args):
     all_pcr_assays_info = read_in_as_dict(args.pcr_assays_inhandle)
-    # print(all_pcr_assays_info)
     for pcr_assay in all_pcr_assays_info:
         if get_pcr_assay(pcr_assay) is False:
             add_pcr_assay(pcr_assay)
