@@ -244,6 +244,7 @@ def read_in_group(group_info):
     group = Groups()
     group.group_name = group_info['group_name']
     group.institution = group_info['institution']
+    group.pi = group_info['pi']
     return group
 
 
@@ -673,6 +674,12 @@ def check_extraction_fields(extraction_info):
 
 
 def check_group(group_info):
+    if ' ' in group_info['group_name']:
+        print(f'group_name should not have any spaces in in. there is one for \n{group_info}\nExiting.')
+        sys.exit()
+    if '/' in group_info['group_name']:
+        print(f'group_name should not have any backslashes in in. there is one for \n{group_info}\nExiting.')
+        sys.exit()
     if group_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{group_info}\nExiting.')
         sys.exit()

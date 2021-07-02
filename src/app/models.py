@@ -98,6 +98,7 @@ class ReadSet(db.Model):
     readset_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
+    include = db.Column(db.VARCHAR(128), comment="Should this readset be included in further analyses?")
 
     # @hybrid_property
     # def readset_id(self):
@@ -359,6 +360,7 @@ class Groups(db.Model):
     group_name = db.Column(db.VARCHAR(60), comment="The name of the group running this project (again, think about"
                                                    "this in context of ethics permission).")
     institution = db.Column(db.VARCHAR(60), comment="The name of the institution where this group work.")
+    pi = db.Column(db.VARCHAR(60), comment="The name of the PI of this group")
     projects = db.relationship("Project", backref="groups")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 

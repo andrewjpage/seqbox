@@ -53,6 +53,7 @@ nanopore data.
 * readset_batch_name and raw sequencing batch namespace is shared across all groups/institutions (i.e. has to be unique)
 * If want to merge a couple of readsets of teh same extract, then need to make a 
 new readset batch, then a bunch of new readsets.
+* Group name should not have any spaces in because it's used for file path.
 
 ## tests
 
