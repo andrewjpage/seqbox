@@ -99,6 +99,7 @@ class ReadSet(db.Model):
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     include = db.Column(db.VARCHAR(128), comment="Should this readset be included in further analyses?")
+    artic_covid_result = db.relationship("ArticCovidResult", backref="readset")
 
     # @hybrid_property
     # def readset_id(self):
@@ -137,6 +138,7 @@ class ReadSetNanopore(db.Model):
     path_fastq = db.Column(db.VARCHAR(250))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     basecaller = db.Column(db.VARCHAR(60))
+    barcode = db.Column(db.VARCHAR(60))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     # nanopore_batch = db.Column(db.VARCHAR(50), db.ForeignKey("nanopore_batch.id", onupdate="cascade",
@@ -401,3 +403,14 @@ class PcrAssay(db.Model):
     assay_name = db.Column(db.VARCHAR(60), comment="What is the name/identifier of the assay? E.g. sars-cov-2 CDC v1")
     pcr_results = db.relationship("PcrResult", backref="pcr_assay")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
+
+
+class ArticCovidResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sample_name = db.Column(db.VARCHAR(60), comment="The sample name from the artic result output.")
+    pct_N_bases = db.Column(db.Numeric, comment="Percentage N bases")
+    pct_covered_bases = db.Column(db.Numeric, comment="Percentage covered bases")
+    num_aligned_reads = db.Column(db.Numeric, comment="The number of aligned reads")
+    workflow = db.Column(db.VARCHAR(60), comment="Workflow e.g. illumina, medaka, nanopolish")
+    profile = db.Column(db.VARCHAR(60), comment="Profile e.g. docker, conda, etc")
+    readset_id = db.Column(db.ForeignKey("read_set.id"))

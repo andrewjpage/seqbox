@@ -70,6 +70,14 @@ extraction identifier of the corresponding extraction.
 * If want to merge a couple of readsets of teh same extract, then need to make a 
 new readset batch, then a bunch of new readsets.
 
+### adding artic nf results
+
+* will only work if you added the nanopore data using "default" settings, as it 
+needs the barcode.
+* only works with nanopore
+* sample name column has to have the barcode as the last element when split by 
+underscores
+
 ## tests
 
 1. Nanopore, default, covid. Test 1 tests multiple things i) that the todo list query is working ok 
@@ -114,4 +122,27 @@ with illumina data instead of nanopore.
     
 6. nanopore, default, not covid. test for adding another readset to same raw sequencing.
 
-7. nanopore, not default, not covid. test for adding another readset to same raw sequencing 
+7. nanopore, not default, not covid. test for adding another readset to same raw sequencing
+
+## How to add a new table
+
+1. Commit to the flask migrate repo?
+2. In seqbox_cmd:
+    a. add a new parser to main()
+    b. add to run_command()
+    c. add new function for processing the input file
+3. In seqbox_utils:
+    
+    a. add a new get_* function
+    
+        i. this runs a check_* function
+        
+        ii. need to come back and check this function after we have added somethign
+         to make sure it returns correctly when there is a match in the database
+         
+4. In models:
+    a. add a new class to represent the table
+    b. 
+    
+    
+    

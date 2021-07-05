@@ -6,7 +6,7 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, read_in_config, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
-    add_pcr_assay
+    add_pcr_assay, get_artic_covid_result, add_artic_covid_result
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -136,6 +136,15 @@ def add_pcr_assays(args):
             add_pcr_assay(pcr_assay)
 
 
+def add_artic_covid_results(args):
+    all_artic_covid_results_info = read_in_as_dict(args.artic_covid_results_inhandle)
+    for artic_covid_result in all_artic_covid_results_info:
+        artic_covid_result['readset_batch_name'] = args.readset_batch_name
+        artic_covid_result['barcode'] = artic_covid_result['sample_name'].split('_')[-1]
+        if get_artic_covid_result(artic_covid_result, args.profile, args.workflow) is False:
+            add_artic_covid_result(artic_covid_result, args.profile, args.workflow)
+
+
 def run_command(args):
     if args.command == 'add_projects':
         add_projects(args=args)
@@ -164,6 +173,8 @@ def run_command(args):
         add_pcr_results(args=args)
     if args.command == 'add_pcr_assays':
         add_pcr_assays(args=args)
+    if args.command == 'add_artic_covid_results':
+        add_artic_covid_results(args=args)
 
 
 def main():
@@ -211,7 +222,12 @@ def main():
     parser_get_covid_todo_list = subparsers.add_parser('get_covid_todo_list', help='Get COVID-seq todo list.')
     parser_add_readset_batches = subparsers.add_parser('add_readset_batches', help='Add a readset batch')
     parser_add_readset_batches.add_argument('-i', dest='readset_batches_inhandle')
-
+    parser_add_artic_covid_results = subparsers.add_parser('add_artic_covid_results', help='Add artic nf covid pipeline'
+                                                                                           ' results')
+    parser_add_artic_covid_results.add_argument('-i', dest='artic_covid_results_inhandle', required=True)
+    parser_add_artic_covid_results.add_argument('-b', dest='readset_batch_name', required=True)
+    parser_add_artic_covid_results.add_argument('-w', dest='workflow', help='Workflow e.g. illumina, medaka, nanopolish', required=True)
+    parser_add_artic_covid_results.add_argument('-p', dest='profile', help='Profile e.g. docker, conda, etc', required=True)
     args = parser.parse_args()
     run_command(args)
 

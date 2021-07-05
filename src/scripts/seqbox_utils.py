@@ -7,7 +7,7 @@ import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
-    ReadSetBatch, PcrResult, PcrAssay
+    ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult
 
 
 def read_in_config(config_inhandle):
@@ -187,6 +187,24 @@ def get_projects(info):
                   f"add_projects function.\nExiting now.")
             sys.exit()
     return projects
+
+
+def get_artic_covid_result(artic_covid_result, profile, workflow):
+    # check_artic_covid_result(artic_covid_result) - check that profile and workflow are in allowed lists.
+    matching_artic_covid_result = ReadSetBatch.query.filter_by(name=artic_covid_result['readset_batch_name'])\
+        .join(ReadSet)\
+        .join(ReadSetNanopore).filter_by(barcode=artic_covid_result['barcode']) \
+        .join(ArticCovidResult).filter_by(profile=profile, workflow=workflow).all()
+    if len(matching_artic_covid_result) == 1:
+        return matching_artic_covid_result[0]
+    elif len(matching_artic_covid_result) == 0:
+        return False
+    else:
+        print(f"Trying to get artic_covid_result. "
+              f"More than one ArticCovidResult for barcode {artic_covid_result['barcode']} for "
+              f"readset batch {artic_covid_result['readset_batch_name']}, run with profile {profile} "
+              f"and workflow {workflow}. Shouldn't happen, exiting.")
+        sys.exit()
 
 
 def read_in_sample_info(sample_info):
@@ -534,7 +552,8 @@ def get_readset(readset_info, covid):
     raw_sequencing_batch = get_raw_sequencing_batch(readset_batch.raw_sequencing_batch.name)
     if raw_sequencing_batch is False:
         print(
-            f"Getting readset. No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
+            f"Getting readset. No RawSequencingBatch match for {readset_info['readset_batch_name']}, "
+            f"need to add that batch and re-run. Exiting.")
         sys.exit()
 
     readset_type = None
@@ -554,7 +573,6 @@ def get_readset(readset_info, covid):
     #  (should spin out the get fastq path functionality from add readset to filesystem into sep func)
     # if it's nanopore, but not default, the fastq path will be in the readset_info.
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
-    #
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
@@ -581,7 +599,7 @@ def get_readset(readset_info, covid):
             .join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .distinct().all()
-    # if there is no matching readset, return False (l
+    # if there is no matching readset, return False
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
@@ -958,6 +976,7 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
             assert readset_info['path_fastq'].endswith('fastq.gz')
             readset.readset_nanopore.path_fastq = readset_info['path_fastq']
         elif nanopore_default is True:
+            readset.readset_nanopore.barcode = readset_info['barcode']
             path = os.path.join(readset_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq.gz')
             fastqs = glob.glob(path)
             if len(fastqs) == 0:
@@ -979,6 +998,34 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
         readset.readset_illumina.path_r1 = readset_info['path_r1']
         readset.readset_illumina.path_r2 = readset_info['path_r2']
         return readset
+
+
+def get_nanopore_readset_from_batch_and_barcode(batch_and_barcode_info):
+    matching_readset = ReadSet.query.join(ReadSetBatch).filter_by(name=batch_and_barcode_info['readset_batch_name'])\
+        .join(ReadSetNanopore).filter_by(barcode=batch_and_barcode_info['barcode']).all()
+    if len(matching_readset) == 0:
+        return False
+    elif len(matching_readset) == 1:
+        return matching_readset[0]
+
+
+def add_artic_covid_result(artic_covid_result, profile, workflow):
+    # need sample_identifier, group_name, date_pcred, pcr_identifier
+
+    # readset_batch = get_readset_batch(artic_covid_result)
+    readset = get_nanopore_readset_from_batch_and_barcode(artic_covid_result)
+    if readset is False:
+        print(f"Adding artic covid results. There is no readset for barcode {artic_covid_result['barcode']} from "
+              f"read set batch {artic_covid_result['readset_batch_name']}. Exiting.")
+        sys.exit()
+    # get_readset()
+    # print(readset.raw_sequencing.extraction)
+    # assert len(readset.raw_sequencing.extraction) == 1
+    artic_covid_result['sample_identifier'] = readset.raw_sequencing.tiling_pcr.extraction.sample.sample_identifier
+    artic_covid_result['group_name'] = readset.raw_sequencing.tiling_pcr.extraction.sample.sample_source.projects[0].groups.group_name
+    artic_covid_result['date_pcred'] = readset.raw_sequencing.tiling_pcr.date_pcred
+    artic_covid_result['pcr_identifier'] = readset.raw_sequencing.tiling_pcr.pcr_identifier
+    print(artic_covid_result)
 
 
 def add_readset(readset_info, covid, config, nanopore_default):
