@@ -15,3 +15,4 @@ python src/scripts/seqbox_cmd.py add_covid_confirmatory_pcrs -i test/01.test_tod
 python src/scripts/seqbox_cmd.py add_raw_sequencing_batches -i test/01.test_todo_list_query/raw_sequencing_batch.csv
 python src/scripts/seqbox_cmd.py add_readset_batches -i test/01.test_todo_list_query/readset_batches.csv
 python src/scripts/seqbox_cmd.py add_readsets -i test/01.test_todo_list_query/nanopore_default_readsets.csv -c test/test_seqbox_config.yaml -s -n 
+python src/scripts/seqbox_cmd.py add_artic_covid_results -i test/01.test_todo_list_query/artic_nf_covid_results.csv -b 20201201_1355_MN33881_FAO20804_109641e0 -w medaka -p docker

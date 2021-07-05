@@ -7,7 +7,7 @@ import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
-    ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult
+    ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult
 
 
 def read_in_config(config_inhandle):
@@ -189,21 +189,40 @@ def get_projects(info):
     return projects
 
 
-def get_artic_covid_result(artic_covid_result, profile, workflow):
+def get_artic_covid_result(artic_covid_result_info):
     # check_artic_covid_result(artic_covid_result) - check that profile and workflow are in allowed lists.
-    matching_artic_covid_result = ReadSetBatch.query.filter_by(name=artic_covid_result['readset_batch_name'])\
+    matching_artic_covid_result = ArticCovidResult.query.filter_by(profile=artic_covid_result_info['artic_profile'],
+                                                                workflow=artic_covid_result_info['artic_workflow'])\
         .join(ReadSet)\
-        .join(ReadSetNanopore).filter_by(barcode=artic_covid_result['barcode']) \
-        .join(ArticCovidResult).filter_by(profile=profile, workflow=workflow).all()
+        .join(ReadSetBatch).filter_by(name=artic_covid_result_info['readset_batch_name'])\
+        .join(ReadSetNanopore).filter_by(barcode=artic_covid_result_info['barcode']).all()
     if len(matching_artic_covid_result) == 1:
         return matching_artic_covid_result[0]
     elif len(matching_artic_covid_result) == 0:
         return False
     else:
         print(f"Trying to get artic_covid_result. "
-              f"More than one ArticCovidResult for barcode {artic_covid_result['barcode']} for "
-              f"readset batch {artic_covid_result['readset_batch_name']}, run with profile {profile} "
-              f"and workflow {workflow}. Shouldn't happen, exiting.")
+              f"More than one ArticCovidResult for barcode {artic_covid_result_info['barcode']} for "
+              f"readset batch {artic_covid_result_info['readset_batch_name']}, run with profile {artic_covid_result_info['profile']} "
+              f"and workflow {artic_covid_result_info['artic_workflow']}. Shouldn't happen, exiting.")
+        sys.exit()
+
+
+def get_pangolin_result(pangolin_result_info):
+    matching_pangolin_result = PangolinResult.query.join(ArticCovidResult)\
+        .filter_by(profile=pangolin_result_info['artic_profile'], workflow=pangolin_result_info['artic_workflow'])\
+        .join(ReadSet)\
+        .join(ReadSetBatch).filter_by(name=pangolin_result_info['readset_batch_name'])\
+        .join(ReadSetNanopore).filter_by(barcode=pangolin_result_info['barcode']).all()
+    if len(matching_pangolin_result) == 1:
+        return matching_pangolin_result[0]
+    elif len(matching_pangolin_result) == 0:
+        return False
+    else:
+        print(f"Trying to get artic_covid_result. "
+              f"More than one ArticCovidResult for barcode {pangolin_result_info['barcode']} for "
+              f"readset batch {pangolin_result_info['readset_batch_name']}, run with profile {pangolin_result_info['artic_profile']} "
+              f"and workflow {pangolin_result_info['artic_workflow']}. Shouldn't happen, exiting.")
         sys.exit()
 
 
@@ -290,6 +309,83 @@ def read_in_tiling_pcr(tiling_pcr_info):
     if tiling_pcr_info['number_of_cycles'] != '':
         tiling_pcr.number_of_cycles = tiling_pcr_info['number_of_cycles']
     return tiling_pcr
+
+
+def check_pangolin_result(pangolin_result_info):
+    if pangolin_result_info['taxon'].strip() == '':
+        print(f'taxon column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
+        sys.exit()
+    if pangolin_result_info['lineage'].strip() == '':
+        print(f'lineage column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
+        sys.exit()
+    if pangolin_result_info['status'].strip() == '':
+        print(f'status column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
+        sys.exit()
+
+
+def check_artic_covid_result(artic_covid_result_info):
+    if artic_covid_result_info['sample_name'].strip() == '':
+        print(f'sample_name column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
+        sys.exit()
+    if artic_covid_result_info['pct_N_bases'].strip() == '':
+        print(f'pct_N_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
+        sys.exit()
+    if artic_covid_result_info['pct_covered_bases'].strip() == '':
+        print(f'pct_covered_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
+        sys.exit()
+    if artic_covid_result_info['num_aligned_reads'].strip() == '':
+        print(f'num_aligned_reads column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
+        sys.exit()
+
+
+def read_in_artic_covid_result(artic_covid_result_info):
+    check_artic_covid_result(artic_covid_result_info)
+    artic_covid_result = ArticCovidResult()
+    artic_covid_result.sample_name = artic_covid_result_info['sample_name']
+    artic_covid_result.pct_N_bases = artic_covid_result_info['pct_N_bases']
+    artic_covid_result.pct_covered_bases = artic_covid_result_info['pct_covered_bases']
+    artic_covid_result.num_aligned_reads = artic_covid_result_info['num_aligned_reads']
+    artic_covid_result.workflow = artic_covid_result_info['artic_workflow']
+    artic_covid_result.profile = artic_covid_result_info['artic_profile']
+    return artic_covid_result
+
+
+def read_in_pangolin_result(pangolin_result_info):
+    check_pangolin_result(pangolin_result_info)
+    pangolin_result = PangolinResult()
+    pangolin_result.lineage = pangolin_result_info['lineage']
+    if pangolin_result_info['conflict'] == '':
+        pangolin_result.conflict = None
+    else:
+        pangolin_result.conflict = pangolin_result_info['conflict']
+
+    if pangolin_result_info['ambiguity_score'] == '':
+        pangolin_result.ambiguity_score = None
+    else:
+        pangolin_result.ambiguity_score = pangolin_result_info['ambiguity_score']
+
+    if pangolin_result_info['scorpio_call'] == '':
+        pangolin_result.scorpio_call = None
+    else:
+        pangolin_result.scorpio_call = pangolin_result_info['scorpio_call']
+
+    if pangolin_result_info['scorpio_support'] == '':
+        pangolin_result.scorpio_support = None
+    else:
+        pangolin_result.scorpio_support = pangolin_result_info['scorpio_support']
+
+    if pangolin_result_info['scorpio_conflict'] == '':
+        pangolin_result.scorpio_conflict = None
+    else:
+        pangolin_result.scorpio_conflict = pangolin_result_info['scorpio_conflict']
+
+    pangolin_result.version = pangolin_result_info['version']
+    pangolin_result.pangolin_version = pangolin_result_info['pangolin_version']
+    pangolin_result.pangolearn_version = pangolin_result_info['pangoLEARN_version']
+    pangolin_result.pango_version = pangolin_result_info['pango_version']
+    pangolin_result.status = pangolin_result_info['status']
+    pangolin_result.note = pangolin_result_info['note']
+    return pangolin_result
 
 
 def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
@@ -1001,33 +1097,38 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
 
 
 def get_nanopore_readset_from_batch_and_barcode(batch_and_barcode_info):
-    matching_readset = ReadSet.query.join(ReadSetBatch).filter_by(name=batch_and_barcode_info['readset_batch_name'])\
-        .join(ReadSetNanopore).filter_by(barcode=batch_and_barcode_info['barcode']).all()
+    matching_readset = ReadSetNanopore.query.filter_by(barcode=batch_and_barcode_info['barcode'])\
+        .join(ReadSet)\
+        .join(ReadSetBatch).filter_by(name=batch_and_barcode_info['readset_batch_name']).all()
     if len(matching_readset) == 0:
         return False
     elif len(matching_readset) == 1:
         return matching_readset[0]
 
 
-def add_artic_covid_result(artic_covid_result, profile, workflow):
-    # need sample_identifier, group_name, date_pcred, pcr_identifier
-
-    # readset_batch = get_readset_batch(artic_covid_result)
-    readset = get_nanopore_readset_from_batch_and_barcode(artic_covid_result)
-    if readset is False:
-        print(f"Adding artic covid results. There is no readset for barcode {artic_covid_result['barcode']} from "
-              f"read set batch {artic_covid_result['readset_batch_name']}. Exiting.")
+def add_artic_covid_result(artic_covid_result_info):
+    readset_nanopore = get_nanopore_readset_from_batch_and_barcode(artic_covid_result_info)
+    if readset_nanopore is False:
+        print(f"Adding artic covid results. There is no readset for barcode {artic_covid_result_info['barcode']} from "
+              f"read set batch {artic_covid_result_info['readset_batch_name']}. Exiting.")
         sys.exit()
-    # get_readset()
-    # print(readset.raw_sequencing.extraction)
-    # assert len(readset.raw_sequencing.extraction) == 1
-    artic_covid_result['sample_identifier'] = readset.raw_sequencing.tiling_pcr.extraction.sample.sample_identifier
-    artic_covid_result['group_name'] = readset.raw_sequencing.tiling_pcr.extraction.sample.sample_source.projects[0].groups.group_name
-    artic_covid_result['date_pcred'] = readset.raw_sequencing.tiling_pcr.date_pcred
-    artic_covid_result['pcr_identifier'] = readset.raw_sequencing.tiling_pcr.pcr_identifier
-    readset_nanopore = get_readset(artic_covid_result, True)
-    artic_covid_result = read_in_artic_covid_result()
-    print(readset_nanopore.readset.artic_covid_result.append(artic_covid_result))
+    artic_covid_result = read_in_artic_covid_result(artic_covid_result_info)
+    readset_nanopore.readset.artic_covid_result.append(artic_covid_result)
+    # db.session.add(extraction)
+    db.session.commit()
+    print(f"Adding artic_covid_result {artic_covid_result_info['sample_name']} from {artic_covid_result_info['readset_batch_name']} to database.")
+
+
+def add_pangolin_result(pangolin_result_info):
+    artic_covid_result = get_artic_covid_result(pangolin_result_info)
+    if artic_covid_result is False:
+        print(f"Adding pangolin results. There is no readset for barcode {pangolin_result_info['barcode']} from "
+              f"read set batch {pangolin_result_info['readset_batch_name']}. Exiting.")
+        sys.exit()
+    pangolin_result = read_in_pangolin_result(pangolin_result_info)
+    artic_covid_result.pangolin_results.append(pangolin_result)
+    db.session.commit()
+    print(f"Adding artic_covid_result {pangolin_result_info['taxon']} from {pangolin_result_info['readset_batch_name']} to database.")
 
 
 def add_readset(readset_info, covid, config, nanopore_default):

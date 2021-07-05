@@ -6,10 +6,12 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, read_in_config, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
-    add_pcr_assay, get_artic_covid_result, add_artic_covid_result
+    add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
+permitted_artic_workflows = {'medaka'}
+permitted_artic_profiles = {'docker'}
 
 
 def add_groups(args):
@@ -141,8 +143,26 @@ def add_artic_covid_results(args):
     for artic_covid_result in all_artic_covid_results_info:
         artic_covid_result['readset_batch_name'] = args.readset_batch_name
         artic_covid_result['barcode'] = artic_covid_result['sample_name'].split('_')[-1]
-        if get_artic_covid_result(artic_covid_result, args.profile, args.workflow) is False:
-            add_artic_covid_result(artic_covid_result, args.profile, args.workflow)
+        assert args.workflow in permitted_artic_workflows
+        artic_covid_result['artic_workflow'] = args.workflow
+        assert args.profile in permitted_artic_profiles
+        artic_covid_result['artic_profile'] = args.profile
+        if get_artic_covid_result(artic_covid_result) is False:
+            add_artic_covid_result(artic_covid_result)
+
+
+def add_pangolin_results(args):
+    all_pangolin_results_info = read_in_as_dict(args.pangolin_results_inhandle)
+    for pangolin_result_info in all_pangolin_results_info:
+        pangolin_result_info['readset_batch_name'] = args.readset_batch_name
+        pangolin_result_info['barcode'] = pangolin_result_info['taxon'].split('/')[0].split('_')[-1]
+        assert pangolin_result_info['barcode'].startswith('barcode')
+        assert args.artic_workflow in permitted_artic_workflows
+        pangolin_result_info['artic_workflow'] = args.artic_workflow
+        assert args.artic_profile in permitted_artic_profiles
+        pangolin_result_info['artic_profile'] = args.artic_profile
+        if get_pangolin_result(pangolin_result_info) is False:
+            add_pangolin_result(pangolin_result_info)
 
 
 def run_command(args):
@@ -175,6 +195,8 @@ def run_command(args):
         add_pcr_assays(args=args)
     if args.command == 'add_artic_covid_results':
         add_artic_covid_results(args=args)
+    if args.command == 'add_pangolin_results':
+        add_pangolin_results(args=args)
 
 
 def main():
@@ -213,7 +235,8 @@ def main():
     parser_add_tiling_pcrs.add_argument('-i', dest='tiling_pcrs_inhandle')
     parser_add_groups = subparsers.add_parser('add_groups', help='Add a new group.')
     parser_add_groups.add_argument('-i', dest='groups_inhandle')
-    parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcrs', help='Add some covid confirmatory pcrs.')
+    parser_add_covid_confirmatory_pcr = subparsers.add_parser('add_covid_confirmatory_pcrs', help='Add some covid '
+                                                                                                  'confirmatory pcrs.')
     parser_add_covid_confirmatory_pcr.add_argument('-i', dest='covid_confirmatory_pcrs_inhandle')
     parser_add_pcr_result = subparsers.add_parser('add_pcr_results', help='Add some PCR results')
     parser_add_pcr_result.add_argument('-i', dest='pcr_results_inhandle')
@@ -226,8 +249,19 @@ def main():
                                                                                            ' results')
     parser_add_artic_covid_results.add_argument('-i', dest='artic_covid_results_inhandle', required=True)
     parser_add_artic_covid_results.add_argument('-b', dest='readset_batch_name', required=True)
-    parser_add_artic_covid_results.add_argument('-w', dest='workflow', help='Workflow e.g. illumina, medaka, nanopolish', required=True)
-    parser_add_artic_covid_results.add_argument('-p', dest='profile', help='Profile e.g. docker, conda, etc', required=True)
+    parser_add_artic_covid_results.add_argument('-w', dest='workflow', help='Workflow e.g. illumina, medaka, '
+                                                                            'nanopolish', required=True)
+    parser_add_artic_covid_results.add_argument('-p', dest='profile', help='Profile e.g. docker, conda, etc',
+                                                required=True)
+    parser_add_pangolin_results = subparsers.add_parser('add_pangolin_results', help='Pangolin')
+    parser_add_pangolin_results.add_argument('-i', dest='pangolin_results_inhandle', required=True)
+    parser_add_pangolin_results.add_argument('-b', dest='readset_batch_name', required=True)
+    parser_add_pangolin_results.add_argument('-w', dest='artic_workflow',
+                                             help='Artic NF Workflow e.g. illumina, medaka, nanopolish used to generate'
+                                                  ' the consensus genome', required=True)
+    parser_add_pangolin_results.add_argument('-p', dest='artic_profile', help='Artic NF Profile e.g. docker, conda, etc'
+                                                                              ' used to generate the consensus genome',
+                                             required=True)
     args = parser.parse_args()
     run_command(args)
 

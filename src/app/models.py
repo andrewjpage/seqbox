@@ -414,3 +414,33 @@ class ArticCovidResult(db.Model):
     workflow = db.Column(db.VARCHAR(60), comment="Workflow e.g. illumina, medaka, nanopolish")
     profile = db.Column(db.VARCHAR(60), comment="Profile e.g. docker, conda, etc")
     readset_id = db.Column(db.ForeignKey("read_set.id"))
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
+    pangolin_results = db.relationship("PangolinResult", backref="artic_covid_result")
+
+
+class PangolinResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    lineage = db.Column(db.VARCHAR(60), comment="The pangolin lineage")
+    conflict = db.Column(db.Numeric, comment="How many other lineages could this sample feasibly be?")
+    ambiguity_score = db.Column(db.Numeric, comment="the proportion of relevant sites in a sequnece which were imputed "
+                                                    "to the reference values. A score of 1 indicates that no sites were"
+                                                    " imputed, while a score of 0 indicates that more sites were "
+                                                    "imputed than were not imputed. This score only includes sites "
+                                                    "which are used by the decision tree to classify a sequence")
+    scorpio_call = db.Column(db.VARCHAR(60), comment="Output of scorpio tool.")
+    scorpio_support = db.Column(db.Numeric, comment="The proportion of defining variants which have the alternative "
+                                                    "allele in the sequence")
+    scorpio_conflict = db.Column(db.Numeric, comment="the proportion of defining variants which have the reference "
+                                                     "allele in the sequence. Ambiguous/other non-ref/alt bases at each"
+                                                     " of the variant positions contribute only to the denominators of"
+                                                     " these scores")
+    version = db.Column(db.VARCHAR(60), comment="See https://cov-lineages.org/pangolin_docs/output.html")
+    pangolin_version = db.Column(db.VARCHAR(60), comment="Pangolin version")
+    pangolearn_version = db.Column(db.VARCHAR(60), comment="Pangolearn version")
+    pango_version = db.Column(db.VARCHAR(60), comment="The sample name from the artic result output.")
+    status = db.Column(db.VARCHAR(60), comment="Pass/fail QC")
+    note = db.Column(db.VARCHAR(300), comment="If any conflicts from the decision tree, this field will output the "
+                                             "alternative assignments. ")
+    notes = db.Column(db.VARCHAR(256), comment="General comments.")
+    artic_covid_result_id = db.Column(db.ForeignKey("artic_covid_result.id"))
+
