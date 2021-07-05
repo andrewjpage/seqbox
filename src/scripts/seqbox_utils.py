@@ -1025,7 +1025,9 @@ def add_artic_covid_result(artic_covid_result, profile, workflow):
     artic_covid_result['group_name'] = readset.raw_sequencing.tiling_pcr.extraction.sample.sample_source.projects[0].groups.group_name
     artic_covid_result['date_pcred'] = readset.raw_sequencing.tiling_pcr.date_pcred
     artic_covid_result['pcr_identifier'] = readset.raw_sequencing.tiling_pcr.pcr_identifier
-    print(artic_covid_result)
+    readset_nanopore = get_readset(artic_covid_result, True)
+    artic_covid_result = read_in_artic_covid_result()
+    print(readset_nanopore.readset.artic_covid_result.append(artic_covid_result))
 
 
 def add_readset(readset_info, covid, config, nanopore_default):
