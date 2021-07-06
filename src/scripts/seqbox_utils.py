@@ -10,11 +10,6 @@ from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, 
     ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult
 
 
-def read_in_config(config_inhandle):
-    with open(config_inhandle) as fi:
-        return yaml.safe_load(fi)
-
-
 def read_in_as_dict(inhandle):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.
@@ -1131,7 +1126,7 @@ def add_pangolin_result(pangolin_result_info):
     print(f"Adding artic_covid_result {pangolin_result_info['taxon']} from {pangolin_result_info['readset_batch_name']} to database.")
 
 
-def add_readset(readset_info, covid, config, nanopore_default):
+def add_readset(readset_info, covid, nanopore_default):
     # this function has three main parts
     # 1. get the raw_sequencing batch
     # 2. get the extraction
@@ -1191,55 +1186,13 @@ def add_readset(readset_info, covid, config, nanopore_default):
     readset_batch.readsets.append(readset)
     raw_sequencing.readsets.append(readset)
     # add the readset to the filestructure
-    add_readset_to_filestructure(readset, config)
-    # todo - how does this add statement act if raw_sequencing already exists? need a test which checks this.
+
     db.session.add(raw_sequencing)
     db.session.commit()
     print(f"Added readset {readset_info['sample_identifier']} to the database.")
 
 
-def add_readset_to_filestructure(readset, config):
-    '''
-    1. Check that input files exist
-    2. get readset_identifier-filename for this sample
-    3. check that output dir exists (make it if not)
-        a. will be /Users/flashton/Dropbox/non-project/test_seqbox_data/Core/[readset_identifier]-filename/
-    4. link the fastq to the output_dir
-    '''
-    if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
-        assert os.path.isfile(readset.readset_nanopore.path_fastq)
-    elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
-        assert os.path.isfile(readset.readset_illumina.path_r1)
-        assert os.path.isfile(readset.readset_illumina.path_r2)
-    # data is going to be stored in a directory with the group name, so need to get the group name of this readset.
-    projects = readset.raw_sequencing.extraction.sample.sample_source.projects
-    group_names = [x.groups.group_name for x in projects]
-    # a sample can only belong to one group, so this assertion should always be true.
-    assert len(set(group_names)) == 1
-    group_name = group_names[0]
-    group_dir = os.path.join(config['seqbox_directory'], group_name)
-    if not os.path.isdir(group_dir):
-        os.mkdir(group_dir)
-    # going to name the linked file with the sample name and readset_identifier
-    sample_name = readset.raw_sequencing.extraction.sample.sample_identifier
-    readset_dir = os.path.join(group_dir, f"{readset.readset_identifier}-{sample_name}")
-    if not os.path.isdir(readset_dir):
-        os.mkdir(readset_dir)
-    if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
-        output_readset_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}.fastq.gz")
-        if os.path.isfile(output_readset_fastq_path):
-            print(f"{output_readset_fastq_path} already exists. Exiting.")
-            sys.exit()
-        else:
-            os.symlink(readset.readset_nanopore.path_fastq, output_readset_fastq_path)
-    elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
-        output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R1.fastq.gz")
-        output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R2.fastq.gz")
 
-        assert os.path.isfile(output_readset_r2_fastq_path) is False
-        os.symlink(readset.readset_illumina.path_r1, output_readset_r1_fastq_path)
-        os.symlink(readset.readset_illumina.path_r2, output_readset_r2_fastq_path)
-    print(f"Added readset to filestructure {readset.readset_identifier}-{sample_name} to {group_dir}")
 
 
 

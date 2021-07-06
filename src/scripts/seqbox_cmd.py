@@ -4,7 +4,7 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
     get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
-    check_sample_source_associated_with_project, read_in_config, get_group, add_group, get_covid_confirmatory_pcr, \
+    check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
     add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result
 
@@ -51,10 +51,10 @@ def add_readset_batches(args):
 
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
-    seqbox_config = read_in_config(args.seqbox_config)
+
     for readset_info in all_readsets_info:
         if get_readset(readset_info, args.covid) is False:
-            add_readset(readset_info=readset_info, covid=args.covid, config=seqbox_config,
+            add_readset(readset_info=readset_info, covid=args.covid,
                         nanopore_default=args.nanopore_default)
         else:
             if 'path_fastq' in readset_info:
@@ -219,8 +219,6 @@ def main():
                                                       help='Take a csv of readsets and add to the DB.')
     parser_add_readsets.add_argument('-i', dest='readsets_inhandle',
                                            help='A CSV file containing readsets info', required=True)
-    parser_add_readsets.add_argument('-c', dest='seqbox_config',
-                                     help='The path to a seqbox_config file.', required=True)
     parser_add_readsets.add_argument('-s', dest='covid', action='store_true', default=False,
                                      help='Are these readsets SARS-CoV-2?')
     parser_add_readsets.add_argument('-n', dest='nanopore_default', action='store_true', default=False,

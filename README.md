@@ -52,6 +52,13 @@ be gzipped.
 * if the readset is not covid, it needs the date and 
 extraction identifier of the corresponding extraction.
 
+### adding to filestructure
+
+* if you're adding nanopore default data, it doesn't matter whether or not you
+include the covid flag.
+* if you're not adding nanopore default data, you should only include the covid
+flag if you're uploading covid data.
+
 ### COVID
 * if you're adding a covid readset, need to include the `-s` flag
 (stands for SARS-CoV-2, `-c` already taken)
