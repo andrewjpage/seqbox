@@ -17,7 +17,7 @@
               <thead>
                 <tr>
                   <th width="15%"> id_sample </th>
-                  <th width="20%"> num_seq </th>
+                  <th width="20%"> num_reads </th>
                   <th width="20%">  date_time </th>
                   <th width="20%">  batch </th>
                   <th width="20%"> location </th>
@@ -25,7 +25,7 @@
                   <th width="20%">  path_r1 </th>
                   <th width="20%">  path_r2 </th>
                   <th width="20%">  result1 </th>
-                  <th width="20%">  result2 </th>
+                  <th width="20%">  mykrobe </th>
                   <th width="15%"> Edit </th>
                   <th width="15%"> Delete </th>
                 </tr>
@@ -34,7 +34,7 @@
               {% for sample in samples %}
                 <tr>
                   <td> {{sample.id_sample }} </td>
-                  <td> {{sample.num_seq }} </td>
+                  <td> {{sample.num_reads }} </td>
                   <td> {{sample.date_time }} </td>
                   <td> {{sample.organism }} </td>
                   <td> {{sample.location }} </td>
@@ -42,7 +42,7 @@
                   <td> {{sample.path_r1 }} </td>
                   <td> {{sample.path_r2 }} </td>
                   <td> {{sample.result1 }} </td>
-                  <td> {{sample.result2 }} </td>
+                  <td> {{sample.mykrobe }} </td>
                   <td>
                     <a href="{{ url_for(sample_edit) }}">
                       <i class="fa fa-pencil"></i> Edit 

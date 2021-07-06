@@ -1,0 +1,2 @@
+﻿batch_directory,batch_name,date_run,sequencing_type,instrument_model,instrument_name,library_prep_method,sequencing_centre,flowcell_type
+/Users/flashton/Dropbox/non-project/test_input_data/illumina_batch_1,illumina_batch_1,01/06/2021,illumina,MiSeq,mlw_miseq_1,flex,MLW,standard

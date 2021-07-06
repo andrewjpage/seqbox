@@ -1,0 +1,16 @@
+﻿sample_source_identifier,sample_source_type,township,city,country,latitude,longitude,projects,group_name,institution
+PTS15G,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS67H,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS34D,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS65H,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS13P,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS74E,patient,,Blantyre,Malawi,-15.80526456,35.02232146,PseudomonasSeq,Core,MLW
+PTS77C,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS33N,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS70M,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+PTS89D,patient,,Blantyre,Malawi,-15.80526123,35.02232035,PseudomonasSeq,Core,MLW
+ABS15I,patient,,Blantyre,Malawi,-15.80526123,35.02232035,AcinetobacterSeq,Core,MLW
+ABS1XD,patient,,Blantyre,Malawi,-15.80526123,35.02232035,AcinetobacterSeq,Core,MLW
+ABS15J,patient,,Blantyre,Malawi,-15.80526123,35.02232035,AcinetobacterSeq,Core,MLW
+ABS15V,patient,,Blantyre,Malawi,-15.80526123,35.02232035,AcinetobacterSeq,Core,MLW
+PTS15G,patient,,Blantyre,Malawi,-15.80526123,35.02232035,AcinetobacterSeq,Core,MLW

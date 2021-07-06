@@ -11,9 +11,9 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.num_seq.label }}<br>
-            {{ form.num_seq(size=64) }}<br>
-            {% for error in form.num_seq.errors %}
+            {{ form.num_reads.label }}<br>
+            {{ form.num_reads(size=64) }}<br>
+            {% for error in form.num_reads.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
@@ -67,9 +67,9 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.result2.label }}<br>
-            {{ form.result2(size=64) }}<br>
-            {% for error in form.result2.errors %}
+            {{ form.mykrobe.label }}<br>
+            {{ form.mykrobe(size=64) }}<br>
+            {% for error in form.mykrobe.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>

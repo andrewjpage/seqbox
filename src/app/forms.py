@@ -1,9 +1,9 @@
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from app.models import User, Sample, Batch, Location, Result1, Result2, Study,Sample_study
+from app.models import User, Mykrobe, Project #,Sample_project #Sample, Batch, Location, Result1
 
 class LoginForm(FlaskForm):
    
@@ -35,15 +35,15 @@ class RegistrationForm(FlaskForm):
 class SampleForm(FlaskForm):
     
     id_sample = StringField('id_sample', validators=[DataRequired()])
-    num_seq = StringField('num_seq', validators=[DataRequired()])
-    date_time = StringField('date_time')
+    num_reads = StringField('num_reads', validators=[DataRequired()])
+    date_time = DateField('date_time')
     organism = StringField('organism')
     path_r1 = StringField('path_r1')
     path_r2 = StringField('path_r2')
     batch =  StringField('batch')
     location = StringField('location')
     result1 = StringField('result1')
-    result2 = StringField('result2')
+    mykrobe = StringField('mykrobe')
 
     submit = SubmitField('Validate')
     
@@ -52,10 +52,10 @@ class SampleForm(FlaskForm):
         if sample is not None:
             raise ValidationError('Please use a different id_sample.')
     
-    def validate_num_seq(self,num_seq):
-        sample =Sample.query.filter_by(num_seq=num_seq.data).first()
+    def validate_num_reads(self,num_reads):
+        sample =Sample.query.filter_by(num_reads=num_reads.data).first()
         if sample is not None:
-            raise ValidationError('Please use a different num_seq.')
+            raise ValidationError('Please use a different num_reads.')
 
 
     
@@ -119,9 +119,9 @@ class Result1Form(FlaskForm):
             raise ValidationError('Please use a different id_result1.')
 
     
-class Result2Form(FlaskForm):
+class MykrobeForm(FlaskForm):
 
-    id_result2= StringField('id_result2', validators=[DataRequired()])
+    id_mykrobe= StringField('id_mykrobe', validators=[DataRequired()])
     mykrobe_version = StringField('mykrobe_version')
     phylo_grp = StringField('phylo_grp')
     phylo_grp_covg = StringField('phylo_grp_covg')
@@ -139,36 +139,36 @@ class Result2Form(FlaskForm):
 
     submit = SubmitField('Validate')
 
-    def validate_id_result2(self, id_result2):
-        result2 = Result2.query.filter_by(id_result2=id_result2.data).first()
-        if result2 is not None:
-            raise ValidationError('Please use a different id_result2.')
+    def validate_id_mykrobe(self, id_mykrobe):
+        mykrobe_result = Mykrobe.query.filter_by(id_mykrobe=id_mykrobe.data).first()
+        if mykrobe_result is not None:
+            raise ValidationError('Please use a different id_mykrobe.')
 
-class StudyForm(FlaskForm) :
+class ProjectForm(FlaskForm) :
 
-    id_study = StringField('id_study', validators=[DataRequired()])
-    date_study = StringField('date_study')
-    result_study = StringField('result_study')
+    id_project = StringField('id_project', validators=[DataRequired()])
+    date_project = StringField('date_project')
+    result_project = StringField('result_project')
     submit = SubmitField('Validate')
     
-    def validate_id_study(self, id_study):
+    def validate_id_project(self, id_project):
 
-        study = Study.query.filter_by(id_study=id_study.data).first()
-        if study is not None:
-            raise ValidationError('Please use a different id_study.')
+        project = Project.query.filter_by(id_project=id_project.data).first()
+        if project is not None:
+            raise ValidationError('Please use a different id_project.')
 
-class Sample_studyForm(FlaskForm):
+class Sample_projectForm(FlaskForm):
     
-    id_study = StringField('id_study', validators=[DataRequired()])
+    id_project = StringField('id_project', validators=[DataRequired()])
     id_sample = StringField('id_sample', validators=[DataRequired()])
     submit = SubmitField('Validate')
 
-    def validate_id_study(self, id_study):
-        sample_study = Sample_study.query.filter_by(id_study=id_study.data).first()
-        if sample_study is not None:
-            raise ValidationError('Please use a different id_study.')
+    def validate_id_project(self, id_project):
+        sample_project = Sample_project.query.filter_by(id_project=id_project.data).first()
+        if sample_project is not None:
+            raise ValidationError('Please use a different id_project.')
 
     def validate_id_sample(self, id_sample):
-        sample_study = Sample_study.query.filter_by(id_sample=id_sample.data).first()
-        if sample_study is not None:
+        sample_project = Sample_project.query.filter_by(id_sample=id_sample.data).first()
+        if sample_project is not None:
             raise ValidationError('Please use a different id_sample.')

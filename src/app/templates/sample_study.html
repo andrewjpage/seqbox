@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Sample_study</h1>
+    <h1>Sample_project</h1>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>
-            {{ form.id_study.label }}<br>
-            {{ form.id_study(size=64) }}<br>
-            {% for error in form.id_study.errors %}
+            {{ form.id_project.label }}<br>
+            {{ form.id_project(size=64) }}<br>
+            {% for error in form.id_project.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>

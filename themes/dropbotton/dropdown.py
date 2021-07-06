@@ -4,7 +4,7 @@ app.debug = True
 
 @app.route('/', methods=['GET'])
 def dropdown():
-    colours = ['Sample', 'Batch', 'Study', 'Location', 'Result1', 'Result2' ]
+    colours = ['Sample', 'Batch', 'Project', 'Location', 'Result1', 'Mykrobe' ]
     return render_template('test.html', colours=colours)
 
 if __name__=="__main__":
@@ -37,9 +37,9 @@ if __name__=="__main__":
             "Batch",
             "Location",
             "Result1",
-            "Result2",
-            "Study",
-            "Sample_study"      
+            "Mykrobe",
+            "Project",
+            "Sample_project"      
         }
         return data.get(month, "Data is not found").strip()
     @app.route('/', methods=['GET', 'POST'])
