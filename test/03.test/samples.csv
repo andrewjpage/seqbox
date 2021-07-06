@@ -1,0 +1,17 @@
+﻿sample_source_identifier,sample_identifier,species,sample_type,day_collected,month_collected,year_collected,day_received,month_received,year_received,group_name,institution
+PTS15G,PTS15G_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS67H,PTS67H_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS34D,PTS34D_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS65H,PTS65H_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS13P,PTS13P_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS74E,PTS74E_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS77C,PTS77C_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS33N,PTS33N_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS70M,PTS70M_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS89D,PTS89D_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+PTS89D,PTS89D_sample2,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,Core,MLW
+ABS15I,ABS15I_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,Core,MLW
+ABS1XD,ABS1XD_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,Core,MLW
+ABS15J,ABS15J_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,Core,MLW
+ABS15V,ABS15V_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,Core,MLW
+ABS15V,ABS15V_sample2,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,Core,MLW

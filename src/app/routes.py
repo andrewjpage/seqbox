@@ -2,8 +2,8 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, SampleForm, BatchForm, LocationForm, Result1Form, MykrobeForm,StudyForm, Sample_studyForm
-from app.models import User, Sample, Result1,Mykrobe, Batch,Location,Study,Sample_study
+from app.forms import LoginForm, RegistrationForm, SampleForm, BatchForm, LocationForm, Result1Form, MykrobeForm,ProjectForm, Sample_projectForm
+from app.models import User, Mykrobe, Project #, Sample_project #Sample, Batch, Location, Result1
 
 @app.route('/')
 @app.route('/index',methods=['GET', 'POST'])
@@ -111,7 +111,7 @@ def sample():
         batch= None if batch =='' else batch
         location= None if location =='' else location
 
-        sample = Sample(id_sample=form.id_sample.data, num_seq=form.num_seq.data,
+        sample = Sample(id_sample=form.id_sample.data, num_reads=form.num_reads.data,
                         date_time=form.date_time.data, organism=form.organism.data,
                         location=location, batch=batch,
                         path_r1=form.path_r1.data, path_r2=form.path_r2.data,
@@ -137,7 +137,7 @@ def list_sample():
         # return render_template('query.html', samples=samples, title='list sample')
         # for sample in samples:
         #     print(sample)
-        #     print (sample.id_sample,sample.num_seq,sample.date_time,sample.batch,sample.organism,sample.location,sample.path_r1,sample.path_r2,sample.result1,sample.mykrobe)
+        #     print (sample.id_sample,sample.num_reads,sample.date_time,sample.batch,sample.organism,sample.location,sample.path_r1,sample.path_r2,sample.result1,sample.mykrobe)
         #     flash('Sample selected successfully!')
         return render_template('query.html', samples=samples, title='list sample')
     if request.method == 'POST':
@@ -162,7 +162,7 @@ def edit(id):
 
     if request.method == 'POST':
         id_sample = request.form.get('id_sample')
-        num_seq = request.form.get('num_seq')
+        num_reads = request.form.get('num_reads')
         date_time = request.form.get('date_time')
         batch = request.form.get('batch')
         organism = request.form.get('organism')
@@ -171,7 +171,7 @@ def edit(id):
         path_r2= request.form.get('path_r2')
         result1 = request.form.get('result1')
         mykrobe = request.form.get('mykrobe')
-        Sample.query.filter_by(id_sample=id_sample).update({"num_seq": num_seq,
+        Sample.query.filter_by(id_sample=id_sample).update({"num_reads": num_reads,
             "date_time":date_time, "batch": batch,"organism": organism,
             "location": location,"path_r1":path_r1,"path_r2": path_r2,"result1":result1,"mykrobe":mykrobe})
         
@@ -183,7 +183,7 @@ def edit(id):
 @app.route('/sample_delete/<id>', methods=['GET', 'POST'])
 def sample_delete(id):
 
-    Sample_study.query.filter_by(id_sample=id).delete()
+    Sample_project.query.filter_by(id_sample=id).delete()
     Sample.query.filter_by(id_sample=id).delete()    
     db.session.commit()
     flash('Sample is deleted')
@@ -209,10 +209,10 @@ def list_batch():
     List all batch
     """
     if request.method == 'GET':
-        batchs=db.session.query(Batch).all()
+        batches=db.session.query(Batch).all()
         db.session.commit()
-        return render_template('batchQuery.html', batchs=batchs, title='list batch')
-    # for batch in batchs:
+        return render_template('batchQuery.html', batches=batches, title='list batch')
+    # for batch in batches:
     #     print(batch)
     #     print (batch.id_batch,batch.name_batch,batch.date_batch,batch.instrument,batch.primer)
     #     flash('Batch selected successfully!')
@@ -469,78 +469,78 @@ def mykrobe_delete(id):
     flash('Mykrobe is deleted')
     return render_template('mykrobe_delete.html')
 
-@app.route('/study', methods=['GET', 'POST'])
-def study():
-    form = StudyForm()
+@app.route('/project', methods=['GET', 'POST'])
+def project():
+    form = ProjectForm()
     if form.validate_on_submit():
-        study = Study(id_study=form.id_study.data, date_study=form.date_study.data, result_study=form.result_study.data)
+        project = Project(id_project=form.id_project.data, date_project=form.date_project.data, result_project=form.result_project.data)
         
         #save the model to the database
-        db.session.add(study)
+        db.session.add(project)
         db.session.commit()
 
-        flash('Congratulations, you are now a registered study!')
+        flash('Congratulations, you are now a registered project!')
         return redirect(url_for('index'))
-    return render_template('study.html', title='validate', form=form)
+    return render_template('project.html', title='validate', form=form)
 
-@app.route('/list_study', methods = ['GET', 'POST'])
-def list_study():
+@app.route('/list_project', methods = ['GET', 'POST'])
+def list_project():
     """
-    List all study
+    List all project
     """
     if request.method == 'GET':
-        studys=db.session.query(Study).all()
+        projects=db.session.query(Project).all()
         db.session.commit()
-        return render_template('studyQuery.html', studys=studys, title='list study')
+        return render_template('projectQuery.html', projects=projects, title='list project')
 
     if request.method == 'POST':
         try: 
             id = request.form['modify']
-            return redirect(url_for('study_edit', id = id))
+            return redirect(url_for('project_edit', id = id))
         except:
             id = request.form['delete']
-            return redirect(url_for('study_delete',id = id))
+            return redirect(url_for('project_delete',id = id))
     
 
-@app.route('/study_edit/<id>', methods = ['GET', 'POST'])
-def study_edit(id):  
+@app.route('/project_edit/<id>', methods = ['GET', 'POST'])
+def project_edit(id):
 
     if request.method == 'GET': 
-        kwargs = {'id_study':id}
-        study=Study.query.filter_by(**kwargs).first()
+        kwargs = {'id_project':id}
+        project=Project.query.filter_by(**kwargs).first()
         db.session.commit()
-        return render_template('study_edit.html',
-                           study=study)
+        return render_template('project_edit.html',
+                           project=project)
 
     if request.method == 'POST':
-        id_study = request.form.get('id_study')
-        date_study= request.form.get('date_study')
-        result_study = request.form.get('result_study')
+        id_project = request.form.get('id_project')
+        date_project= request.form.get('date_project')
+        result_project = request.form.get('result_project')
        
-        study=Study.query.filter_by(id_study=id_study).update({"id_study":id_study,"date_study":date_study,"result_study":result_study})
+        project=Project.query.filter_by(id_project=id_project).update({"id_project":id_project,"date_project":date_project,"result_project":result_project})
         db.session.commit()
-        flash('Study modifited successfully!')
+        flash('Project modifited successfully!')
         return render_template('index.html')
     
 
-@app.route('/study_delete/<id>', methods=['GET', 'POST'])
-def study_delete(id):
+@app.route('/project_delete/<id>', methods=['GET', 'POST'])
+def project_delete(id):
 
-    Study.query.filter_by(id_study=id).delete()    
+    Project.query.filter_by(id_project=id).delete()
     db.session.commit()
-    flash('Study is deleted')
-    return render_template('study_delete.html')
+    flash('Project is deleted')
+    return render_template('project_delete.html')
 
-@app.route('/sample_study', methods=['GET', 'POST'])
-def sample_study():
-    form = Sample_studyForm()
+@app.route('/sample_project', methods=['GET', 'POST'])
+def sample_project():
+    form = Sample_projectForm()
     if form.validate_on_submit():
-        sample_study = Sample_study(id_sample=form.id_sample.data,id_study=form.id_study.data)
+        sample_project = Sample_project(id_sample=form.id_sample.data,id_project=form.id_project.data)
         
         #save the model to the database
-        db.session.add(sample_study)
+        db.session.add(sample_project)
         db.session.commit()
         
-        flash('Congratulations, you are now a registered sample_study!')
+        flash('Congratulations, you are now a registered sample_project!')
         return redirect(url_for('index'))
-    return render_template('sample_study.html', title='validate', form=form)
+    return render_template('sample_project.html', title='validate', form=form)

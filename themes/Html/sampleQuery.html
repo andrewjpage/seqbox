@@ -6,7 +6,7 @@
     <table>
          <tr>
             <th>Sample ID</th>
-            <th>Number of sequences</th>
+            <th>Number of reads</th>
             <th>Batch</th>
             <th>Organism</th>
           
@@ -14,7 +14,7 @@
         {% for sample in samples %}
         <tr>
             <th>{{sample.id_sample}}</th>
-            <th>{{sample.num_seq}}</th>
+            <th>{{sample.num_reads}}</th>
             <th>{{sample.batch}}</th>
             <th>{{sample.organism}}</th>
                     

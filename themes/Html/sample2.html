@@ -17,7 +17,7 @@
               <thead>
                 <tr>
                   <th width="15%"> id_sample </th>
-                  <th width="20%"> num_seq </th>
+                  <th width="20%"> num_reads </th>
                   <th width="20%">  date_time </th>
                   <th width="20%">  batch </th>
                   <th width="20%"> location </th>
@@ -34,7 +34,7 @@
               {% for sample in samples %}
                 <tr>
                   <td> {{sample.id_sample }} </td>
-                  <td> {{sample.num_seq }} </td>
+                  <td> {{sample.num_reads }} </td>
                   <td> {{sample.date_time }} </td>
                   <td> {{sample.organism }} </td>
                   <td> {{sample.location }} </td>

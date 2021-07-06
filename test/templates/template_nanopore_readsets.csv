@@ -1,0 +1,2 @@
+﻿sample_identifier,date_pcred,pcr_identifier,date_extracted,extraction_identifier,group_name,path_fastq,path_fast5,data_storage_device,readset_batch_name
+PTS89D_sample1,,,01/06/2021,1,Core,/Users/flashton/Dropbox/non-project/test_input_data/20210601_1134_DK-111231_0_FAO09894_ba56ad3/fastq_pass/barcode09/FAO09894_pass_barcode09_2be005f9_0.fastq.gz,/Users/flashton/Dropbox/non-project/test_input_data/20210601_1134_DK-111231_0_FAO09894_ba56ad3/fast5_pass/barcode09/FAO09894_pass_barcode09_2be005f9_0.fast5,local,20210601_1134_DK-111231_0_FAO09894_ba56ad3
