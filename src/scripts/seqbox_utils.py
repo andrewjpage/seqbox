@@ -10,9 +10,6 @@ from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, 
     ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult
 
 
-
-
-
 def read_in_as_dict(inhandle):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.

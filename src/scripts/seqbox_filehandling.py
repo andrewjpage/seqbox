@@ -67,12 +67,13 @@ def run_add_readset_to_filestructure(args):
             else:
                 add_readset_to_filestructure(readset_nanopre.readset, config)
         elif args.nanopore_default is False:
-            readset = get_readset(readset_info, args.covid)
-            if readset is False:
+            # readset_tech is either readset_illumina or readset_nanopore
+            readset_tech = get_readset(readset_info, args.covid)
+            if readset_tech is False:
                 print(f"There is no readset for\n{readset_info}\nExiting.")
                 sys.exit()
             else:
-                add_readset_to_filestructure(readset, config)
+                add_readset_to_filestructure(readset_tech.readset, config)
 
 
 def run_command(args):

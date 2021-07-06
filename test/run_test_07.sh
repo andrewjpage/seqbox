@@ -10,4 +10,6 @@ python src/scripts/seqbox_cmd.py add_samples -i test/06.test/samples.csv
 python src/scripts/seqbox_cmd.py add_extractions -i test/06.test/extraction.csv
 python src/scripts/seqbox_cmd.py add_raw_sequencing_batches -i test/06.test/raw_sequencing_batch.csv
 python src/scripts/seqbox_cmd.py add_readset_batches -i test/06.test/readset_batches.csv
-python src/scripts/seqbox_cmd.py add_readsets -i test/06.test/nanopore_readsets.csv -c test/test_seqbox_config.yaml
+python src/scripts/seqbox_cmd.py add_readsets -i test/06.test/nanopore_readsets.csv
+python src/scripts/seqbox_filehandling.py add_readset_to_filestructure -i test/06.test/nanopore_readsets.csv -c test/test_seqbox_config.yaml
+
