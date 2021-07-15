@@ -151,5 +151,16 @@ with illumina data instead of nanopore.
     a. add a new class to represent the table
     b. 
     
-    
+## Dependencies
+
+* pip install pyyaml - tested v5.4.1
+* pip install Flask - tested Flask-2.0.1
+* pip install SQLAlchemy - tested SQLAlchemy-1.4.21
+* pip install Flask-SQLAlchemy - tested Flask-SQLAlchemy-2.5.1
+* Flask-Login-0.5.0
+* Flask-Bootstrap-3.3.7.1
+* Flask-Migrate-3.0.1
+* Flask-WTF-0.15.1
+* email-validator-1.1.3
+ 
     
