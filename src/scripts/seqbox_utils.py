@@ -804,15 +804,10 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
         if nanopore_default is True:
             path = os.path.join(batch_directory, 'fast5_pass', readset_info['barcode'], '*fast5')
+            raw_sequencing.raw_sequencing_nanopore.path_fast5 = path
             fast5s = glob.glob(path)
-            if len(fast5s) == 1:
-                raw_sequencing.raw_sequencing_nanopore.path_fast5 = fast5s[0]
-            elif len(fast5s) == 0:
-                print(f'No fast5 found in {path}. Exiting.')
-                sys.exit()
-            elif len(fast5s) > 1:
-                print(f'More than one fast5 found in {path}. Exiting.')
-                sys.exit()
+            if len(fast5s) == 0:
+                print(f'Warning - No fast5 found in {path}. Continuing, but check this.')
         elif nanopore_default is False:
             assert readset_info['path_fast5'].endswith('fast5')
             assert os.path.isfile(readset_info['path_fast5'])
