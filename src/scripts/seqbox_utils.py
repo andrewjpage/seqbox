@@ -154,6 +154,8 @@ def add_readset_batch(readset_batch_info):
     readset_batch = read_in_readset_batch(readset_batch_info)
     raw_sequencing_batch.readset_batches.append(readset_batch)
     db.session.commit()
+    print(f"Added readset batch {readset_batch_info['raw_sequencing_batch_name']} to group "
+          f"{readset_batch_info['group_name']} at {readset_batch_info['institution']}.")
 
 
 def query_projects(info, project_name):
@@ -982,9 +984,9 @@ def check_tiling_pcr(tiling_pcr_info):
     if tiling_pcr_info['protocol'].strip() == '':
         print(f'protocol column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
         sys.exit()
-    if tiling_pcr_info['number_of_cycles'].strip() == '':
-        print(f'number_of_cycles column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
+    # if tiling_pcr_info['number_of_cycles'].strip() == '':
+    #     print(f'number_of_cycles column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
+    #     sys.exit()
 
 
 def check_pcr_result(pcr_result_info):
