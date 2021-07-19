@@ -154,8 +154,7 @@ def add_readset_batch(readset_batch_info):
     readset_batch = read_in_readset_batch(readset_batch_info)
     raw_sequencing_batch.readset_batches.append(readset_batch)
     db.session.commit()
-    print(f"Added readset batch {readset_batch_info['raw_sequencing_batch_name']} to group "
-          f"{readset_batch_info['group_name']} at {readset_batch_info['institution']}.")
+    print(f"Added readset batch {readset_batch_info['raw_sequencing_batch_name']}.")
 
 
 def query_projects(info, project_name):
@@ -1072,9 +1071,6 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
             readset.readset_nanopore.barcode = readset_info['barcode']
             path = os.path.join(readset_batch.batch_directory, 'fastq_pass', readset_info['barcode'], '*fastq.gz')
             fastqs = glob.glob(path)
-            if len(fastqs) == 0:
-                print(f"No files matching this path {path}. Exiting.")
-                sys.exit()
             if len(fastqs) == 1:
                 readset.readset_nanopore.path_fastq = fastqs[0]
             elif len(fastqs) == 0:

@@ -47,6 +47,9 @@ def add_readset_batches(args):
     for readset_batch_info in all_readset_batches_info:
         if get_readset_batch(readset_batch_info) is False:
             add_readset_batch(readset_batch_info)
+        else:
+            print(f"This readset batch {readset_batch_info['readset_batch_name']} is already in the database, "
+                  f"not adding it.")
 
 
 def add_readsets(args):

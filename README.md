@@ -162,5 +162,8 @@ with illumina data instead of nanopore.
 * Flask-Migrate-3.0.1
 * Flask-WTF-0.15.1
 * email-validator-1.1.3
+* psycopg2==2.9.1
+
+* sudo apt-get install libxslt-dev libxml2-dev libpam-dev libedit-dev
  
     
