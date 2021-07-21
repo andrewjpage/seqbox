@@ -1,8 +1,9 @@
 import os
 import sys
 import yaml
+import glob
 import argparse
-from app.models import ReadSet
+from app.models import ReadSetBatch
 from seqbox_utils import read_in_as_dict, get_readset, get_nanopore_readset_from_batch_and_barcode
 
 
@@ -76,9 +77,36 @@ def run_add_readset_to_filestructure(args):
                 add_readset_to_filestructure(readset_tech.readset, config)
 
 
+def run_add_artic_consensus_to_filestructure(args):
+    config = read_in_config(args.seqbox_config)
+    '''
+    1. get readset batch
+    2. for each readset in batch, get:
+        a. readset id
+        b. sample_identifier
+        c. group_name
+    3. get all readset ids 
+    '''
+    rsb = ReadSetBatch.query.filter_by(name=args.readset_batch_name).all()
+    assert len(rsb) == 1
+    for rs in rsb[0].readsets:
+        sample = rs.raw_sequencing.extraction.sample
+        group_name = sample.sample_source.projects[0].groups.group_name
+        target_dir = os.path.join(config['seqbox_directory'], group_name, f"{rs.readset_identifier}-{sample.sample_identifier}", "artic_nf_pipeline")
+        # print(target_dir)
+        if not os.path.isdir(target_dir):
+            print(f"mkdir {target_dir}")
+        target_file = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}", "artic_nf.consensus.fasta")
+        source_file = glob.glob(f"{args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*consensus.fasta")
+        assert len(source_file) == 1
+        print(source_file, target_file)
+
+
 def run_command(args):
     if args.command == 'add_readset_to_filestructure':
         run_add_readset_to_filestructure(args=args)
+    if args.command == 'add_artic_consensus_to_filestructure':
+        run_add_artic_consensus_to_filestructure(args=args)
 
 
 def main():
@@ -96,8 +124,22 @@ def main():
     parser_add_readset_to_filestructure.add_argument('-n', dest='nanopore_default', action='store_true', default=False,
                                      help='Are the data for these readsets arranged in nanopore default format? Need to'
                                           ' follow a different template for the inhandle.')
+
+    parser_add_artic_consensus_to_filestructure = subparsers.add_parser('add_artic_consensus_to_filestructure',
+                                                                help='Add artic consensus files to seqbox filestructure'
+                                                                     ' for a sequencing batch, nanopore default format.')
+    parser_add_artic_consensus_to_filestructure.add_argument('-b', dest='readset_batch_name',
+                                                     help='the readset batch name', required=True)
+    parser_add_artic_consensus_to_filestructure.add_argument('-c', dest='seqbox_config',
+                                                     help='The path to a seqbox_config file.', required=True)
+    parser_add_artic_consensus_to_filestructure.add_argument('-d', dest='consensus_genomes_parent_dir',
+                                                             help='The path to the dir within qc_pass_climb_upload '
+                                                                  'produced by artic-nf.',
+                                                             required=True)
+
     args = parser.parse_args()
     run_command(args)
+
 
 if __name__ == '__main__':
     main()
