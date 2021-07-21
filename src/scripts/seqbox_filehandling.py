@@ -93,13 +93,30 @@ def run_add_artic_consensus_to_filestructure(args):
         sample = rs.raw_sequencing.extraction.sample
         group_name = sample.sample_source.projects[0].groups.group_name
         target_dir = os.path.join(config['seqbox_directory'], group_name, f"{rs.readset_identifier}-{sample.sample_identifier}", "artic_nf_pipeline")
-        # print(target_dir)
-        if not os.path.isdir(target_dir):
-            print(f"mkdir {target_dir}")
-        target_file = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic_nf.consensus.fasta")
-        source_file = glob.glob(f"{args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*consensus.fasta")
-        assert len(source_file) == 1
-        print(source_file[0], target_file)
+        
+        target_consensus = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic_nf.consensus.fasta")
+        source_consensus = glob.glob(f"{args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*consensus.fasta")
+        if len(source_consensus) == 1:
+            if not os.path.isdir(target_dir):
+                os.mkdir(target_dir)
+            os.symlink(source_consensus[0], target_consensus)
+            print(f"Linked {source_consensus[0]} to {target_consensus}")
+        elif len(source_consensus) == 0:
+            print(f"No consensus genome at {args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*consensus.fasta ")
+        elif len(source_consensus) > 1:
+            print(f"More than one consensus genome at {args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*consensus.fasta ")
+
+        source_bam = glob.glob(f"{args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*mapped.sorted.bam")
+        target_bam = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic_nf.mapped.sorted.bam")
+        if len(source_bam) == 1:
+            if not os.path.isdir(target_dir):
+                os.mkdir(target_dir)
+            os.symlink(source_bam[0], target_bam)
+            print(f"Linked {source_bam[0]} to {target_bam}")
+        elif len(source_bam) == 0:
+            print(f"No bam at {args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*mapped.sorted.bam")
+        elif len(source_bam) > 1:
+            print(f"More than one bam at {args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*mapped.sorted.bam")
 
 
 def run_command(args):
