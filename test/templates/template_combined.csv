@@ -1,0 +1,13 @@
+﻿sample_source_identifier,sample_source_type,township,city,country,latitude,longitude,projects,group_name,institution,sample_identifier,species,sample_type,day_collected,month_collected,year_collected,day_received,month_received,year_received,date_extracted,extraction_identifier,extraction_machine,extraction_kit,what_was_extracted,extraction_from,date_tiling_pcred,tiling_pcr_identifier,tiling_pcr_protocol,number_of_cycles
+Patient2,patient,Bangwe,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro; TyVAC,Core,MLW,ASH001,Salmonella,Blood,,,,4,3,2021,01/06/2021,1,QiaSymphony,MiniKit,DNA,isolate,01/06/2021,1,artic_v3,12
+Patient1,patient,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,Core,MLW,ASH002,Salmonella,Blood,,,,5,3,2021,01/06/2021,1,QiaSymphony,MiniKit,DNA,isolate,01/06/2021,1,artic_v3,12
+Patient3,patient,Zingwangwe,Blantyre,Malawi,-15.80526123,35.02232035,TyVAC,Core,MLW,ASH003,Salmonella,Blood,,,,5,4,2021,01/06/2021,1,QiaSymphony,MiniKit,DNA,isolate,01/06/2021,1,artic_v3,12
+Household1,household,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,Core,MLW,ASH005,Salmonella,Blood,,,,5,4,2021,01/06/2021,1,QiaSymphony,MiniKit,DNA,isolate,01/06/2021,1,artic_v3,12
+River1_Site1,river,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,iNTS_enviro,Core,MLW,HS001,Salmonella,Water,,,,5,4,2021,01/06/2021,1,QiaSymphony,MiniKit,DNA,whole sample,01/06/2021,1,artic_v3,12
+River1_Site2,river,Ndirande,Blantyre,Malawi,-15.80526456,35.02232146,iNTS_enviro,Core,MLW,RS001,Salmonella,Water,,,,5,4,2021,01/06/2021,1,QiaSymphony,MiniKit,DNA,whole sample,01/06/2021,1,artic_v3,12
+Patient1,patient,Ndirande,Blantyre,Malawi,-15.80526123,35.02232035,TyVAC,Core,MLW,ASH006,Salmonella,Blood,,,,5,4,2021,01/06/2021,1,QiaSymphony,MiniKit,DNA,isolate,01/06/2021,1,artic_v3,12
+CovidPatient1,patient,Bangwe,Blantyre,Malawi,-15.80526123,35.02232035,COVIDseq,Core,MLW,RS002,SARS-CoV-2,NP,,,,5,4,2021,01/06/2021,1,QiaSymphony,MiniKit,RNA,whole sample,01/06/2021,1,artic_v3,12
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,

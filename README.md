@@ -166,6 +166,29 @@ with illumina data instead of nanopore.
 
 * sudo apt-get install libxslt-dev libxml2-dev libpam-dev libedit-dev
  
+## combined input sheet explainer
+
+We need information on four “classes” of thing – sample source, sample, extraction and tiling PCR. I’ve colour coded the attached template by these four classes.
+ 
+The rationale, starting from the end of the process and working backwards, is:
+ 
+We sequence the product of a tiling PCR reaction(s)
+We do tiling PCR on an RNA extract from a sample
+A sample is derived from a sample source.
+Sample sources belong to projects (and have other characteristics we might want to capture).
+ 
+Essential columns are; sample_source_identifier; sample_source_type, projects, group_name, institution, sample_identifier, date_extracted, extraction_identifier, date_tiling_pcred, tiling_pcr_identifier, tiling_pcr_protocol.
+ 
+I recognise that this is quite a lot of info, but it means it should be robust to all kinds of repeats (if you re-do tiling PCR on the same extract, if you re-extract the same sample, if you take multiple samples from the same sample_source, etc).
+ 
+Then, once the sequencing is done, there will be another spreadsheet to fill in with the sequencing run information.
+ 
+Few other bits of info:
+If you sampled the same site twice, those two samples should have the same sample_source_identifier.
+Each individual sample should have a unique sample_identifier.
+The extraction identifier column is only for if you do multiple extractions from the same sample on the same day, if you only do one sample on each date then this should always be `1`. The tiling_pcr identifier works in the same way.
+ 
+
 ## single sheet rationale
 
 Ok, the overall information I need is the group name and project name. Then there are four separate spreadsheets which you need to fill in. I know it’s a lot, but it was designed for the COVID sequencing service so it’s quite granular.
