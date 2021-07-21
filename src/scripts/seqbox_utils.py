@@ -1115,9 +1115,10 @@ def add_artic_covid_result(artic_covid_result_info):
 def add_pangolin_result(pangolin_result_info):
     artic_covid_result = get_artic_covid_result(pangolin_result_info)
     if artic_covid_result is False:
-        print(f"Adding pangolin results. There is no readset for barcode {pangolin_result_info['barcode']} from "
-              f"read set batch {pangolin_result_info['readset_batch_name']}. Exiting.")
-        sys.exit()
+        print(f"Warning - trying to add pangolin results. There is no readset for barcode "
+              f"{pangolin_result_info['barcode']} from "
+              f"read set batch {pangolin_result_info['readset_batch_name']}.")
+        return
     pangolin_result = read_in_pangolin_result(pangolin_result_info)
     artic_covid_result.pangolin_results.append(pangolin_result)
     db.session.commit()
