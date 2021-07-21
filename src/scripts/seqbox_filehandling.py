@@ -84,7 +84,9 @@ def run_command(args):
 def main():
     parser = argparse.ArgumentParser(prog='seqbox_filehandling')
     subparsers = parser.add_subparsers(title='[sub-commands]', dest='command')
-    parser_add_readset_to_filestructure = subparsers.add_parser('add_readset_to_filestructure', help='Take a csv file of samples and add to the DB')
+    parser_add_readset_to_filestructure = subparsers.add_parser('add_readset_to_filestructure',
+                                                                help='Take a csv file of samples and add links to the '
+                                                                     'file structure')
     parser_add_readset_to_filestructure.add_argument('-i', dest='readsets_inhandle', help='A CSV file containing samples'
                                      , required=True)
     parser_add_readset_to_filestructure.add_argument('-c', dest='seqbox_config',

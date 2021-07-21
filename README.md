@@ -166,4 +166,27 @@ with illumina data instead of nanopore.
 
 * sudo apt-get install libxslt-dev libxml2-dev libpam-dev libedit-dev
  
-    
+## single sheet rationale
+
+Ok, the overall information I need is the group name and project name. Then there are four separate spreadsheets which you need to fill in. I know it’s a lot, but it was designed for the COVID sequencing service so it’s quite granular.
+
+The rationale is:
+
+1.	We sequence the product of a tiling PCR reaction(s)
+2.	We do tiling PCR on an RNA extract from a sample
+3.	A sample is derived from a sample source.
+4.	Sample sources belong to projects (and have other characteristics we might want to capture).
+
+Each step in the process for a particular sample source/sample/extract/tiling PCR links to the previous step in the chain for a particular “sample”. So, when you enter the information for a tiling PCR reaction, you also need to tell the database which extract you did this reaction on. When you enter the information for the extraction, you need to tell it which sample you extracted from, and so on.
+
+Then “sample source” information. This is for e.g. sites you’ve sampled. If you sample the same site twice it should have the same sample_source_identifier. Essential columns here are; sample_source_identifier; sample_source_type, projects, group_name, institution.
+
+Then “sample” information. This is for each sample you’ve taken. Each individual sample should have a unique sample_identifier. Each sample has a “sample source”, the sample_source_identifier in the sample table should match one of the entries in the sample_source table. Essential columns here are; sample_source_identifier, sample_identifier, projects, group_name.
+
+Then “extraction” information. This is for a specific RNA extraction from a sample. It’s identified as unique by a combination of sample id, and the date you did the extraction. The sample_identifier column here should match a sample_identifier column from the sample table. The extraction identifier column is only for if you do multiple extractions from the same sample on the same day, if you only do one sample on each date then this should always be `1`. Essential columns here are; sample_identifier, date_extracted, extraction_identifier, group_name, extraction_from. 
+
+Then, finally (for the pre-bioinformatics section), the tiling PCR info. The sample identifier column here should match a sample_identifier column from the sample table, the date_extracted and extraction_identifier columns should match the information for that sample from the extraction table. Essential columns here are sample_identifier, date_extracted, extraction_identifier, 
+
+I’ve attached a template for each sheet.
+
+I know it’s quite a lot, so happy to meet to discuss or help out in any other way. The date extracted and date pcred columns don’t have to be “true”, they just have to consistent between the sheets (so if, in the extraction sheet you say you did the extraction on 01/06/2021, then on the tiling pcr sheet, you have to put that same date for that sample.

@@ -2,7 +2,6 @@ import os
 import csv
 import sys
 import glob
-import yaml
 import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
@@ -867,9 +866,9 @@ def check_extraction_fields(extraction_info):
     if extraction_info['group_name'].strip() == '':
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit()
-    if extraction_info['extraction_from'].strip() == '':
-        print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
-        sys.exit()
+    # if extraction_info['extraction_from'].strip() == '':
+    #     print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
+    #     sys.exit()
 
 
 def check_group(group_info):

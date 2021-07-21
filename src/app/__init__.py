@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from flask_migrate import Migrate
 
+
 app = Flask(__name__) # Create a Flask app instance
 app.config.from_object(Config)
  # Load ALL uppercase variables

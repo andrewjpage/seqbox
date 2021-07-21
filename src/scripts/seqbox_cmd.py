@@ -142,13 +142,13 @@ def add_pcr_assays(args):
 
 
 def add_artic_covid_results(args):
+    assert args.workflow in permitted_artic_workflows
+    assert args.profile in permitted_artic_profiles
     all_artic_covid_results_info = read_in_as_dict(args.artic_covid_results_inhandle)
     for artic_covid_result in all_artic_covid_results_info:
         artic_covid_result['readset_batch_name'] = args.readset_batch_name
         artic_covid_result['barcode'] = artic_covid_result['sample_name'].split('_')[-1]
-        assert args.workflow in permitted_artic_workflows
         artic_covid_result['artic_workflow'] = args.workflow
-        assert args.profile in permitted_artic_profiles
         artic_covid_result['artic_profile'] = args.profile
         if get_artic_covid_result(artic_covid_result) is False:
             add_artic_covid_result(artic_covid_result)
