@@ -96,10 +96,10 @@ def run_add_artic_consensus_to_filestructure(args):
         # print(target_dir)
         if not os.path.isdir(target_dir):
             print(f"mkdir {target_dir}")
-        target_file = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}", "artic_nf.consensus.fasta")
+        target_file = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic_nf.consensus.fasta")
         source_file = glob.glob(f"{args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}/*consensus.fasta")
         assert len(source_file) == 1
-        print(source_file, target_file)
+        print(source_file[0], target_file)
 
 
 def run_command(args):
@@ -133,7 +133,7 @@ def main():
     parser_add_artic_consensus_to_filestructure.add_argument('-c', dest='seqbox_config',
                                                      help='The path to a seqbox_config file.', required=True)
     parser_add_artic_consensus_to_filestructure.add_argument('-d', dest='consensus_genomes_parent_dir',
-                                                             help='The path to the dir within qc_pass_climb_upload '
+                                                             help='Absolute path to the dir within qc_pass_climb_upload '
                                                                   'produced by artic-nf.',
                                                              required=True)
 
