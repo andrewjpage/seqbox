@@ -1101,9 +1101,10 @@ def get_nanopore_readset_from_batch_and_barcode(batch_and_barcode_info):
 def add_artic_covid_result(artic_covid_result_info):
     readset_nanopore = get_nanopore_readset_from_batch_and_barcode(artic_covid_result_info)
     if readset_nanopore is False:
-        print(f"Adding artic covid results. There is no readset for barcode {artic_covid_result_info['barcode']} from "
-              f"read set batch {artic_covid_result_info['readset_batch_name']}. Exiting.")
-        sys.exit()
+        print(f"Warning - trying to add artic covid results. There is no readset for barcode {artic_covid_result_info['barcode']} from "
+              f"read set batch {artic_covid_result_info['readset_batch_name']}.")
+        return
+        # sys.exit()
     artic_covid_result = read_in_artic_covid_result(artic_covid_result_info)
     readset_nanopore.readset.artic_covid_result.append(artic_covid_result)
     # db.session.add(extraction)
