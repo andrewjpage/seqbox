@@ -169,6 +169,9 @@ def add_pangolin_results(args):
         pangolin_result_info['artic_profile'] = args.artic_profile
         if get_pangolin_result(pangolin_result_info) is False:
             add_pangolin_result(pangolin_result_info)
+        else:
+            print(f"There is already an artic covid result for barcode {pangolin_result_info['barcode']} batch "
+                  f"{pangolin_result_info['readset_batch_name']} in the database. No action taken.")
 
 
 def run_command(args):
