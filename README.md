@@ -140,6 +140,9 @@ with illumina data instead of nanopore.
 
 7. nanopore, not default, not covid. test for adding another readset to same raw sequencing
 
+8. nanopore, default, covid. testing combined sample source, sample, covid confirmatory pcr, 
+extraction, tiling pcr, readset.
+
 ## How to add a new table
 
 1. Commit to the flask migrate repo?
