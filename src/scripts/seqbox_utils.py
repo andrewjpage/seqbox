@@ -67,7 +67,7 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
                       f"Project {project_name} from group {sample_source_info['group_name']} "
                       f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
                       f"add_projects function.\nExiting now.")
-                sys.exit()
+                sys.exit(1)
     # and update the database.
     db.session.commit()
 
@@ -105,7 +105,7 @@ def get_sample(readset_info):
         print(f"Trying to get sample. There is more than one matching sample with the sample_identifier "
               f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, This shouldn't happen. "
               f"Exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_extraction(readset_info):
@@ -125,7 +125,7 @@ def get_extraction(readset_info):
     else:
         print(f"Trying to get extraction. "
               f"More than one Extraction match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def add_project(project_info):
@@ -134,7 +134,7 @@ def add_project(project_info):
         print(f"Trying to get group to add project. "
               f"No group {project_info['group_name']} from institution {project_info['institution']}. You need to add "
               f"this group. Exiting.")
-        sys.exit()
+        sys.exit(1)
     project = Project(project_name=project_info['project_name'], project_details=project_info['project_details'])
     group.projects.append(project)
     db.session.add(project)
@@ -149,7 +149,7 @@ def add_readset_batch(readset_batch_info):
         print(f"Trying to get raw sequencing batch to add read set batch. "
               f"No raw sequencing batch {readset_batch_info['raw_sequencing_batch_name']}. You need to add "
               f"this raw sequencing batch. Exiting.")
-        sys.exit()
+        sys.exit(1)
     readset_batch = read_in_readset_batch(readset_batch_info)
     raw_sequencing_batch.readset_batches.append(readset_batch)
     db.session.commit()
@@ -169,7 +169,7 @@ def query_projects(info, project_name):
         print(f"Querying projects. "
               f"There is already more than one project called {project_name} from {info['group_name']} at "
               f"{info['institution']} in the database, this shouldn't happen.\nExiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_projects(info):
@@ -185,7 +185,7 @@ def get_projects(info):
             print(f"Getting projects. Project {project_name} from group {info['group_name']} "
                   f" doesnt exist in the db, you need to add it using the seqbox_cmd.py "
                   f"add_projects function.\nExiting now.")
-            sys.exit()
+            sys.exit(1)
     return projects
 
 
@@ -205,7 +205,7 @@ def get_artic_covid_result(artic_covid_result_info):
               f"More than one ArticCovidResult for barcode {artic_covid_result_info['barcode']} for "
               f"readset batch {artic_covid_result_info['readset_batch_name']}, run with profile {artic_covid_result_info['profile']} "
               f"and workflow {artic_covid_result_info['artic_workflow']}. Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_pangolin_result(pangolin_result_info):
@@ -223,7 +223,7 @@ def get_pangolin_result(pangolin_result_info):
               f"More than one ArticCovidResult for barcode {pangolin_result_info['barcode']} for "
               f"readset batch {pangolin_result_info['readset_batch_name']}, run with profile {pangolin_result_info['artic_profile']} "
               f"and workflow {pangolin_result_info['artic_workflow']}. Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def read_in_sample_info(sample_info):
@@ -298,7 +298,8 @@ def read_in_group(group_info):
 
 
 def read_in_tiling_pcr(tiling_pcr_info):
-    check_tiling_pcr(tiling_pcr_info)
+    # doing this earlier in the process now
+    # check_tiling_pcr(tiling_pcr_info)
     tiling_pcr = TilingPcr()
     if tiling_pcr_info['date_tiling_pcred'] != '':
         tiling_pcr.date_pcred = datetime.datetime.strptime(tiling_pcr_info['date_tiling_pcred'], '%d/%m/%Y')
@@ -314,28 +315,28 @@ def read_in_tiling_pcr(tiling_pcr_info):
 def check_pangolin_result(pangolin_result_info):
     if pangolin_result_info['taxon'].strip() == '':
         print(f'taxon column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if pangolin_result_info['lineage'].strip() == '':
         print(f'lineage column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if pangolin_result_info['status'].strip() == '':
         print(f'status column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_artic_covid_result(artic_covid_result_info):
     if artic_covid_result_info['sample_name'].strip() == '':
         print(f'sample_name column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if artic_covid_result_info['pct_N_bases'].strip() == '':
         print(f'pct_N_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if artic_covid_result_info['pct_covered_bases'].strip() == '':
         print(f'pct_covered_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if artic_covid_result_info['num_aligned_reads'].strip() == '':
         print(f'num_aligned_reads column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def read_in_artic_covid_result(artic_covid_result_info):
@@ -430,7 +431,7 @@ def add_sample(sample_info):
         print(f"Adding sample. There is no matching sample_source with the sample_source_identifier "
               f"{sample_info['sample_source_identifier']} for group {sample_info['group_name']}, please add using "
               f"python seqbox_cmd.py add_sample_source and then re-run this command. Exiting.")
-        sys.exit()
+        sys.exit(1)
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
     sample_source.samples.append(sample)
@@ -459,7 +460,7 @@ def add_tiling_pcr(tiling_pcr_info):
         print(f"Adding tiling PCR. No Extraction match for {tiling_pcr_info['sample_identifier']}, extracted on "
               f"{tiling_pcr_info['date_extracted']} for extraction id {tiling_pcr_info['extraction_identifier']} "
               f"need to add that extract and re-run. Exiting.")
-        sys.exit()
+        sys.exit(1)
     tiling_pcr = read_in_tiling_pcr(tiling_pcr_info)
     extraction.tiling_pcrs.append(tiling_pcr)
     db.session.add(tiling_pcr)
@@ -476,7 +477,7 @@ def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
               f"{covid_confirmatory_pcr_info['date_extracted']} for extraction id "
               f"{covid_confirmatory_pcr_info['extraction_identifier']} "
               f"need to add that extract and re-run. Exiting.")
-        sys.exit()
+        sys.exit(1)
     covid_confirmatory_pcr = read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
     extraction.covid_confirmatory_pcrs.append(covid_confirmatory_pcr)
     db.session.add(covid_confirmatory_pcr)
@@ -510,7 +511,7 @@ def add_pcr_result(pcr_result_info):
     sample = get_sample(pcr_result_info)
     if sample is False:
         print(f"Adding pcr result, cant find sample for this result:\n{pcr_result_info}\nExiting.")
-        sys.exit()
+        sys.exit(1)
     sample.pcr_results.append(pcr_result)
     db.session.add(pcr_result)
     db.session.commit()
@@ -524,7 +525,7 @@ def add_extraction(extraction_info):
         print(f"Adding extraction. There is no matching sample with the sample_source_identifier "
               f"{extraction_info['sample_identifier']} for group {extraction_info['group_name']}, please add using "
               f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
-        sys.exit()
+        sys.exit(1)
     extraction = read_in_extraction(extraction_info)
     sample.extractions.append(extraction)
     db.session.add(extraction)
@@ -546,7 +547,7 @@ def get_tiling_pcr(tiling_pcr_info):
         print(f"Getting tiling PCR. More than one match for {tiling_pcr_info['sample_identifier']} on date "
               f"{tiling_pcr_info['date_tiling_pcred']} "
               f"with pcr_identifier {tiling_pcr_info['tiling_pcr_identifier']}. Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
@@ -567,7 +568,7 @@ def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
               f"More than one match for {covid_confirmatory_pcr_info['sample_identifier']} on date"
               f" {covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']} with covid_confirmatory_pcr_identifier "
               f"{covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']}. Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_pcr_assay(pcr_assay_info):
@@ -581,7 +582,7 @@ def get_pcr_assay(pcr_assay_info):
         print(f"Getting pcr assay. Within getting pcr_result. "
               f"More than one match in the db for {pcr_assay_info['assay']}. "
               f"Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_pcr_result(pcr_result_info):
@@ -589,7 +590,7 @@ def get_pcr_result(pcr_result_info):
     if assay is False:
         print(f"There is no pcr assay called {pcr_result_info['assay_name']} in the database, please add it and re-run. "
               f"Exiting.")
-        sys.exit()
+        sys.exit(1)
     matching_pcr_result = PcrResult.query.filter_by(date_pcred=pcr_result_info['date_pcred'],
                                                     pcr_identifier=pcr_result_info['pcr_identifier'])\
         .join(PcrAssay).filter_by(assay_name=pcr_result_info['assay_name'])\
@@ -603,7 +604,7 @@ def get_pcr_result(pcr_result_info):
               f"More than one match in the db for {pcr_result_info['sample_identifier']}, running the "
               f"{pcr_result_info['assay']} test, on {pcr_result_info['date_pcred']} "
               f"Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_readset_batch(readset_batch_info):
@@ -616,7 +617,7 @@ def get_readset_batch(readset_batch_info):
         print(f"Getting readset batch. "
               f"More than one match for {readset_batch_info['readset_batch_name']}. "
               f"Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_group(group_info):
@@ -630,7 +631,7 @@ def get_group(group_info):
         print(f"Getting group. "
               f"More than one match for {group_info['group_name']} from {group_info['institution']}. Shouldn't happen, "
               f"exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_readset(readset_info, covid):
@@ -640,7 +641,7 @@ def get_readset(readset_info, covid):
         print(
             f"Getting readset. No ReadSetBatch match for {readset_info['readset_batch_name']}, need to add that batch "
             f"and re-run. Exiting.")
-        sys.exit()
+        sys.exit(1)
     # this get_raw_sequencing_batch is probably superfluous, because the readset_batch should be guaranteed to have
     #  a raw_seuqencing_batch attribute, and can then just be replaced with an assertion that it's true
     #  but will leave it in for now.
@@ -651,7 +652,7 @@ def get_readset(readset_info, covid):
         print(
             f"Getting readset. No RawSequencingBatch match for {readset_info['readset_batch_name']}, "
             f"need to add that batch and re-run. Exiting.")
-        sys.exit()
+        sys.exit(1)
 
     readset_type = None
     # this is because the readset query is currently generic to sequencing type, so we use this structure to
@@ -742,7 +743,7 @@ def get_raw_sequencing_batch(batch_name):
         return False
     else:
         print(f"Getting raw_sequencing batch. More than one match for {batch_name}. Shouldn't happen, exiting.")
-        sys.exit()
+        sys.exit(1)
 
 
 def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
@@ -818,171 +819,154 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
 def check_raw_sequencing_batch(raw_sequencing_batch_info):
     if raw_sequencing_batch_info['batch_directory'].strip() == '':
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if raw_sequencing_batch_info['batch_name'].strip() == '':
         print(f'batch_name column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if raw_sequencing_batch_info['date_run'].strip() == '':
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if raw_sequencing_batch_info['sequencing_type'].strip() == '':
         print(f'sequencing_type column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if raw_sequencing_batch_info['instrument_name'].strip() == '':
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if raw_sequencing_batch_info['library_prep_method'].strip() == '':
         print(f'batch_name column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if raw_sequencing_batch_info['flowcell_type'].strip() == '':
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_readset_batches(readset_batch_info):
     if readset_batch_info['raw_sequencing_batch_name'].strip() == '':
         print(f'raw_sequencing_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if readset_batch_info['readset_batch_name'].strip() == '':
         print(f'readset_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if readset_batch_info['readset_batch_dir'].strip() == '':
         print(f'readset_batch_dir column should not be empty. it is for \n{readset_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if readset_batch_info['basecaller'].strip() == '':
         print(f'basecaller column should not be empty. it is for \n{readset_batch_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_extraction_fields(extraction_info):
     if extraction_info['sample_identifier'].strip() == '':
         print(f'sample_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if extraction_info['date_extracted'].strip() == '':
         print(f'date_extracted column should not be empty. it is for \n{extraction_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if extraction_info['extraction_identifier'].strip() == '':
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if extraction_info['group_name'].strip() == '':
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     # if extraction_info['extraction_from'].strip() == '':
     #     print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
-    #     sys.exit()
+    #     sys.exit(1)
 
 
 def check_group(group_info):
     if ' ' in group_info['group_name']:
         print(f'group_name should not have any spaces in in. there is one for \n{group_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if '/' in group_info['group_name']:
         print(f'group_name should not have any backslashes in in. there is one for \n{group_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if group_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{group_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if group_info['institution'].strip() == '':
         print(f'institution column should not be empty. it is for \n{group_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_project(project_info):
     if project_info['project_name'].strip() == '':
         print(f'project_name column should not be empty. it is for \n{project_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if project_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{project_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if project_info['institution'].strip() == '':
         print(f'institution column should not be empty. it is for \n{project_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_sample_sources(sample_source_info):
     if sample_source_info['sample_source_identifier'].strip() == '':
         print(f'sample_source_identifier column should not be empty. it is for \n{sample_source_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if sample_source_info['sample_source_type'].strip() == '':
         print(f'sample_source_type column should not be empty. it is for \n{sample_source_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if sample_source_info['projects'].strip() == '':
         print(f'projects column should not be empty. it is for \n{sample_source_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if sample_source_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{sample_source_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if sample_source_info['institution'].strip() == '':
         print(f'institution column should not be empty. it is for \n{sample_source_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_samples(sample_info):
     if sample_info['sample_source_identifier'].strip() == '':
         print(f'sample_source_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if sample_info['sample_identifier'].strip() == '':
         print(f'sample_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if sample_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{sample_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if sample_info['institution'].strip() == '':
         print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     if covid_confirmatory_pcr_info['sample_identifier'].strip() == '':
         print(f'sample_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if covid_confirmatory_pcr_info['date_extracted'].strip() == '':
         print(f'date_extracted column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if covid_confirmatory_pcr_info['extraction_identifier'].strip() == '':
         print(f'extraction_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'].strip() == '':
         print(f'date_covid_confirmatory_pcred column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'].strip() == '':
         print(f'covid_confirmatory_pcr_identifier column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if covid_confirmatory_pcr_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol'].strip() == '':
         print(f'covid_confirmatory_pcr_protocol column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
-        sys.exit()
+        sys.exit(1)
 
 
 def check_tiling_pcr(tiling_pcr_info):
-    if tiling_pcr_info['sample_identifier'].strip() == '':
-        print(f'sample_identifier column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
-    if tiling_pcr_info['date_extracted'].strip() == '':
-        print(f'date_extracted column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
-    if tiling_pcr_info['extraction_identifier'].strip() == '':
-        print(f'extraction_identifier column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
-    if tiling_pcr_info['date_tiling_pcred'].strip() == '':
-        print(f'date_tiling_pcred column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
-    if tiling_pcr_info['tiling_pcr_identifier'].strip() == '':
-        print(f'pcr_identifier column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
-    if tiling_pcr_info['group_name'].strip() == '':
-        print(f'group_name column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
-    if tiling_pcr_info['tiling_pcr_protocol'].strip() == '':
-        print(f'tiling_pcr_protocol column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-        sys.exit()
-    # if tiling_pcr_info['number_of_cycles'].strip() == '':
-    #     print(f'number_of_cycles column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
-    #     sys.exit()
+    to_check = ['sample_identifier', 'date_extracted', 'extraction_identifier', 'date_tiling_pcred',
+                'tiling_pcr_identifier', 'group_name', 'tiling_pcr_protocol']
+    for r in to_check:
+        if tiling_pcr_info[r].strip() == '':
+            print(f'Warning - {r} column should not be empty. it is for \n{tiling_pcr_info}. Not adding this tiling pcr record.')
+            return False
+    return True
 
 
 def check_pcr_result(pcr_result_info):
@@ -990,59 +974,73 @@ def check_pcr_result(pcr_result_info):
     for r in to_check:
         if pcr_result_info[r].strip() == '':
             print(f'{r} column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-            sys.exit()
+            sys.exit(1)
     allowable_results = {'Negative', 'Negative - Followup', 'Positive - Followup', 'Positive',
                          'Indeterminate'}
     if pcr_result_info['result'] not in allowable_results:
         print(f'result column should contain one of these results {allowable_results}. '
               f'it doesnt for \n{pcr_result_info}\nExiting.')
-        sys.exit()
-        
+        sys.exit(1)
+
+
+def basic_check_readset_fields(readset_info):
+    # need two flavours of check read set fields, this one is to not try and make a readset record when
+    # it looks like the readset is totally missing, which would be the case in teh combined input file if the
+    # covid confirmatory pcr was negative.
+    to_check = ['barcode', 'data_storage_device', 'readset_batch_name']
+    for r in to_check:
+        if readset_info[r].strip() == '':
+            print(f'Warning - {r} column should not be empty. it is for \n{readset_info}.')
+            return False
+
 
 def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid):
+    # this is the full check of the readset fields, when it looks like the readset is present.
     to_check = ['data_storage_device', 'sample_identifier', 'group_name', 'readset_batch_name']
     for r in to_check:
         if readset_info[r].strip() == '':
             print(f'{r} column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit()
+
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         if nanopore_default is True:
             if readset_info['barcode'].strip() == '':
                 print(f'barcode column should not be empty. it is for \n{readset_info}\nExiting.')
-                sys.exit()
+                sys.exit(1)
         else:
             if readset_info['path_fastq'].strip() == '':
-                print(f'barcode column should not be empty. it is for \n{readset_info}\nExiting.')
-                sys.exit()
+                print(f'path_fastq column should not be empty. it is for \n{readset_info}\nExiting.')
+                sys.exit(1)
             if readset_info['path_fast5'].strip() == '':
-                print(f'barcode column should not be empty. it is for \n{readset_info}\nExiting.')
-                sys.exit()
+                print(f'path_fast5 column should not be empty. it is for \n{readset_info}\nExiting.')
+                sys.exit(1)
     elif raw_sequencing_batch.sequencing_type == 'illumina':
         if readset_info['path_r1'].strip() == '':
             print(f'path_r1 column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit()
+            sys.exit(1)
         if readset_info['path_r2'].strip() == '':
             print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit()
+            sys.exit(1)
     if covid is True:
         if readset_info['date_tiling_pcred'].strip() == '':
             print(f'date_tiling_pcred column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit()
+            sys.exit(1)
         if readset_info['tiling_pcr_identifier'].strip() == '':
             print(f'tiling_pcr_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit()
+            sys.exit(1)
     else:
         if readset_info['date_extracted'].strip() == '':
             print(f'date_extracted column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit()
+            sys.exit(1)
         if readset_info['extraction_identifier'].strip() == '':
             print(f'extraction_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit()
+            sys.exit(1)
 
 
 def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readset_batch, covid):
     readset = ReadSet()
     check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid)
+
     readset.data_storage_device = readset_info['data_storage_device']
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         readset.readset_nanopore = ReadSetNanopore()
@@ -1057,10 +1055,10 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
                 readset.readset_nanopore.path_fastq = fastqs[0]
             elif len(fastqs) == 0:
                 print(f'Reading in readset. No fastq found in {path}. Exiting.')
-                sys.exit()
+                sys.exit(1)
             elif len(fastqs) > 1:
                 print(f'Reading in readset. More than one fastq found in {path}. Exiting.')
-                sys.exit()
+                sys.exit(1)
         return readset
     elif raw_sequencing_batch.sequencing_type == 'illumina':
         readset.readset_illumina = ReadSetIllumina()
@@ -1087,7 +1085,7 @@ def add_artic_covid_result(artic_covid_result_info):
         print(f"Warning - trying to add artic covid results. There is no readset for barcode {artic_covid_result_info['barcode']} from "
               f"read set batch {artic_covid_result_info['readset_batch_name']}.")
         return
-        # sys.exit()
+        # sys.exit(1)
     artic_covid_result = read_in_artic_covid_result(artic_covid_result_info)
     readset_nanopore.readset.artic_covid_result.append(artic_covid_result)
     # db.session.add(extraction)
@@ -1119,7 +1117,7 @@ def add_readset(readset_info, covid, nanopore_default):
         print(
             f"Adding readset. No ReadSetBatch match for {readset_info['readset_batch_name']}, need to add that batch "
             f"and re-run. Exiting.")
-        sys.exit()
+        sys.exit(1)
     # this get_raw_sequencing_batch is probably superfluous, because the readset_batch should be guaranteed to have
     #  a raw_seuqencing_batch attribute, and can then just be replaced with an assertion that it's true
     #  but will leave it in for now.
@@ -1127,7 +1125,7 @@ def add_readset(readset_info, covid, nanopore_default):
     raw_sequencing_batch = get_raw_sequencing_batch(readset_batch.raw_sequencing_batch.name)
     if raw_sequencing_batch is False:
         print(f"Adding readset. No RawSequencingBatch match for {readset_info['batch']}, need to add that batch and re-run. Exiting.")
-        sys.exit()
+        sys.exit(1)
     # get raw sequencing
     raw_sequencing = get_raw_sequencing(readset_info, readset_batch.raw_sequencing_batch, covid)
     # raw_sequencing will only be True if this is a re-basecalled readset
@@ -1144,7 +1142,7 @@ def add_readset(readset_info, covid, nanopore_default):
                 print(f"Adding readset. There is no TilingPcr record for sample {readset_info['sample_identifier']} PCRed on "
                       f"{readset_info['date_tiling_pcred']} by group {readset_info['group_name']}. You need to add this. "
                       f"Exiting.")
-                sys.exit()
+                sys.exit(1)
             # add the raw_seq to the tiling pcr
             tiling_pcr.raw_sequencings.append(raw_sequencing)
             # then add the raw sequencing to the extraction which was used to generate the PCR as well.
@@ -1156,7 +1154,7 @@ def add_readset(readset_info, covid, nanopore_default):
                 print(f"Adding readset. No Extraction match for {readset_info['sample_identifier']}, extracted on "
                       f"{readset_info['date_extracted']} for extraction id {readset_info['extraction_identifier']} need to add "
                       f"that extract and re-run. Exiting.")
-                sys.exit()
+                sys.exit(1)
             # and add the raw_sequencing to the extraction
             extraction.raw_sequencing.append(raw_sequencing)
 

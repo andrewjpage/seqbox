@@ -6,7 +6,8 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
-    add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result
+    add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result, \
+    check_tiling_pcr, basic_check_readset_fields
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -27,6 +28,10 @@ def add_groups(args):
 def add_tiling_pcrs(args):
     all_tiling_pcrs_info = read_in_as_dict(args.tiling_pcrs_inhandle)
     for tiling_pcr_info in all_tiling_pcrs_info:
+        # check the tiling pcr information is there, if it isn't (because e.g. covid confirmation pcr failed), then
+        # just continue.
+        if check_tiling_pcr(tiling_pcr_info) is False:
+            continue
         if get_tiling_pcr(tiling_pcr_info) is False:
             add_tiling_pcr(tiling_pcr_info)
 
@@ -37,7 +42,7 @@ def add_raw_sequencing_batches(args):
         if raw_sequencing_batch_info['sequencing_type'] not in allowed_sequencing_types:
             print(f"sequencing_type {raw_sequencing_batch_info['sequencing_type']} is not in {allowed_sequencing_types}"
                   f" for this line {raw_sequencing_batch_info}. Exiting.")
-            sys.exit()
+            sys.exit(1)
         if get_raw_sequencing_batch(raw_sequencing_batch_info['batch_name']) is False:
             add_raw_sequencing_batch(raw_sequencing_batch_info)
 
@@ -56,6 +61,8 @@ def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
 
     for readset_info in all_readsets_info:
+        if basic_check_readset_fields(readset_info) is False:
+            continue
         if get_readset(readset_info, args.covid) is False:
             add_readset(readset_info=readset_info, covid=args.covid,
                         nanopore_default=args.nanopore_default)
@@ -249,7 +256,6 @@ def main():
     parser_add_pcr_result.add_argument('-i', dest='pcr_results_inhandle')
     parser_add_pcr_assay = subparsers.add_parser('add_pcr_assays', help='Add a PCR assay')
     parser_add_pcr_assay.add_argument('-i', dest='pcr_assays_inhandle')
-    parser_get_covid_todo_list = subparsers.add_parser('get_covid_todo_list', help='Get COVID-seq todo list.')
     parser_add_readset_batches = subparsers.add_parser('add_readset_batches', help='Add a readset batch')
     parser_add_readset_batches.add_argument('-i', dest='readset_batches_inhandle')
     parser_add_artic_covid_results = subparsers.add_parser('add_artic_covid_results', help='Add artic nf covid pipeline'

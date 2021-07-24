@@ -4,7 +4,8 @@ import yaml
 import glob
 import argparse
 from app.models import ReadSetBatch
-from seqbox_utils import read_in_as_dict, get_readset, get_nanopore_readset_from_batch_and_barcode
+from seqbox_utils import read_in_as_dict, get_readset, get_nanopore_readset_from_batch_and_barcode, \
+    basic_check_readset_fields
 
 
 def read_in_config(config_inhandle):
@@ -60,6 +61,8 @@ def run_add_readset_to_filestructure(args):
     config = read_in_config(args.seqbox_config)
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     for readset_info in all_readsets_info:
+        if basic_check_readset_fields(readset_info) is False:
+            continue
         if args.nanopore_default is True:
             readset_nanopre = get_nanopore_readset_from_batch_and_barcode(readset_info)
             if readset_nanopre is False:

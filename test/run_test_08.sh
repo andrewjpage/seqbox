@@ -14,5 +14,5 @@ python src/scripts/seqbox_cmd.py add_extractions -i test/08.test/combined.csv
 python src/scripts/seqbox_cmd.py add_tiling_pcrs -i test/08.test/combined.csv
 
 python src/scripts/seqbox_cmd.py add_readsets -i test/08.test/combined.csv -s -n
-python src/scripts/seqbox_filehandling.py add_readset_to_filestructure -i test/08.test/nanopore_readsets.csv -c test/test_seqbox_config.yaml 
+python src/scripts/seqbox_filehandling.py add_readset_to_filestructure -i test/08.test/combined.csv -c test/test_seqbox_config.yaml -s -n
 

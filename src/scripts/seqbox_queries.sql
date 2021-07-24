@@ -34,3 +34,21 @@ join read_set rs on rs.id = acr.readset_id
 join raw_sequencing r on rs.raw_sequencing_id = r.id
 join extraction e on r.extraction_id = e.id
 join sample s on e.sample_id = s.id
+
+-- get readset batch, readset id, sample id
+
+select name, readset_identifier, sample_identifier from read_set
+join read_set_batch on read_set.readset_batch_id = read_set_batch.id
+join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+join extraction e on rs.extraction_id = e.id
+join sample s on e.sample_id = s.id
+
+-- get all the samples from a run
+
+select readset_identifier, sample_identifier, barcode, name from read_set
+join read_set_nanopore rsn on read_set.id = rsn.readset_id
+join read_set_batch rsb on read_set.readset_batch_id = rsb.id
+join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+join extraction e on rs.extraction_id = e.id
+join sample s on e.sample_id = s.id
+where name = '20210713_1422_MN33881_FAO36609_d9ac6fbd';
