@@ -281,10 +281,10 @@ def read_in_extraction(extraction_info):
         extraction.what_was_extracted = extraction_info['what_was_extracted']
     if extraction_info['date_extracted'] != '':
         extraction.date_extracted = datetime.datetime.strptime(extraction_info['date_extracted'], '%d/%m/%Y')
-    if extraction_info['processing_institution'] != '':
-        extraction.processing_institution = extraction_info['processing_institution']
+    if extraction_info['extraction_processing_institution'] != '':
+        extraction.processing_institution = extraction_info['extraction_processing_institution']
     if extraction_info['extraction_from'] != '':
-        extraction.processing_institution = extraction_info['extraction_from']
+        extraction.extraction_from = extraction_info['extraction_from']
     return extraction
 
 
