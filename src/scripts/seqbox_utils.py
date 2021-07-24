@@ -401,12 +401,13 @@ def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_ct'] == '':
         covid_confirmatory_pcr.ct = None
     else:
-        covid_confirmatory_pcr.ct = covid_confirmatory_pcr_info['ct']
+        covid_confirmatory_pcr.ct = covid_confirmatory_pcr_info['covid_confirmatory_pcr_ct']
     return covid_confirmatory_pcr
 
 
 def read_in_pcr_result(pcr_result_info):
-    check_pcr_result(pcr_result_info)
+    if check_pcr_result(pcr_result_info) is False:
+        sys.exit(1)
     pcr_result = PcrResult()
     if pcr_result_info['date_pcred'] != '':
         pcr_result.date_pcred = datetime.datetime.strptime(pcr_result_info['date_pcred'], '%d/%m/%Y')
@@ -504,7 +505,8 @@ def add_pcr_assay(pcr_assay_info):
 
 
 def add_pcr_result(pcr_result_info):
-    check_pcr_result(pcr_result_info)
+    if check_pcr_result(pcr_result_info) is False:
+        sys.exit(1)
     pcr_result = read_in_pcr_result(pcr_result_info)
     assay = get_pcr_assay(pcr_result_info)
     assay.pcr_results.append(pcr_result)
@@ -970,11 +972,11 @@ def check_tiling_pcr(tiling_pcr_info):
 
 
 def check_pcr_result(pcr_result_info):
-    to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name', 'pcr_result']
+    to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name']
     for r in to_check:
         if pcr_result_info[r].strip() == '':
-            print(f'{r} column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-            sys.exit(1)
+            print(f'{r} column should not be empty. it is for \n{pcr_result_info}')
+            return False
 
     allowable_results = {'Negative', 'Negative - Followup', 'Positive - Followup', 'Positive',
                          'Indeterminate'}

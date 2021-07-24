@@ -1,6 +1,8 @@
 # seqbox
 local sequence management lightweight tools
 
+**this codebase is still in active development, breaking changes will occur**
+
 ## Database notes
 
 ### groups

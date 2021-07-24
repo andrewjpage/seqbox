@@ -14,6 +14,7 @@ python src/scripts/seqbox_cmd.py add_sample_sources -i test/08.test/combined.csv
 python src/scripts/seqbox_cmd.py add_samples -i test/08.test/combined.csv
 python src/scripts/seqbox_cmd.py add_pcr_results -i test/08.test/combined.csv
 python src/scripts/seqbox_cmd.py add_extractions -i test/08.test/combined.csv
+python src/scripts/seqbox_cmd.py add_covid_confirmatory_pcrs -i test/08.test/combined.csv
 python src/scripts/seqbox_cmd.py add_tiling_pcrs -i test/08.test/combined.csv
 
 python src/scripts/seqbox_cmd.py add_readsets -i test/08.test/combined.csv -s -n
