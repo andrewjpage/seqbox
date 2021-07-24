@@ -52,3 +52,20 @@ join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
 join extraction e on rs.extraction_id = e.id
 join sample s on e.sample_id = s.id
 where name = '20210713_1422_MN33881_FAO36609_d9ac6fbd';
+
+-- get all info on sample, need to add some more info to this and rename column headings
+
+select group_name, project_name, sample_source_identifier, sample_identifier, pr.pcr_result, e.date_extracted,  ccp.ct, tp.date_pcred, tp.protocol, readset_identifier, name from sample
+join pcr_result pr on sample.id = pr.sample_id
+join extraction e on sample.id = e.sample_id
+join covid_confirmatory_pcr ccp on e.id = ccp.extraction_id
+join tiling_pcr tp on e.id = tp.extraction_id
+join raw_sequencing rs on e.id = rs.extraction_id
+join read_set r on rs.id = r.raw_sequencing_id
+join read_set_batch rsb on r.readset_batch_id = rsb.id
+join sample_source ss on sample.sample_source_id = ss.id
+join sample_source_project ssp on ss.id = ssp.sample_source_id
+join project p on ssp.project_id = p.id
+join groups g on p.groups_id = g.id
+where sample_identifier = 'CMT22M'
+;

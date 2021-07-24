@@ -237,6 +237,7 @@ class TilingPcr(db.Model):
     number_of_cycles = db.Column(db.Integer, comment="Number of PCR cycles")
     date_pcred = db.Column(db.DateTime, comment="Date this PCR was done")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    protocol = db.Column(db.VARCHAR(60), comment="Tiling PCR protocol")
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
     raw_sequencings = db.relationship("RawSequencing", backref="tiling_pcr")
