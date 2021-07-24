@@ -50,7 +50,16 @@ multiple.
 * all the input fastqs for both nanopore and illumina need to 
 be gzipped.
 * if the readset is not covid, it needs the date and 
-extraction identifier of the corresponding extraction.
+extraction identifier of the corresponding extraction. if it is covid then
+need the tiling pcr date.
+* negative controls/negative extractions should be assigned to sample sources and 
+samples wiht the identifier "Neg ex", they will all be grouped togehter into
+those samples/sample sources, but will of course have different extractions. 
+they can be assigned to thge same project/group as the run (or arbitrary, doesnt matter). 
+
+### covid confirmatory pcrs & other PCRs
+
+* for pcrs, negative results should have their Ct field left blank.
 
 ### adding to filestructure
 
@@ -130,6 +139,9 @@ with illumina data instead of nanopore.
 6. nanopore, default, not covid. test for adding another readset to same raw sequencing.
 
 7. nanopore, not default, not covid. test for adding another readset to same raw sequencing
+
+8. nanopore, default, covid. testing combined sample source, sample, covid confirmatory pcr, 
+extraction, tiling pcr, readset.
 
 ## How to add a new table
 

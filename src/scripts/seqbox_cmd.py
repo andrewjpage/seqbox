@@ -269,9 +269,14 @@ def main():
     parser_add_pangolin_results.add_argument('-p', dest='artic_profile', help='Artic NF Profile e.g. docker, conda, etc'
                                                                               ' used to generate the consensus genome',
                                              required=True)
+    # print the help if no arguments passed
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
     args = parser.parse_args()
     run_command(args)
 
 
 if __name__ == '__main__':
+
     main()

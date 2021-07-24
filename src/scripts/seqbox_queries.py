@@ -63,6 +63,7 @@ def get_sample_barcode_batch(args, Session):
     #     print(x)
 
 
+
 def run_command(args):
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     # from here https://stackoverflow.com/questions/43459182/proper-sqlalchemy-use-in-flask

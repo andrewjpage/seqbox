@@ -281,10 +281,10 @@ def read_in_extraction(extraction_info):
         extraction.what_was_extracted = extraction_info['what_was_extracted']
     if extraction_info['date_extracted'] != '':
         extraction.date_extracted = datetime.datetime.strptime(extraction_info['date_extracted'], '%d/%m/%Y')
-    if extraction_info['processing_institution'] != '':
-        extraction.processing_institution = extraction_info['processing_institution']
+    if extraction_info['extraction_processing_institution'] != '':
+        extraction.processing_institution = extraction_info['extraction_processing_institution']
     if extraction_info['extraction_from'] != '':
-        extraction.processing_institution = extraction_info['extraction_from']
+        extraction.extraction_from = extraction_info['extraction_from']
     return extraction
 
 
@@ -300,12 +300,12 @@ def read_in_group(group_info):
 def read_in_tiling_pcr(tiling_pcr_info):
     check_tiling_pcr(tiling_pcr_info)
     tiling_pcr = TilingPcr()
-    if tiling_pcr_info['date_pcred'] != '':
-        tiling_pcr.date_pcred = datetime.datetime.strptime(tiling_pcr_info['date_pcred'], '%d/%m/%Y')
-    if tiling_pcr_info['pcr_identifier'] != '':
-        tiling_pcr.pcr_identifier = tiling_pcr_info['pcr_identifier']
-    if tiling_pcr_info['protocol'] != '':
-        tiling_pcr.protocol = tiling_pcr_info['protocol']
+    if tiling_pcr_info['date_tiling_pcred'] != '':
+        tiling_pcr.date_pcred = datetime.datetime.strptime(tiling_pcr_info['date_tiling_pcred'], '%d/%m/%Y')
+    if tiling_pcr_info['tiling_pcr_identifier'] != '':
+        tiling_pcr.pcr_identifier = tiling_pcr_info['tiling_pcr_identifier']
+    if tiling_pcr_info['tiling_pcr_protocol'] != '':
+        tiling_pcr.protocol = tiling_pcr_info['tiling_pcr_protocol']
     if tiling_pcr_info['number_of_cycles'] != '':
         tiling_pcr.number_of_cycles = tiling_pcr_info['number_of_cycles']
     return tiling_pcr
@@ -391,13 +391,13 @@ def read_in_pangolin_result(pangolin_result_info):
 def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     check_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
     covid_confirmatory_pcr = CovidConfirmatoryPcr()
-    if covid_confirmatory_pcr_info['date_pcred'] != '':
-        covid_confirmatory_pcr.date_pcred = datetime.datetime.strptime(covid_confirmatory_pcr_info['date_pcred'], '%d/%m/%Y')
-    if covid_confirmatory_pcr_info['pcr_identifier'] != '':
-        covid_confirmatory_pcr.pcr_identifier = covid_confirmatory_pcr_info['pcr_identifier']
-    if covid_confirmatory_pcr_info['protocol'] != '':
-        covid_confirmatory_pcr.protocol = covid_confirmatory_pcr_info['protocol']
-    if covid_confirmatory_pcr_info['ct'] == '':
+    if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'] != '':
+        covid_confirmatory_pcr.date_pcred = datetime.datetime.strptime(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'], '%d/%m/%Y')
+    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'] != '':
+        covid_confirmatory_pcr.pcr_identifier = covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']
+    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol'] != '':
+        covid_confirmatory_pcr.protocol = covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']
+    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_ct'] == '':
         covid_confirmatory_pcr.ct = None
     else:
         covid_confirmatory_pcr.ct = covid_confirmatory_pcr_info['ct']
@@ -465,7 +465,7 @@ def add_tiling_pcr(tiling_pcr_info):
     db.session.add(tiling_pcr)
     db.session.commit()
     print(f"Adding tiling PCR for sample {tiling_pcr_info['sample_identifier']} run on "
-          f"{tiling_pcr_info['date_pcred']} PCR id {tiling_pcr_info['pcr_identifier']} to the database.")
+          f"{tiling_pcr_info['date_tiling_pcred']} PCR id {tiling_pcr_info['tiling_pcr_identifier']} to the database.")
 
 
 def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
@@ -482,7 +482,8 @@ def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     db.session.add(covid_confirmatory_pcr)
     db.session.commit()
     print(f"Adding confirmatory PCR for sample {covid_confirmatory_pcr_info['sample_identifier']} run on "
-          f"{covid_confirmatory_pcr_info['date_pcred']} PCR id {covid_confirmatory_pcr_info['pcr_identifier']} to the database.")
+          f"{covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']} PCR id "
+          f"{covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']} to the database.")
 
 
 def add_group(group_info):
@@ -534,8 +535,8 @@ def add_extraction(extraction_info):
 def get_tiling_pcr(tiling_pcr_info):
     matching_tiling_pcr = TilingPcr.query\
         .filter_by(
-            pcr_identifier=tiling_pcr_info['pcr_identifier'],
-            date_pcred=datetime.datetime.strptime(tiling_pcr_info['date_pcred'], '%d/%m/%Y'))\
+            pcr_identifier=tiling_pcr_info['tiling_pcr_identifier'],
+            date_pcred=datetime.datetime.strptime(tiling_pcr_info['date_tiling_pcred'], '%d/%m/%Y'))\
         .join(Extraction).join(Sample).filter_by(sample_identifier=tiling_pcr_info['sample_identifier']).all()
     if len(matching_tiling_pcr) == 1:
         return matching_tiling_pcr[0]
@@ -543,15 +544,15 @@ def get_tiling_pcr(tiling_pcr_info):
         return False
     else:
         print(f"Getting tiling PCR. More than one match for {tiling_pcr_info['sample_identifier']} on date "
-              f"{tiling_pcr_info['date_run']} "
-              f"with pcr_identifier {tiling_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
+              f"{tiling_pcr_info['date_tiling_pcred']} "
+              f"with pcr_identifier {tiling_pcr_info['tiling_pcr_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
 
 
 def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     matching_covid_confirmatory_pcr = CovidConfirmatoryPcr.query.filter_by(
-        pcr_identifier=covid_confirmatory_pcr_info['pcr_identifier'],
-        date_pcred=datetime.datetime.strptime(covid_confirmatory_pcr_info['date_pcred'], '%d/%m/%Y'))\
+        pcr_identifier=covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'],
+        date_pcred=datetime.datetime.strptime(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'], '%d/%m/%Y'))\
         .join(Extraction).filter_by(extraction_identifier=covid_confirmatory_pcr_info['extraction_identifier'],
                                                      date_extracted=datetime.datetime.strptime(
                                                          covid_confirmatory_pcr_info['date_extracted'], '%d/%m/%Y')) \
@@ -564,8 +565,8 @@ def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     else:
         print(f"Getting covid confirmatory PCR. "
               f"More than one match for {covid_confirmatory_pcr_info['sample_identifier']} on date"
-              f" {covid_confirmatory_pcr_info['date_run']} with pcr_identifier "
-              f"{covid_confirmatory_pcr_info['pcr_identifier']}. Shouldn't happen, exiting.")
+              f" {covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']} with covid_confirmatory_pcr_identifier "
+              f"{covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']}. Shouldn't happen, exiting.")
         sys.exit()
 
 
@@ -686,8 +687,8 @@ def get_readset(readset_info, covid):
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name']) \
             .join(RawSequencing) \
-            .join(TilingPcr).filter_by(date_pcred=readset_info['date_pcred'],
-                                       pcr_identifier=readset_info['pcr_identifier']) \
+            .join(TilingPcr).filter_by(date_pcred=readset_info['date_tiling_pcred'],
+                                       pcr_identifier=readset_info['tiling_pcr_identifier']) \
             .join(Extraction)\
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
@@ -756,9 +757,9 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
             .join(RawSequencing) \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
             .join(Extraction)\
-            .join(TilingPcr).filter_by(pcr_identifier=readset_info['pcr_identifier'],
+            .join(TilingPcr).filter_by(pcr_identifier=readset_info['tiling_pcr_identifier'],
                                         date_pcred=datetime.datetime.strptime(
-                                            readset_info['date_pcred'], '%d/%m/%Y')) \
+                                            readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
             .join(SampleSource.projects).join(Groups) \
@@ -941,17 +942,19 @@ def check_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     if covid_confirmatory_pcr_info['extraction_identifier'].strip() == '':
         print(f'extraction_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit()
-    if covid_confirmatory_pcr_info['date_pcred'].strip() == '':
-        print(f'date_pcred column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
+    if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'].strip() == '':
+        print(f'date_covid_confirmatory_pcred column should not be empty. it is for '
+              f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit()
-    if covid_confirmatory_pcr_info['pcr_identifier'].strip() == '':
-        print(f'pcr_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
+    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'].strip() == '':
+        print(f'covid_confirmatory_pcr_identifier column should not be empty. it is for '
+              f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit()
     if covid_confirmatory_pcr_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit()
-    if covid_confirmatory_pcr_info['protocol'].strip() == '':
-        print(f'protocol column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
+    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol'].strip() == '':
+        print(f'covid_confirmatory_pcr_protocol column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit()
 
 
@@ -965,17 +968,17 @@ def check_tiling_pcr(tiling_pcr_info):
     if tiling_pcr_info['extraction_identifier'].strip() == '':
         print(f'extraction_identifier column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
         sys.exit()
-    if tiling_pcr_info['date_pcred'].strip() == '':
-        print(f'date_pcred column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
+    if tiling_pcr_info['date_tiling_pcred'].strip() == '':
+        print(f'date_tiling_pcred column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
         sys.exit()
-    if tiling_pcr_info['pcr_identifier'].strip() == '':
+    if tiling_pcr_info['tiling_pcr_identifier'].strip() == '':
         print(f'pcr_identifier column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
         sys.exit()
     if tiling_pcr_info['group_name'].strip() == '':
         print(f'group_name column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
         sys.exit()
-    if tiling_pcr_info['protocol'].strip() == '':
-        print(f'protocol column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
+    if tiling_pcr_info['tiling_pcr_protocol'].strip() == '':
+        print(f'tiling_pcr_protocol column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
         sys.exit()
     # if tiling_pcr_info['number_of_cycles'].strip() == '':
     #     print(f'number_of_cycles column should not be empty. it is for \n{tiling_pcr_info}\nExiting.')
@@ -983,24 +986,11 @@ def check_tiling_pcr(tiling_pcr_info):
 
 
 def check_pcr_result(pcr_result_info):
-    if pcr_result_info['sample_identifier'].strip() == '':
-        print(f'sample_identifier column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-        sys.exit()
-    if pcr_result_info['date_pcred'].strip() == '':
-        print(f'date_pcred column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-        sys.exit()
-    if pcr_result_info['pcr_identifier'].strip() == '':
-        print(f'pcr_identifier column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-        sys.exit()
-    if pcr_result_info['group_name'].strip() == '':
-        print(f'group_name column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-        sys.exit()
-    if pcr_result_info['assay_name'].strip() == '':
-        print(f'protocol column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-        sys.exit()
-    if pcr_result_info['result'].strip() == '':
-        print(f'result column should not be empty. it is for \n{pcr_result_info}\nExiting.')
-        sys.exit()
+    to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name', 'result']
+    for r in to_check:
+        if pcr_result_info[r].strip() == '':
+            print(f'{r} column should not be empty. it is for \n{pcr_result_info}\nExiting.')
+            sys.exit()
     allowable_results = {'Negative', 'Negative - Followup', 'Positive - Followup', 'Positive',
                          'Indeterminate'}
     if pcr_result_info['result'] not in allowable_results:
@@ -1010,18 +1000,11 @@ def check_pcr_result(pcr_result_info):
         
 
 def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid):
-    if readset_info['data_storage_device'].strip() == '':
-        print(f'data_storage_device column should not be empty. it is for \n{readset_info}\nExiting.')
-        sys.exit()
-    if readset_info['sample_identifier'].strip() == '':
-        print(f'sample_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
-        sys.exit()
-    if readset_info['group_name'].strip() == '':
-        print(f'group_name column should not be empty. it is for \n{readset_info}\nExiting.')
-        sys.exit()
-    if readset_info['readset_batch_name'].strip() == '':
-        print(f'readset_batch_name column should not be empty. it is for \n{readset_info}\nExiting.')
-        sys.exit()
+    to_check = ['data_storage_device', 'sample_identifier', 'group_name', 'readset_batch_name']
+    for r in to_check:
+        if readset_info[r].strip() == '':
+            print(f'{r} column should not be empty. it is for \n{readset_info}\nExiting.')
+            sys.exit()
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         if nanopore_default is True:
             if readset_info['barcode'].strip() == '':
@@ -1042,18 +1025,18 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
             print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit()
     if covid is True:
-        if readset_info['date_pcred'].strip() == '':
-            print(f'date_pcred column should not be empty. it is for \n{readset_info}\nExiting.')
+        if readset_info['date_tiling_pcred'].strip() == '':
+            print(f'date_tiling_pcred column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit()
-        if readset_info['pcr_identifier'].strip() == '':
-            print(f'pcr_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
+        if readset_info['tiling_pcr_identifier'].strip() == '':
+            print(f'tiling_pcr_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit()
     else:
         if readset_info['date_extracted'].strip() == '':
-            print(f'date_pcred column should not be empty. it is for \n{readset_info}\nExiting.')
+            print(f'date_extracted column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit()
         if readset_info['extraction_identifier'].strip() == '':
-            print(f'pcr_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
+            print(f'extraction_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit()
 
 
@@ -1159,7 +1142,7 @@ def add_readset(readset_info, covid, nanopore_default):
             tiling_pcr = get_tiling_pcr(readset_info)
             if tiling_pcr is False:
                 print(f"Adding readset. There is no TilingPcr record for sample {readset_info['sample_identifier']} PCRed on "
-                      f"{readset_info['date_pcred']} by group {readset_info['group_name']}. You need to add this. "
+                      f"{readset_info['date_tiling_pcred']} by group {readset_info['group_name']}. You need to add this. "
                       f"Exiting.")
                 sys.exit()
             # add the raw_seq to the tiling pcr
