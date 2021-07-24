@@ -1106,7 +1106,7 @@ def add_pangolin_result(pangolin_result_info):
     pangolin_result = read_in_pangolin_result(pangolin_result_info)
     artic_covid_result.pangolin_results.append(pangolin_result)
     db.session.commit()
-    print(f"Adding artic_covid_result {pangolin_result_info['taxon']} from {pangolin_result_info['readset_batch_name']} to database.")
+    print(f"Adding pangolin_result {pangolin_result_info['taxon']} from {pangolin_result_info['readset_batch_name']} to database.")
 
 
 def add_readset(readset_info, covid, nanopore_default):
