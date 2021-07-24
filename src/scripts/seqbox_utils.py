@@ -416,8 +416,8 @@ def read_in_pcr_result(pcr_result_info):
         pcr_result.ct = None
     else:
         pcr_result.ct = pcr_result_info['ct']
-    if pcr_result_info['result'] != '':
-        pcr_result.pcr_result = pcr_result_info['result']
+    if pcr_result_info['pcr_result'] != '':
+        pcr_result.pcr_result = pcr_result_info['pcr_result']
     return pcr_result
 
 
@@ -970,14 +970,15 @@ def check_tiling_pcr(tiling_pcr_info):
 
 
 def check_pcr_result(pcr_result_info):
-    to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name', 'result']
+    to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name', 'pcr_result']
     for r in to_check:
         if pcr_result_info[r].strip() == '':
             print(f'{r} column should not be empty. it is for \n{pcr_result_info}\nExiting.')
             sys.exit(1)
+
     allowable_results = {'Negative', 'Negative - Followup', 'Positive - Followup', 'Positive',
                          'Indeterminate'}
-    if pcr_result_info['result'] not in allowable_results:
+    if pcr_result_info['pcr_result'] not in allowable_results:
         print(f'result column should contain one of these results {allowable_results}. '
               f'it doesnt for \n{pcr_result_info}\nExiting.')
         sys.exit(1)
