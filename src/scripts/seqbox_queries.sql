@@ -1,3 +1,5 @@
+-- get covid todo list
+
 select sample.sample_identifier, sample.day_received, sample.month_received, sample.year_received, pr.pcr_result as qech_pcr_result, project_name, e.extraction_identifier, DATE(e.date_extracted) as date_extracted, ccp.pcr_identifier, DATE(ccp.date_pcred) as date_covid_confirmatory_pcred,
        ccp.ct as covid_confirmation_pcr_ct, tp.pcr_identifier as tiling_pcr_identifier, DATE(tp.date_pcred) as date_tiling_pcrer, rsb.name as read_set_batch_name, r.readset_identifier
 from sample
@@ -13,3 +15,22 @@ left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
 left join read_set r on rs.id = r.raw_sequencing_id
 where species = 'SARS-CoV-2' and pr.pcr_result like 'Positive%' and project_name = any(array['ISARIC'])
 order by e.date_extracted desc, ccp.date_pcred desc, tp.date_pcred desc, rsb.name desc, r.readset_identifier desc;
+
+-- get pangolin results for plotting
+
+select readset_identifier, sample_identifier, lineage, day_received, month_received, year_received from pangolin_result
+join artic_covid_result acr on pangolin_result.artic_covid_result_id = acr.id
+join read_set rs on rs.id = acr.readset_id
+join raw_sequencing r on rs.raw_sequencing_id = r.id
+join extraction e on r.extraction_id = e.id
+join sample s on e.sample_id = s.id
+where lineage != 'None';
+
+-- get artic qc and pangolin results
+
+select readset_identifier, sample_identifier, pct_covered_bases, lineage, day_received, month_received, year_received from pangolin_result
+join artic_covid_result acr on pangolin_result.artic_covid_result_id = acr.id
+join read_set rs on rs.id = acr.readset_id
+join raw_sequencing r on rs.raw_sequencing_id = r.id
+join extraction e on r.extraction_id = e.id
+join sample s on e.sample_id = s.id
