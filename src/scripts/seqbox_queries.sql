@@ -33,7 +33,7 @@ join artic_covid_result acr on pangolin_result.artic_covid_result_id = acr.id
 join read_set rs on rs.id = acr.readset_id
 join raw_sequencing r on rs.raw_sequencing_id = r.id
 join extraction e on r.extraction_id = e.id
-join sample s on e.sample_id = s.id
+join sample s on e.sample_id = s.id;
 
 -- get readset batch, readset id, sample id
 
@@ -69,3 +69,13 @@ join project p on ssp.project_id = p.id
 join groups g on p.groups_id = g.id
 where sample_identifier = 'CMT22M'
 ;
+
+-- change the project associated with the originating sample sources for all samples with CMU sample identifier
+--  warning - this won't handle sample sources which belong to multiple projects well. need to add another
+--  check about is project.id = 'X' where switching from a specific project to another. e.g. ISARIC to DHO COVID
+
+update sample_source_project set project_id = 3
+from sample_source, sample
+where sample.sample_identifier like 'CMU%'
+and sample_source_project.sample_source_id = sample_source.id
+and sample_source.id = sample.sample_source_id;

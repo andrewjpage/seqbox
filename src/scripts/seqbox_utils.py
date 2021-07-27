@@ -979,7 +979,7 @@ def check_pcr_result(pcr_result_info):
             return False
 
     allowable_results = {'Negative', 'Negative - Followup', 'Positive - Followup', 'Positive',
-                         'Indeterminate'}
+                         'Indeterminate', 'Not Done'}
     if pcr_result_info['pcr_result'] not in allowable_results:
         print(f'result column should contain one of these results {allowable_results}. '
               f'it doesnt for \n{pcr_result_info}\nExiting.')
