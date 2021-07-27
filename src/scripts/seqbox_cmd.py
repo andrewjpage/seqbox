@@ -137,10 +137,14 @@ def add_covid_confirmatory_pcrs(args):
 def add_pcr_results(args):
     all_pcr_results_info = read_in_as_dict(args.pcr_results_inhandle)
     for pcr_result_info in all_pcr_results_info:
+        # this is a check to account for the combined format, is the pcr result present?
         if check_pcr_result(pcr_result_info) is False:
             continue
         if get_pcr_result(pcr_result_info) is False:
             add_pcr_result(pcr_result_info)
+        else:
+            print(f"PCR result for {pcr_result_info['sample_identifier']} already exists on "
+                  f"{pcr_result_info['date_pcred']}. Not adding.")
 
 
 def add_pcr_assays(args):
