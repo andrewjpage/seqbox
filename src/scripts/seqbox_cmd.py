@@ -12,7 +12,7 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
 permitted_artic_workflows = {'medaka'}
-permitted_artic_profiles = {'docker'}
+permitted_artic_profiles = {'docker', 'manual'}
 
 
 def add_groups(args):
