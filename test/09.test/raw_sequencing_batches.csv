@@ -1,0 +1,3 @@
+﻿batch_directory,batch_name,date_run,sequencing_type,instrument_model,instrument_name,library_prep_method,sequencing_centre,flowcell_type
+/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210727_1549_MN34547_FAQ45758_175ec4bf,20210727_1549_MN34547_FAQ45758_175ec4bf,27/07/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
+/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210728_1011_MN34547_FAQ45758_27811173,20210728_1011_MN34547_FAQ45758_27811173,28/07/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
