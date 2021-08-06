@@ -45,13 +45,14 @@ join sample s on e.sample_id = s.id
 
 -- get all the samples from a run
 
-select readset_identifier, sample_identifier, barcode, name from read_set
+select readset_identifier, sample_identifier, barcode, name, pct_covered_bases from read_set
 join read_set_nanopore rsn on read_set.id = rsn.readset_id
 join read_set_batch rsb on read_set.readset_batch_id = rsb.id
 join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+join artic_covid_result on read_set.id = artic_covid_result.readset_id
 join extraction e on rs.extraction_id = e.id
 join sample s on e.sample_id = s.id
-where name = '20210713_1422_MN33881_FAO36609_d9ac6fbd';
+where name = '20210728_1011_MN34547_FAQ45758_27811173';
 
 -- get all info on sample, need to add some more info to this and rename column headings
 
@@ -157,3 +158,45 @@ and (year_received >= 2021 and month_received >= 6)
 and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
 order by sample_identifier, pct_covered_bases desc) as foo
 group by lineage
+
+-- get one best coverage readset per sample, and the artic and pangolin results for that.
+
+select * from
+    (select distinct on (sample_identifier) sample_identifier, pct_covered_bases, lineage, day_received, month_received, year_received, name
+    from read_set
+             left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
+             left join read_set_batch on read_set.readset_batch_id = read_set_batch.id
+             left join artic_covid_result on read_set.id = artic_covid_result.readset_id
+             left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
+             left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+             left join extraction e on rs.extraction_id = e.id
+             left join tiling_pcr on e.id = tiling_pcr.extraction_id
+             left join sample s on e.sample_id = s.id
+             left join sample_source ss on s.sample_source_id = ss.id
+             left join sample_source_project ssp on ss.id = ssp.sample_source_id
+             left join project p on ssp.project_id = p.id
+    where pct_covered_bases is not Null
+      and project_name = any (array ['ISARIC', 'COCOA'])
+      and sample_identifier != 'Neg ex'
+    and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
+    order by sample_identifier, pct_covered_bases desc) as foo
+order by year_received desc, month_received desc, day_received desc;
+
+-- get every batch which has at least one sars-cov-2 on
+
+select distinct(name) from read_set_batch
+join read_set rs on read_set_batch.id = rs.readset_batch_id
+join raw_sequencing r on rs.raw_sequencing_id = r.id
+join extraction e on r.extraction_id = e.id
+join sample s on e.sample_id = s.id
+where s.species = 'SARS-CoV-2';
+
+-- get every barcode and readset batchname where the species of the sample is SC2
+
+select barcode, name from read_set_batch
+join read_set rs on read_set_batch.id = rs.readset_batch_id
+join read_set_nanopore on rs.id = read_set_nanopore.readset_id
+join raw_sequencing r on rs.raw_sequencing_id = r.id
+join extraction e on r.extraction_id = e.id
+join sample s on e.sample_id = s.id
+where s.species = 'SARS-CoV-2';
