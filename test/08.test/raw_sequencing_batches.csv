@@ -1,7 +1,0 @@
-﻿batch_directory,batch_name,date_run,sequencing_type,instrument_model,instrument_name,library_prep_method,sequencing_centre,flowcell_type
-/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210701_1420_MN33881_FAO36609_5c3b1ea9,20210701_1420_MN33881_FAO36609_5c3b1ea9,01/07/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
-/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210623_1513_MN33881_FAO36636_d6fbf869,20210623_1513_MN33881_FAO36636_d6fbf869,23/06/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
-/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210628_1538_MN33881_FAO36636_219737d0,20210628_1538_MN33881_FAO36636_219737d0,28/06/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
-/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210623_20210628_merged,20210623_20210628_merged,23/06/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
-/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210713_1422_MN33881_FAO36609_d9ac6fbd,20210713_1422_MN33881_FAO36609_d9ac6fbd,13/07/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
-/Users/flashton/Dropbox/non-project/test_input_data/test_minion_data/20210714_0925_MN33881_FAO60975_a0da1913,20210714_0925_MN33881_FAO60975_a0da1913,14/07/2021,nanopore,MinION Mk1c,mlw_mk1c_a,rapid,MLW,R9.4.1
