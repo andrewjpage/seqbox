@@ -749,59 +749,41 @@ def get_raw_sequencing_batch(batch_name):
 
 
 def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
-    # raw_sequencing_type = None
-    # if raw_sequencing_batch.sequencing_type == 'nanopore':
-    #     raw_sequencing_type = RawSequencingNanopore
-    # elif raw_sequencing_batch.sequencing_type == 'illumina':
-    #     raw_sequencing_type = RawSequencingIllumina
-    print()
-    print(readset_info['sample_identifier'], readset_info['tiling_pcr_identifier'], readset_info['tiling_pcr_protocol'])
     if covid is True:
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
-            .join(TilingPcr).filter_by(pcr_identifier=int(readset_info['tiling_pcr_identifier']),
-                                        date_pcred=datetime.datetime.strptime(
-                                            readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
+            .join(TilingPcr).filter_by(pcr_identifier=readset_info['tiling_pcr_identifier'],
+                                       date_pcred=datetime.datetime \
+                                       .strptime(readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
             .join(Extraction) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
             .join(SampleSource.projects).join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .all()
-
-        # print(RawSequencing.query \
-        #     .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
-        #     .join(Extraction)\
-        #     .join(TilingPcr).filter_by(pcr_identifier=readset_info['tiling_pcr_identifier'],
-        #                                 date_pcred=datetime.datetime.strptime(
-        #                                     readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
-        #     .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
-        #     .join(SampleSource) \
-        #     .join(SampleSource.projects).join(Groups) \
-        #     .filter_by(group_name=readset_info['group_name']) \
-        #     .distinct())
     elif covid is False:
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name)\
             .join(Extraction).filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                         date_extracted=datetime.datetime.strptime(
-                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+                                        date_extracted=datetime.datetime \
+                                        .strptime(readset_info['date_extracted'], '%d/%m/%Y')) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource) \
             .join(SampleSource.projects).join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
-            .distinct().all()
-
+            .all()
     if len(matching_raw_sequencing) == 0:
         # no matching raw sequencing will be the case for 99.999% of illumina (all illumina?) and most nanopore
         return False
-
     elif len(matching_raw_sequencing) == 1:
-        print(matching_raw_sequencing, matching_raw_sequencing[0].tiling_pcr.pcr_identifier)
         # if there is already a raw_sequencing record (i.e. this is another basecalling run of the same raw_sequencing
         # data), then extraction is already assocaited with the raw sequencing, so don't need to add.
-        # we use the matching_raw_tech_sequencing[0].raw_sequencing because the find_matching_raw_sequencing() query
-        # returns an Illumina/NanoporeRawSequencing class.
+        # todo - add in asserts checking that thing returning matches the queries in order to guard against shittly
+        #  written queries
+        # assert matching_raw_sequencing[0].tiling_pcr.tiling_pcr_identifier == readset_info['tiling_pcr_identifier']
+        # assert matching_raw_sequencing[0].tiling_pcr.date_pcred == readset_info['date_tiling_pcred']
+        # assert matching_raw_sequencing[0].extraction.sample.sample_identifier == readset_info['sample_identifier']
+        # assert matching_raw_sequencing[0].extraction.sample.projects.group_name == readset_info['group_name']
         return matching_raw_sequencing[0]
     else:
         print(f"Getting raw_sequencing, more than one match in {readset_info['batch']} for sample "
