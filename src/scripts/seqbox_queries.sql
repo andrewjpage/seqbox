@@ -56,20 +56,19 @@ where name = '20210728_1011_MN34547_FAQ45758_27811173';
 
 -- get all info on sample, need to add some more info to this and rename column headings
 
-select group_name, project_name, sample_source_identifier, sample_identifier, pr.pcr_result, e.date_extracted,  ccp.ct, tp.date_pcred, tp.protocol, readset_identifier, name from sample
-join pcr_result pr on sample.id = pr.sample_id
-join extraction e on sample.id = e.sample_id
-join covid_confirmatory_pcr ccp on e.id = ccp.extraction_id
-join tiling_pcr tp on e.id = tp.extraction_id
-join raw_sequencing rs on e.id = rs.extraction_id
-join read_set r on rs.id = r.raw_sequencing_id
-join read_set_batch rsb on r.readset_batch_id = rsb.id
-join sample_source ss on sample.sample_source_id = ss.id
-join sample_source_project ssp on ss.id = ssp.sample_source_id
-join project p on ssp.project_id = p.id
-join groups g on p.groups_id = g.id
-where sample_identifier = 'CMT22M'
-;
+select group_name, project_name, sample_source_identifier, sample_identifier, pr.pcr_result, e.date_extracted,  ccp.ct, tp.date_pcred, tp.protocol, readset_identifier, name from read_set r
+left join raw_sequencing rs on r.raw_sequencing_id = rs.id
+left join tiling_pcr tp on rs.tiling_pcr_id = tp.id
+left join extraction e on rs.extraction_id = e.id
+left join sample on e.sample_id = sample.id
+left join pcr_result pr on sample.id = pr.sample_id
+left join covid_confirmatory_pcr ccp on e.id = ccp.extraction_id
+left join read_set_batch rsb on r.readset_batch_id = rsb.id
+left join sample_source ss on sample.sample_source_id = ss.id
+left join sample_source_project ssp on ss.id = ssp.sample_source_id
+left join project p on ssp.project_id = p.id
+left join groups g on p.groups_id = g.id
+where sample_identifier = 'CMT22I';
 
 -- change the project associated with the originating sample sources for all samples with CMU sample identifier
 --  warning - this won't handle sample sources which belong to multiple projects well. need to add another
@@ -83,14 +82,33 @@ and sample_source.id = sample.sample_source_id;
 
 -- AAP report, distinct samples sequenced, which arent super script, aren't on duplicated runs, etc.
 
-select distinct on(sample_identifier) readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, rsb.name
+select distinct on(sample_identifier) readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, name, protocol from
+    (select readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, rsb.name, protocol
+        from read_set
+        left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
+        left join artic_covid_result on read_set.id = artic_covid_result.readset_id
+        left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+        left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
+        left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
+        left join extraction e on rs.extraction_id = e.id
+        left join sample s on e.sample_id = s.id
+        left join sample_source ss on s.sample_source_id = ss.id
+        left join sample_source_project ssp on ss.id = ssp.sample_source_id
+        left join project p on ssp.project_id = p.id
+        where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0'])
+        and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
+        and project_name = any(array['ISARIC', 'COCOA'])
+        and sample_identifier != 'Neg ex') as foo
+order by sample_identifier, pct_covered_bases desc;
+
+
+select readset_identifier, sample_identifier, project_name, barcode, rsb.name, tiling_pcr.protocol
 from read_set
 left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
-left join artic_covid_result on read_set.id = artic_covid_result.readset_id
 left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
 left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
 left join extraction e on rs.extraction_id = e.id
-left join tiling_pcr on e.id = tiling_pcr.extraction_id
 left join sample s on e.sample_id = s.id
 left join sample_source ss on s.sample_source_id = ss.id
 left join sample_source_project ssp on ss.id = ssp.sample_source_id
@@ -98,8 +116,7 @@ left join project p on ssp.project_id = p.id
 where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0'])
 and tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null
 and project_name = any(array['ISARIC', 'COCOA'])
-and sample_identifier != 'Neg ex'
-order by sample_identifier, pct_covered_bases desc;
+and sample_identifier != 'Neg ex';
 
 -- AAP sql query, number with more than 80% coverage
 -- from here https://www.cybertec-postgresql.com/en/postgresql-group-by-expression/
