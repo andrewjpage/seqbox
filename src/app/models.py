@@ -80,10 +80,8 @@ class ReadSetBatch(db.Model):
 class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.Integer,
-                                  db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="set null"))
-    readset_batch_id = db.Column(db.Integer,
-                                  db.ForeignKey("read_set_batch.id", onupdate="cascade", ondelete="set null"))
-    # the Sequence won't work until port to postgres
+                                  db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="cascade"))
+    readset_batch_id = db.Column(db.Integer, db.ForeignKey("read_set_batch.id"))
     readset_identifier = db.Column(db.Integer, db.Sequence("readset_identifier"), comment="ReadSet identifier id, "
                                                                                           "incrementing integer id to "
                                                                                           "uniquely identify this read "
@@ -94,12 +92,12 @@ class ReadSet(db.Model):
     mykrobes = db.relationship("Mykrobe", backref=backref("readset", passive_updates=True,
                                                           passive_deletes=True))
 
-    readset_illumina = db.relationship("ReadSetIllumina", backref="readset", uselist=False)
-    readset_nanopore = db.relationship("ReadSetNanopore", backref="readset", uselist=False)
+    readset_illumina = db.relationship("ReadSetIllumina", backref=backref("readset", passive_deletes=True), uselist=False)
+    readset_nanopore = db.relationship("ReadSetNanopore", backref=backref("readset", passive_deletes=True), uselist=False)
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     include = db.Column(db.VARCHAR(128), comment="Should this readset be included in further analyses?")
-    artic_covid_result = db.relationship("ArticCovidResult", backref="readset")
+    artic_covid_result = db.relationship("ArticCovidResult", backref=backref("readset", passive_deletes=True))
 
     # @hybrid_property
     # def readset_id(self):
@@ -222,9 +220,9 @@ class Extraction(db.Model):
     date_extracted = db.Column(db.DateTime, comment="Date this extract was done")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which did the DNA extraction.")
-    raw_sequencing = db.relationship("RawSequencing", backref="extraction")
-    tiling_pcrs = db.relationship("TilingPcr", backref="extraction")
-    covid_confirmatory_pcrs = db.relationship("CovidConfirmatoryPcr", backref="extraction")
+    raw_sequencing = db.relationship("RawSequencing", backref=backref("extraction", passive_deletes=True))
+    tiling_pcrs = db.relationship("TilingPcr", backref=backref("extraction", passive_deletes=True))
+    covid_confirmatory_pcrs = db.relationship("CovidConfirmatoryPcr", backref=backref("extraction", passive_deletes=True))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
@@ -240,7 +238,7 @@ class TilingPcr(db.Model):
     protocol = db.Column(db.VARCHAR(60), comment="Tiling PCR protocol")
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
-    raw_sequencings = db.relationship("RawSequencing", backref="tiling_pcr")
+    raw_sequencings = db.relationship("RawSequencing", backref=backref("tiling_pcr", passive_deletes=True))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
@@ -251,7 +249,7 @@ class RawSequencing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     extraction_id = db.Column(db.ForeignKey("extraction.id"))
     raw_sequencing_batch_id = db.Column(db.ForeignKey("raw_sequencing_batch.id"))
-    tiling_pcr_id = db.Column(db.ForeignKey("tiling_pcr.id"))
+    tiling_pcr_id = db.Column(db.ForeignKey("tiling_pcr.id",  ondelete="cascade"))
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     readsets = db.relationship("ReadSet", backref="raw_sequencing")
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref="raw_sequencing", uselist=False)
@@ -328,7 +326,7 @@ class SampleSource(db.Model):
                                                            "does the sample source identifier identify? is it a patient"
                                                            "or a visit (like tyvac/strataa), or a sampling location for"
                                                            " an environmental sample")
-    projects = db.relationship("Project", secondary="sample_source_project", backref="sample_source")
+
     samples = db.relationship("Sample", backref="sample_source")
     latitude = db.Column(db.Float(), comment="Latitude of sample source if known")
     longitude = db.Column(db.Float(), comment="Longitude of sample source origin if known")
@@ -340,6 +338,7 @@ class SampleSource(db.Model):
     location_third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district "
                                                              "(UK/VN), township (MW)")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
+    # projects = db.relationship("project", secondary="sample_source_project", backref="sample_source")
 
 
 class Project(db.Model):
@@ -358,6 +357,7 @@ class Project(db.Model):
     # __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
     # todo - add in a constraint somehow so that project_name is unique within group
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
+    sample_sources = db.relationship("SampleSource", secondary="sample_source_project", backref="projects")
 
     def __repr__(self):
         return f"Project(id: {self.id}, details: {self.project_name})"
