@@ -1,4 +1,4 @@
--- get covid todo list
+-- get covid todo list - returning duplicates where there are multiple tiling PCRs
 
 select sample.sample_identifier, sample.day_received, sample.month_received, sample.year_received, pr.pcr_result as qech_pcr_result, project_name, e.extraction_identifier, DATE(e.date_extracted) as date_extracted, ccp.pcr_identifier, DATE(ccp.date_pcred) as date_covid_confirmatory_pcred,
        ccp.ct as covid_confirmation_pcr_ct, tp.pcr_identifier as tiling_pcr_identifier, DATE(tp.date_pcred) as date_tiling_pcrer, rsb.name as read_set_batch_name, r.readset_identifier
@@ -13,8 +13,10 @@ left join tiling_pcr tp on e.id = tp.extraction_id
 left join raw_sequencing rs on e.id = rs.extraction_id
 left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
 left join read_set r on rs.id = r.raw_sequencing_id
-where species = 'SARS-CoV-2' and pr.pcr_result like 'Positive%' and project_name = any(array['ISARIC', 'COCOA'])
-order by sample.year_received desc, sample.month_received desc, sample.day_received;
+where species = 'SARS-CoV-2'
+  and pr.pcr_result like 'Positive%'
+  and (project_name = any(array['ISARIC', 'COCOA']) or (project_name = 'COCOSU' and year_received >= 2021 and month_received >= 8 and day_received >= 4))
+order by sample.year_received desc, sample.month_received desc, sample.day_received desc;
 
 -- get pangolin results for plotting
 
