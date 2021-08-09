@@ -185,7 +185,7 @@ class Sample(db.Model):
     sample_type = db.Column(db.VARCHAR(60), comment="What was DNA extracted from? An isolate, clinical sample (for "
                                                     "covid), a plate sweep, whole stools, etc.")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this sample, if known/appropriate.")
-    sample_source_id = db.Column(db.ForeignKey("sample_source.id"))
+    sample_source_id = db.Column(db.ForeignKey("sample_source.id", ondelete="cascade"))
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")
     year_collected = db.Column(db.Integer, comment="year this was collected")
@@ -308,9 +308,9 @@ class RawSequencingBatch(db.Model):
 
 
 sample_source_project = db.Table("sample_source_project",
-                                  db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id"),
+                                  db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id", ondelete='cascade'),
                                             primary_key=True),
-                                  db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True)
+                                  db.Column("project_id", db.Integer, db.ForeignKey("project.id", ondelete='cascade'), primary_key=True)
                                   )
 
 
@@ -324,7 +324,7 @@ class SampleSource(db.Model):
                                                            "or a visit (like tyvac/strataa), or a sampling location for"
                                                            " an environmental sample")
 
-    samples = db.relationship("Sample", backref="sample_source")
+    samples = db.relationship("Sample", backref=backref("sample_source", passive_deletes=True))
     latitude = db.Column(db.Float(), comment="Latitude of sample source if known")
     longitude = db.Column(db.Float(), comment="Longitude of sample source origin if known")
     country = db.Column(db.VARCHAR(60), comment="country of origin")
@@ -335,7 +335,7 @@ class SampleSource(db.Model):
     location_third_level = db.Column(db.VARCHAR(50), comment="Third highest level of organisation e.g. district "
                                                              "(UK/VN), township (MW)")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
-    # projects = db.relationship("project", secondary="sample_source_project", backref="sample_source")
+    # projects = db.relationship("Project", secondary="sample_source_project", backref=backref("sample_sources", passive_deletes=True))
 
 
 class Project(db.Model):
@@ -353,7 +353,7 @@ class Project(db.Model):
     # __table_args__ = (UniqueConstraint('project_name', 'group_name', name='_projectname_group_uc'),)
     # todo - add in a constraint somehow so that project_name is unique within group
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
-    sample_sources = db.relationship("SampleSource", secondary="sample_source_project", backref="projects")
+    sample_sources = db.relationship("SampleSource", secondary="sample_source_project", backref=backref("projects", passive_deletes=True))
 
     def __repr__(self):
         return f"Project(id: {self.id}, details: {self.project_name})"

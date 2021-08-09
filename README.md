@@ -16,6 +16,8 @@ local sequence management lightweight tools
 * if you add an existing sample_source_identifier associated with a different 
 project then that sample_source_identifier will be associated
 with that project.
+* if you delete a project, then it won't cascade through to delete the sample sources
+in the project.
 
 ### projects
 * projects (and hence samples, sample sources, etc) can't be 
@@ -23,6 +25,8 @@ shared between groups
 * projects is an attribute of sample_source because it's the 
 sample source which is the primary thing enrolled in the project,
 not the sample itself
+* if you delete a project, then it won't cascade through to delete the sample sources
+in the project.
 
 ###read set batch/raw sequencing batch
 * raw_sequencing_batch name has to be unique across all projects/groups
