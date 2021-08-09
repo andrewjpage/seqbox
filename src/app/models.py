@@ -71,9 +71,9 @@ class ReadSetBatch(db.Model):
     basecaller = db.Column(db.VARCHAR(60), comment="Basecaller used to generate sequence data.")
     raw_sequencing_batch_id = db.Column(db.Integer,
                                         db.ForeignKey("raw_sequencing_batch.id", onupdate="cascade",
-                                                      ondelete="set null"),
+                                                      ondelete="cascade"),
                                         nullable=True)
-    readsets = db.relationship("ReadSet", backref="readset_batch")
+    readsets = db.relationship("ReadSet", backref=backref("readset_batch", passive_deletes=True))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
 
@@ -81,7 +81,7 @@ class ReadSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.Integer,
                                   db.ForeignKey("raw_sequencing.id", onupdate="cascade", ondelete="cascade"))
-    readset_batch_id = db.Column(db.Integer, db.ForeignKey("read_set_batch.id"))
+    readset_batch_id = db.Column(db.Integer, db.ForeignKey("read_set_batch.id", ondelete="cascade", onupdate="cascade"))
     readset_identifier = db.Column(db.Integer, db.Sequence("readset_identifier"), comment="ReadSet identifier id, "
                                                                                           "incrementing integer id to "
                                                                                           "uniquely identify this read "
@@ -114,7 +114,7 @@ class ReadSetIllumina(db.Model):
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
-    readset_id = db.Column(db.Integer, db.ForeignKey("read_set.id", ondelete="cascade"))
+    readset_id = db.Column(db.Integer, db.ForeignKey("read_set.id", ondelete="cascade", onupdate="cascade"))
 
     # illumina_batch = db.Column(db.VARCHAR(50), db.ForeignKey("illumina_batch.id", onupdate="cascade",
     #                                                          ondelete="set null"), nullable=True, comment="")
@@ -131,7 +131,7 @@ class ReadSetIllumina(db.Model):
 
 class ReadSetNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    readset_id = db.Column(db.Integer, db.ForeignKey("read_set.id", ondelete="cascade"))
+    readset_id = db.Column(db.Integer, db.ForeignKey("read_set.id", ondelete="cascade", onupdate="cascade"))
     path_fastq = db.Column(db.VARCHAR(250))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     basecaller = db.Column(db.VARCHAR(60))
@@ -185,7 +185,7 @@ class Sample(db.Model):
     sample_type = db.Column(db.VARCHAR(60), comment="What was DNA extracted from? An isolate, clinical sample (for "
                                                     "covid), a plate sweep, whole stools, etc.")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this sample, if known/appropriate.")
-    sample_source_id = db.Column(db.ForeignKey("sample_source.id", ondelete="cascade"))
+    sample_source_id = db.Column(db.ForeignKey("sample_source.id", ondelete="cascade", onupdate="cascade"))
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")
     year_collected = db.Column(db.Integer, comment="year this was collected")
@@ -205,7 +205,7 @@ class Sample(db.Model):
 
 class Extraction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sample_id = db.Column(db.ForeignKey("sample.id", ondelete="cascade"))
+    sample_id = db.Column(db.ForeignKey("sample.id", ondelete="cascade", onupdate="cascade"))
     extraction_identifier = db.Column(db.Integer, comment="An identifier to differentiate multiple extracts from the "
                                                           "ame sample on the same day. It will usually be 1, but if "
                                                           "this is the second extract done on this sample on this day, "
@@ -228,7 +228,7 @@ class Extraction(db.Model):
 
 class TilingPcr(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    extraction_id = db.Column(db.ForeignKey("extraction.id"))
+    extraction_id = db.Column(db.ForeignKey("extraction.id", ondelete="cascade", onupdate="cascade"))
     number_of_cycles = db.Column(db.Integer, comment="Number of PCR cycles")
     date_pcred = db.Column(db.DateTime, comment="Date this PCR was done")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
@@ -244,9 +244,9 @@ class TilingPcr(db.Model):
 
 class RawSequencing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    extraction_id = db.Column(db.ForeignKey("extraction.id"))
-    raw_sequencing_batch_id = db.Column(db.ForeignKey("raw_sequencing_batch.id"))
-    tiling_pcr_id = db.Column(db.ForeignKey("tiling_pcr.id",  ondelete="cascade"))
+    extraction_id = db.Column(db.ForeignKey("extraction.id", ondelete="cascade", onupdate="cascade"))
+    raw_sequencing_batch_id = db.Column(db.ForeignKey("raw_sequencing_batch.id", ondelete="cascade", onupdate="cascade"))
+    tiling_pcr_id = db.Column(db.ForeignKey("tiling_pcr.id",  ondelete="cascade", onupdate="cascade"))
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     readsets = db.relationship("ReadSet", backref=backref("raw_sequencing", passive_deletes=True))
     raw_sequencing_nanopore = db.relationship("RawSequencingNanopore", backref=backref("raw_sequencing", passive_deletes=True), uselist=False)
@@ -259,7 +259,7 @@ class RawSequencing(db.Model):
 
 class RawSequencingNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id", ondelete="cascade"))
+    raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id", ondelete="cascade", onupdate="cascade"))
     path_fast5 = db.Column(db.VARCHAR(250))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
@@ -269,7 +269,7 @@ class RawSequencingNanopore(db.Model):
 
 class RawSequencingIllumina(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id", ondelete="cascade"))
+    raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id", ondelete="cascade", onupdate="cascade"))
     path_r1 = db.Column(db.VARCHAR(250))
     path_r2 = db.Column(db.VARCHAR(250))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
@@ -298,9 +298,9 @@ class RawSequencingBatch(db.Model):
     library_prep_method = db.Column(db.VARCHAR(64))
     sequencing_centre = db.Column(db.VARCHAR(64), comment="E.g. Sanger, CGR, MLW, etc.")
     flowcell_type = db.Column(db.VARCHAR(64))
-    raw_sequencings = db.relationship("RawSequencing", backref="raw_sequencing_batch")
+    raw_sequencings = db.relationship("RawSequencing", backref=backref("raw_sequencing_batch", passive_deletes=True))
     batch_directory = db.Column(db.VARCHAR(128))
-    readset_batches = db.relationship("ReadSetBatch", backref="raw_sequencing_batch")
+    readset_batches = db.relationship("ReadSetBatch", backref=backref("raw_sequencing_batch", passive_deletes=True))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
@@ -308,9 +308,9 @@ class RawSequencingBatch(db.Model):
 
 
 sample_source_project = db.Table("sample_source_project",
-                                  db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id", ondelete='cascade'),
+                                  db.Column("sample_source_id", db.Integer, db.ForeignKey("sample_source.id", ondelete='cascade', onupdate="cascade"),
                                             primary_key=True),
-                                  db.Column("project_id", db.Integer, db.ForeignKey("project.id", ondelete='cascade'), primary_key=True)
+                                  db.Column("project_id", db.Integer, db.ForeignKey("project.id", ondelete='cascade', onupdate="cascade"), primary_key=True)
                                   )
 
 
@@ -345,7 +345,7 @@ class Project(db.Model):
         [type] -- [description]
     """
     id = db.Column(db.Integer, primary_key=True)
-    groups_id = db.Column(db.ForeignKey("groups.id", ondelete="cascade"))
+    groups_id = db.Column(db.ForeignKey("groups.id", ondelete="cascade", onupdate="cascade"))
     project_name = db.Column(db.VARCHAR(64), comment="You can think about this as 'what study got ethics for this "
                                                      "sample to be taken'")
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
@@ -372,7 +372,7 @@ class Groups(db.Model):
 class CovidConfirmatoryPcr(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     # link to extraction
-    extraction_id = db.Column(db.ForeignKey("extraction.id", ondelete="cascade"))
+    extraction_id = db.Column(db.ForeignKey("extraction.id", ondelete="cascade", onupdate="cascade"))
     ct = db.Column(db.Numeric, comment="Ct value of the confirmatory PCR")
     protocol = db.Column(db.VARCHAR(60), comment="What is the name/identifier of the assay? E.g. CDC v1")
     date_pcred = db.Column(db.DateTime, comment="Date this PCR was done")
@@ -384,7 +384,7 @@ class CovidConfirmatoryPcr(db.Model):
 
 class PcrResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sample_id = db.Column(db.ForeignKey("sample.id", ondelete="cascade"))
+    sample_id = db.Column(db.ForeignKey("sample.id", ondelete="cascade", onupdate="cascade"))
     pcr_result = db.Column(db.VARCHAR(60), comment="Was the test positive or negative")
     ct = db.Column(db.Numeric, comment="Was the test positive or negative")
     date_pcred = db.Column(db.DateTime, comment="Date this PCR was done")
@@ -393,7 +393,7 @@ class PcrResult(db.Model):
     institution = db.Column(db.VARCHAR(60), comment="Which institution did this PCR?")
     pcr_identifier = db.Column(db.Integer, comment="Differentiates this PCR from other PCRs done on this sample on the "
                                                    "same day.")
-    pcr_assay_id = db.Column(db.ForeignKey("pcr_assay.id", ondelete="cascade"))
+    pcr_assay_id = db.Column(db.ForeignKey("pcr_assay.id", ondelete="cascade", onupdate="cascade"))
 
 
 class PcrAssay(db.Model):
@@ -411,7 +411,7 @@ class ArticCovidResult(db.Model):
     num_aligned_reads = db.Column(db.Numeric, comment="The number of aligned reads")
     workflow = db.Column(db.VARCHAR(60), comment="Workflow e.g. illumina, medaka, nanopolish")
     profile = db.Column(db.VARCHAR(60), comment="Profile e.g. docker, conda, etc")
-    readset_id = db.Column(db.ForeignKey("read_set.id", ondelete="cascade"))
+    readset_id = db.Column(db.ForeignKey("read_set.id", ondelete="cascade", onupdate="cascade"))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
     pangolin_results = db.relationship("PangolinResult", backref=backref("artic_covid_result", passive_deletes=True))
 
@@ -440,5 +440,5 @@ class PangolinResult(db.Model):
     note = db.Column(db.VARCHAR(300), comment="If any conflicts from the decision tree, this field will output the "
                                              "alternative assignments. ")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
-    artic_covid_result_id = db.Column(db.ForeignKey("artic_covid_result.id", ondelete="cascade"))
+    artic_covid_result_id = db.Column(db.ForeignKey("artic_covid_result.id", ondelete="cascade", onupdate="cascade"))
 
