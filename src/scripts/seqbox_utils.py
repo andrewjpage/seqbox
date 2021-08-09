@@ -76,7 +76,7 @@ def get_sample_source(sample_info):
     # want to find whether this sample_source is already part of this project
     matching_sample_source = SampleSource.query.\
         filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
-        .join(SampleSource.projects)\
+        .join(SampleSource.projects) \
         .join(Groups)\
         .filter_by(group_name=sample_info['group_name']).all()
     if len(matching_sample_source) == 0:
@@ -681,7 +681,7 @@ def get_readset(readset_info, covid):
                                         extraction_identifier=readset_info['extraction_identifier']) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource)\
-            .join(SampleSource.projects)\
+            .join(SampleSource.projects) \
             .join(Groups)\
             .filter_by(group_name=readset_info['group_name'])\
             .distinct().all()
@@ -758,7 +758,8 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
             .join(Extraction) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
-            .join(SampleSource.projects).join(Groups) \
+            .join(SampleSource.projects)\
+            .join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .all()
     elif covid is False:
@@ -769,7 +770,8 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
                                         .strptime(readset_info['date_extracted'], '%d/%m/%Y')) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource) \
-            .join(SampleSource.projects).join(Groups) \
+            .join(SampleSource.projects)\
+            .join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .all()
     if len(matching_raw_sequencing) == 0:
