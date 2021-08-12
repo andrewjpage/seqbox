@@ -98,37 +98,31 @@ def run_add_artic_consensus_to_filestructure(args):
         target_dir = os.path.join(config['seqbox_directory'], group_name, f"{rs.readset_identifier}-{sample.sample_identifier}", "artic_pipeline")
         target_consensus = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic.consensus.fasta")
         if not os.path.isfile(target_consensus):
-            if args.manual_artic_pipeline is True:
-                source_consensus = glob.glob(
+            source_consensus = glob.glob(
                     f"{args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.consensus.fasta")
-            else:
-                source_consensus = glob.glob(f"{args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}/*consensus.fasta")
             if len(source_consensus) == 1:
                 if not os.path.isdir(target_dir):
                     os.mkdir(target_dir)
                 os.symlink(source_consensus[0], target_consensus)
                 print(f"Linked {source_consensus[0]} to {target_consensus}")
             elif len(source_consensus) == 0:
-                print(f"No consensus genome at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}*")
+                print(f"No consensus genome at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.consensus.fasta")
             elif len(source_consensus) > 1:
-                print(f"More than one consensus genome at {args.consensus_genomes_parent_dir}/*{rs.readset_nanopore.barcode}*")
+                print(f"More than one consensus {genome at args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.consensus.fasta")
 
         target_bam = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic.bam")
         if not os.path.isfile(target_bam):
-            if args.manual_artic_pipeline is True:
-                source_bam = glob.glob(
+            source_bam = glob.glob(
                     f"{args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.primertrimmed.rg.sorted.bam")
-            else:
-                source_bam = glob.glob(f"{args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}/*primertrimmed.rg.sorted.bam")
             if len(source_bam) == 1:
                 if not os.path.isdir(target_dir):
                     os.mkdir(target_dir)
                 os.symlink(source_bam[0], target_bam)
                 print(f"Linked {source_bam[0]} to {target_bam}")
             elif len(source_bam) == 0:
-                print(f"No bam at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}*")
+                print(f"No bam at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.primertrimmed.rg.sorted.bam")
             elif len(source_bam) > 1:
-                print(f"More than one bam at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}*")
+                print(f"More than one bam at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.primertrimmed.rg.sorted.bam")
 
 
 def run_command(args):
@@ -162,14 +156,8 @@ def main():
     parser_add_artic_consensus_to_filestructure.add_argument('-c', dest='seqbox_config',
                                                      help='The path to a seqbox_config file.', required=True)
     parser_add_artic_consensus_to_filestructure.add_argument('-d', dest='consensus_genomes_parent_dir',
-                                                             help='Absolute path to the dir within qc_pass_climb_upload '
-                                                                  'produced by artic-nf.',
+                                                             help='Absolute path to the artic pipeline results dir',
                                                              required=True)
-    parser_add_artic_consensus_to_filestructure.add_argument('-m', dest='manual_artic_pipeline', action='store_true',
-                                                             default=False,
-                                                             help="If you ran artic pipeline not via the connor lab "
-                                                                  "nextflow, then pass this flag (makes assumptions "
-                                                                  "about how you ran it/where you saved files.")
 
     args = parser.parse_args()
     run_command(args)
