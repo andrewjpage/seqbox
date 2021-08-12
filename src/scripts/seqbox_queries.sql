@@ -84,11 +84,12 @@ and sample_source.id = sample.sample_source_id;
 
 -- AAP report, distinct samples sequenced, which arent super script, aren't on duplicated runs, etc.
 
-select distinct on(sample_identifier) readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, name, protocol from
-    (select readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, rsb.name, protocol
+select distinct on(sample_identifier) readset_identifier, sample_identifier, lineage, day_received, month_received, year_received, pct_covered_bases, project_name, barcode, name, protocol from
+    (select readset_identifier, sample_identifier, lineage, day_received, month_received, year_received, pct_covered_bases, project_name, barcode, rsb.name, protocol
         from read_set
         left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
         left join artic_covid_result on read_set.id = artic_covid_result.readset_id
+        left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
         left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
         left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
         left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
@@ -98,27 +99,25 @@ select distinct on(sample_identifier) readset_identifier, sample_identifier, pct
         left join sample_source_project ssp on ss.id = ssp.sample_source_id
         left join project p on ssp.project_id = p.id
         where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0'])
-        and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
-        and project_name = any(array['ISARIC', 'COCOA'])
-        and sample_identifier != 'Neg ex') as foo
-order by sample_identifier, pct_covered_bases desc;
+        and (tiling_pcr.protocol = 'ARTIC v3' or tiling_pcr.protocol is Null)
+        and (project_name = any(array['ISARIC', 'COCOA']) or (project_name = 'COCOSU' and year_received >= 2021 and month_received >= 8 and day_received >= 4) )
+        and sample_identifier != any(array['Neg ex', 'Neg_ex'])) as foo
+order by sample_identifier, pct_covered_bases desc NULLS LAST;
 
-
-select readset_identifier, sample_identifier, project_name, barcode, rsb.name, tiling_pcr.protocol
-from read_set
-left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
+-- get info on a couple of batches, for the sequencing report
+select sample_identifier, day_received, month_received, year_received, ct, lineage, pct_covered_bases from read_set
+left join read_set_nanopore rsn on read_set.id = rsn.readset_id
+left join artic_covid_result acr on read_set.id = acr.readset_id
+left join pangolin_result on acr.id = pangolin_result.artic_covid_result_id
 left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
-left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
+left join tiling_pcr tp on rs.tiling_pcr_id = tp.id
 left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
-left join extraction e on rs.extraction_id = e.id
+left join extraction e on tp.extraction_id = e.id
+left join covid_confirmatory_pcr on e.id = covid_confirmatory_pcr.extraction_id
 left join sample s on e.sample_id = s.id
-left join sample_source ss on s.sample_source_id = ss.id
-left join sample_source_project ssp on ss.id = ssp.sample_source_id
-left join project p on ssp.project_id = p.id
-where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0'])
-and tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null
-and project_name = any(array['ISARIC', 'COCOA'])
-and sample_identifier != 'Neg ex';
+where name = any(array['20210727_1549_MN34547_FAQ45758_175ec4bf', '20210728_1011_MN34547_FAQ45758_27811173'])
+and sample_identifier != any(array['Neg ex', 'Neg_ex'])
+and tp.protocol = 'ARTIC v3';
 
 -- AAP sql query, number with more than 80% coverage
 -- from here https://www.cybertec-postgresql.com/en/postgresql-group-by-expression/
@@ -172,7 +171,7 @@ left join sample_source_project ssp on ss.id = ssp.sample_source_id
 left join project p on ssp.project_id = p.id
 where pct_covered_bases is not Null
 and project_name = any(array['ISARIC', 'COCOA'])
-and sample_identifier != 'Neg ex'
+and sample_identifier != any(array['Neg ex', 'Neg_ex'])
 and (year_received >= 2021 and month_received >= 6)
 and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
 order by sample_identifier, pct_covered_bases desc) as foo
@@ -196,7 +195,7 @@ select * from
              left join project p on ssp.project_id = p.id
     where pct_covered_bases is not Null
       and project_name = any (array ['ISARIC', 'COCOA'])
-      and sample_identifier != 'Neg ex'
+      and sample_identifier != any(array['Neg ex', 'Neg_ex'])
     and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
     order by sample_identifier, pct_covered_bases desc) as foo
 order by year_received desc, month_received desc, day_received desc;
@@ -219,3 +218,11 @@ join raw_sequencing r on rs.raw_sequencing_id = r.id
 join extraction e on r.extraction_id = e.id
 join sample s on e.sample_id = s.id
 where s.species = 'SARS-CoV-2';
+
+
+-- delete tiling pcrs from a particular batch
+
+delete from tiling_pcr where id in (select tp.id from tiling_pcr tp
+left join raw_sequencing rs on tp.id = rs.tiling_pcr_id
+left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
+where name = any(array['20210713_1422_MN33881_FAO36609_d9ac6fbd', '20210714_0925_MN33881_FAO60975_a0da1913']) );

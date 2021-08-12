@@ -59,7 +59,8 @@ be gzipped.
 extraction identifier of the corresponding extraction. if it is covid then
 need the tiling pcr date.
 * negative controls/negative extractions should be assigned to sample sources and 
-samples wiht the identifier "Neg ex", they will all be grouped togehter into
+samples wiht the identifier "Neg_ex" (the underscore is important as sample names become 
+paths, so shouldn't have spaces etc. they will all be grouped togehter into
 those samples/sample sources, but will of course have different extractions. 
 they can be assigned to thge same project/group as the run (or arbitrary, doesnt matter). 
 
