@@ -108,7 +108,7 @@ def run_add_artic_consensus_to_filestructure(args):
             elif len(source_consensus) == 0:
                 print(f"No consensus genome at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.consensus.fasta")
             elif len(source_consensus) > 1:
-                print(f"More than one consensus {genome at args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.consensus.fasta")
+                print(f"More than one consensus genome at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.consensus.fasta")
 
         target_bam = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic.bam")
         if not os.path.isfile(target_bam):
