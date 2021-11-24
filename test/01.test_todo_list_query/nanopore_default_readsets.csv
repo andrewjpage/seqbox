@@ -1,4 +1,4 @@
-﻿sample_identifier,date_pcred,pcr_identifier,date_extracted,extraction_identifier,group_name,barcode,data_storage_device,readset_batch_name
+﻿sample_identifier,date_tiling_pcred,tiling_pcr_identifier,date_extracted,extraction_identifier,group_name,barcode,data_storage_device,readset_batch_name
 CMT15I,01/06/2021,1,,,Core,barcode01,local,20201201_1355_MN33881_FAO20804_109641e0
 CMT1XD,01/06/2021,1,,,Core,barcode02,local,20201201_1355_MN33881_FAO20804_109641e0
 CMT15J,01/06/2021,1,,,Core,barcode03,local,20201201_1355_MN33881_FAO20804_109641e0

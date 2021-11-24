@@ -209,7 +209,8 @@ def get_artic_covid_result(artic_covid_result_info):
 
 
 def get_pangolin_result(pangolin_result_info):
-    matching_pangolin_result = PangolinResult.query.join(ArticCovidResult)\
+    matching_pangolin_result = PangolinResult.query.filter_by(pangolearn_version=pangolin_result_info['pangoLEARN_version'])\
+        .join(ArticCovidResult)\
         .filter_by(profile=pangolin_result_info['artic_profile'], workflow=pangolin_result_info['artic_workflow'])\
         .join(ReadSet)\
         .join(ReadSetBatch).filter_by(name=pangolin_result_info['readset_batch_name'])\
@@ -219,9 +220,10 @@ def get_pangolin_result(pangolin_result_info):
     elif len(matching_pangolin_result) == 0:
         return False
     else:
-        print(f"Trying to get artic_covid_result. "
-              f"More than one ArticCovidResult for barcode {pangolin_result_info['barcode']} for "
-              f"readset batch {pangolin_result_info['readset_batch_name']}, run with profile {pangolin_result_info['artic_profile']} "
+        print(f"Trying to get pangolin_result. "
+              f"More than one PangolinResult for pangoLEARN version {pangolin_result_info['pangoLEARN_version']} "
+              f"barcode {pangolin_result_info['barcode']} for readset batch"
+              f"{pangolin_result_info['readset_batch_name']}, run with profile {pangolin_result_info['artic_profile']} "
               f"and workflow {pangolin_result_info['artic_workflow']}. Shouldn't happen, exiting.")
         sys.exit(1)
 

@@ -434,6 +434,7 @@ class PangolinResult(db.Model):
                                                      " these scores")
     version = db.Column(db.VARCHAR(60), comment="See https://cov-lineages.org/pangolin_docs/output.html")
     pangolin_version = db.Column(db.VARCHAR(60), comment="Pangolin version")
+    # todo - pangolearn version should be a date
     pangolearn_version = db.Column(db.VARCHAR(60), comment="Pangolearn version")
     pango_version = db.Column(db.VARCHAR(60), comment="The sample name from the artic result output.")
     status = db.Column(db.VARCHAR(60), comment="Pass/fail QC")
