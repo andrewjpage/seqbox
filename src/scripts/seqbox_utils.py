@@ -209,8 +209,7 @@ def get_artic_covid_result(artic_covid_result_info):
 
 
 def get_pangolin_result(pangolin_result_info):
-    matching_pangolin_result = PangolinResult.query.filter_by(
-        pangolearn_version=datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%d/%m/%Y'))\
+    matching_pangolin_result = PangolinResult.query.filter_by(pangolearn_version=datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%d/%m/%Y')) \
         .join(ArticCovidResult)\
         .filter_by(profile=pangolin_result_info['artic_profile'], workflow=pangolin_result_info['artic_workflow'])\
         .join(ReadSet)\

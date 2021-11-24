@@ -13,7 +13,7 @@ app.config.from_object(Config)
 Bootstrap(app)
 db = SQLAlchemy(app) # Initialize the Flask-SQLAlchemy extension instance
 # see here https://blog.miguelgrinberg.com/post/how-to-add-flask-migrate-to-an-existing-project
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 login = LoginManager(app)
 login.login_view = 'login'
 
