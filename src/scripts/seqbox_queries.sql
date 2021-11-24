@@ -9,8 +9,8 @@ left join project on ssp.project_id = project.id
 left join pcr_result pr on sample.id = pr.sample_id
 left join extraction e on sample.id = e.sample_id
 left join covid_confirmatory_pcr ccp on e.id = ccp.extraction_id
-left join tiling_pcr tp on e.id = tp.extraction_id
 left join raw_sequencing rs on e.id = rs.extraction_id
+left join tiling_pcr tp on rs.tiling_pcr_id = tp.id
 left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
 left join read_set r on rs.id = r.raw_sequencing_id
 where species = 'SARS-CoV-2'
@@ -54,7 +54,7 @@ join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
 join artic_covid_result on read_set.id = artic_covid_result.readset_id
 join extraction e on rs.extraction_id = e.id
 join sample s on e.sample_id = s.id
-where name = '20210728_1011_MN34547_FAQ45758_27811173';
+where name = '20210810_1431_MN34547_FAO36609_68382386';
 
 -- get all info on sample, need to add some more info to this and rename column headings
 
@@ -83,13 +83,17 @@ and sample_source_project.sample_source_id = sample_source.id
 and sample_source.id = sample.sample_source_id;
 
 -- AAP report, distinct samples sequenced, which arent super script, aren't on duplicated runs, etc.
+-- add in/remove the pct_covered_bases for the proportion >90
+-- add in/remove the lineage section as required
 
+-- select lineage, count(lineage) from (
 select distinct on(sample_identifier) readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, name, protocol from
-    (select readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, rsb.name, protocol
+    (select readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, rsb.name, protocol, lineage
         from read_set
         left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
         left join artic_covid_result on read_set.id = artic_covid_result.readset_id
         left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+        left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
         left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
         left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
         left join extraction e on rs.extraction_id = e.id
@@ -97,46 +101,50 @@ select distinct on(sample_identifier) readset_identifier, sample_identifier, pct
         left join sample_source ss on s.sample_source_id = ss.id
         left join sample_source_project ssp on ss.id = ssp.sample_source_id
         left join project p on ssp.project_id = p.id
-        where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0'])
-        and (tiling_pcr.protocol = 'ARTIC v3' or tiling_pcr.protocol is Null)
-        and (project_name = any(array['ISARIC', 'COCOA']) or (project_name = 'COCOSU' and year_received >= 2021 and month_received >= 8 and day_received >= 4) )
-        and sample_identifier != any(array['Neg ex', 'Neg_ex'])) as foo
-order by sample_identifier, pct_covered_bases desc NULLS LAST;
+        where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0', '20210818_1510_MN34547_FAQ69577_004054cc'])
+        and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger']) or tiling_pcr.protocol is Null)
+        and (project_name = any(array['ISARIC', 'COCOA', 'COCOSU'])
+        and sample_identifier != any(array['Neg ex', 'Neg_ex', 'Neg_ex', 'Neg_extract'])
+        and pct_covered_bases >= 90
+    ) as foo
+order by sample_identifier, pct_covered_bases desc NULLS LAST
+-- ) as bar
+-- group by lineage;
 
 -- AAP sql query, number with more than 80% coverage
 -- from here https://www.cybertec-postgresql.com/en/postgresql-group-by-expression/
-select project_name, count(project_name), pct_covered_bases >= 80 from (
-select distinct on (sample_identifier) readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode
-from read_set
-left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
-left join artic_covid_result on read_set.id = artic_covid_result.readset_id
-left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
-left join extraction e on rs.extraction_id = e.id
-left join tiling_pcr on e.id = tiling_pcr.extraction_id
-left join sample s on e.sample_id = s.id
-left join sample_source ss on s.sample_source_id = ss.id
-left join sample_source_project ssp on ss.id = ssp.sample_source_id
-left join project p on ssp.project_id = p.id
-where pct_covered_bases is not Null
-and project_name = any(array['ISARIC', 'COCOA'])
-and sample_identifier != 'Neg ex'
-and (year_received >= 2021 and month_received >= 6)
-and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
-order by sample_identifier, pct_covered_bases desc) as foo
-group by project_name, pct_covered_bases >= 80;
+-- select project_name, count(project_name), pct_covered_bases >= 80 from (
+-- select distinct on (sample_identifier) readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode
+-- from read_set
+-- left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
+-- left join artic_covid_result on read_set.id = artic_covid_result.readset_id
+-- left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+-- left join tiling_pcr tp on rs.tiling_pcr_id = tp.id
+-- left join extraction e on rs.extraction_id = e.id
+-- left join sample s on e.sample_id = s.id
+-- left join sample_source ss on s.sample_source_id = ss.id
+-- left join sample_source_project ssp on ss.id = ssp.sample_source_id
+-- left join project p on ssp.project_id = p.id
+-- where 
+-- and project_name = any(array['ISARIC', 'COCOA'])
+-- and sample_identifier != 'Neg ex'
+-- and (year_received >= 2021 and month_received >= 6)
+-- and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger']) or tiling_pcr.protocol is Null)
+-- order by sample_identifier, pct_covered_bases desc NULLS LAST) as foo
+-- group by project_name, pct_covered_bases >= 80;
 
 -- AAP report, numnber of samples received and pcr positive/negative
 
-select project_name, count(project_name), pcr_result, count(pcr_result) from (
+select pcr_result, count(pcr_result) from (
     select distinct on (sample_identifier) split_part(pcr_result, ' -', 1) as pcr_result, project_name from sample
     join pcr_result pr on sample.id = pr.sample_id
     join sample_source ss on sample.sample_source_id = ss.id
     join sample_source_project ssp on ss.id = ssp.sample_source_id
     join project p on ssp.project_id = p.id
     where (year_received >= 2021 and month_received >= 6)
-    and project_name = any(array['COCOA', 'COCOSU', 'ISARIC'])
+    and (project_name = any(array['ISARIC', 'COCOA']) or (project_name = 'COCOSU' and year_received >= 2021 and month_received >= 8 and day_received >= 4) )
     and pcr_result != 'Not Done') as foo
-group by project_name, pcr_result;
+group by  pcr_result;
 
 -- AAP report, number of each lineage
 
@@ -147,42 +155,21 @@ left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
 left join artic_covid_result on read_set.id = artic_covid_result.readset_id
 left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
 left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+left join tiling_pcr tp on rs.tiling_pcr_id = tp.id
 left join extraction e on rs.extraction_id = e.id
-left join tiling_pcr on e.id = tiling_pcr.extraction_id
 left join sample s on e.sample_id = s.id
 left join sample_source ss on s.sample_source_id = ss.id
 left join sample_source_project ssp on ss.id = ssp.sample_source_id
 left join project p on ssp.project_id = p.id
 where pct_covered_bases is not Null
 and project_name = any(array['ISARIC', 'COCOA'])
-and sample_identifier != any(array['Neg ex', 'Neg_ex'])
+and sample_identifier != any(array['Neg ex', 'Neg_ex', 'Neg_ex', 'Neg_extract'])
 and (year_received >= 2021 and month_received >= 6)
-and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
+and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger']) or tiling_pcr.protocol is Null)
 order by sample_identifier, pct_covered_bases desc) as foo
 group by lineage
 
--- get one best coverage readset per sample, and the artic and pangolin results for that.
 
-select * from
-    (select distinct on (sample_identifier) sample_identifier, pct_covered_bases, lineage, day_received, month_received, year_received, name
-    from read_set
-             left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
-             left join read_set_batch on read_set.readset_batch_id = read_set_batch.id
-             left join artic_covid_result on read_set.id = artic_covid_result.readset_id
-             left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
-             left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
-             left join extraction e on rs.extraction_id = e.id
-             left join tiling_pcr on e.id = tiling_pcr.extraction_id
-             left join sample s on e.sample_id = s.id
-             left join sample_source ss on s.sample_source_id = ss.id
-             left join sample_source_project ssp on ss.id = ssp.sample_source_id
-             left join project p on ssp.project_id = p.id
-    where pct_covered_bases is not Null
-      and project_name = any (array ['ISARIC', 'COCOA'])
-      and sample_identifier != any(array['Neg ex', 'Neg_ex'])
-    and (tiling_pcr.protocol not like '%SuperScript%' or tiling_pcr.protocol is Null)
-    order by sample_identifier, pct_covered_bases desc) as foo
-order by year_received desc, month_received desc, day_received desc;
 
 -- get every batch which has at least one sars-cov-2 on
 

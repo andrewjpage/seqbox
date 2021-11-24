@@ -28,7 +28,7 @@ not the sample itself
 * if you delete a project, then it won't cascade through to delete the sample sources
 in the project.
 
-###read set batch/raw sequencing batch
+### read set batch/raw sequencing batch
 * raw_sequencing_batch name has to be unique across all projects/groups
 * readset_batch_name and raw sequencing batch namespace is shared across all groups/institutions (i.e. has to be unique)
 
