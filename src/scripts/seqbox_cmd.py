@@ -172,7 +172,11 @@ def add_artic_covid_results(args):
 def add_pangolin_results(args):
     all_pangolin_results_info = read_in_as_dict(args.pangolin_results_inhandle)
     for pangolin_result_info in all_pangolin_results_info:
-        pangolin_result_info['readset_batch_name'] = args.readset_batch_name
+        if args.nanopore_default is False:
+            pangolin_result_info['readset_batch_name'] = args.readset_batch_name
+        else:
+            pangolin_result_info['readset_batch_name'] = pangolin_result_info['taxon'].split('/')[0].split('_barcode')[0]
+        # print(pangolin_result_info['readset_batch_name'])
         pangolin_result_info['barcode'] = pangolin_result_info['taxon'].split('/')[0].split('_')[-1]
         assert pangolin_result_info['barcode'].startswith('barcode')
         assert args.artic_workflow in permitted_artic_workflows
@@ -274,13 +278,19 @@ def main():
                                                 required=True)
     parser_add_pangolin_results = subparsers.add_parser('add_pangolin_results', help='Pangolin')
     parser_add_pangolin_results.add_argument('-i', dest='pangolin_results_inhandle', required=True)
-    parser_add_pangolin_results.add_argument('-b', dest='readset_batch_name', required=True)
+    parser_add_pangolin_results.add_argument('-b', dest='readset_batch_name', help='Readset batch name. If youre '
+                                                                                   'running nanopore default then the '
+                                                                                   'script can get this from the input '
+                                                                                   'file')
     parser_add_pangolin_results.add_argument('-w', dest='artic_workflow',
                                              help='Artic NF Workflow e.g. illumina, medaka, nanopolish used to generate'
                                                   ' the consensus genome', required=True)
     parser_add_pangolin_results.add_argument('-p', dest='artic_profile', help='Artic NF Profile e.g. docker, conda, etc'
                                                                               ' used to generate the consensus genome',
                                              required=True)
+    parser_add_pangolin_results.add_argument('-n', dest='nanopore_default', action='store_true', default=False,
+                                     help='Are the data for these readsets arranged in nanopore default format? Need to'
+                                          ' follow a different template for the inhandle.')
     # print the help if no arguments passed
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -290,5 +300,4 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()

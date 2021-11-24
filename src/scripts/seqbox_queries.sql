@@ -19,23 +19,23 @@ where species = 'SARS-CoV-2'
 order by sample.year_received desc, sample.month_received desc, sample.day_received desc;
 
 -- get pangolin results for plotting
-
-select readset_identifier, sample_identifier, lineage, day_received, month_received, year_received from pangolin_result
-join artic_covid_result acr on pangolin_result.artic_covid_result_id = acr.id
-join read_set rs on rs.id = acr.readset_id
-join raw_sequencing r on rs.raw_sequencing_id = r.id
-join extraction e on r.extraction_id = e.id
-join sample s on e.sample_id = s.id
-where lineage != 'None';
+-- needs to be changed to handle multiple pangolin results
+-- select readset_identifier, sample_identifier, lineage, day_received, month_received, year_received from pangolin_result
+-- join artic_covid_result acr on pangolin_result.artic_covid_result_id = acr.id
+-- join read_set rs on rs.id = acr.readset_id
+-- join raw_sequencing r on rs.raw_sequencing_id = r.id
+-- join extraction e on r.extraction_id = e.id
+-- join sample s on e.sample_id = s.id
+-- where lineage != 'None';
 
 -- get artic qc and pangolin results
-
-select readset_identifier, sample_identifier, pct_covered_bases, lineage, day_received, month_received, year_received from pangolin_result
-join artic_covid_result acr on pangolin_result.artic_covid_result_id = acr.id
-join read_set rs on rs.id = acr.readset_id
-join raw_sequencing r on rs.raw_sequencing_id = r.id
-join extraction e on r.extraction_id = e.id
-join sample s on e.sample_id = s.id;
+-- needs to be changed to handle multiple pangolin results
+-- select readset_identifier, sample_identifier, pct_covered_bases, lineage, day_received, month_received, year_received from pangolin_result
+-- join artic_covid_result acr on pangolin_result.artic_covid_result_id = acr.id
+-- join read_set rs on rs.id = acr.readset_id
+-- join raw_sequencing r on rs.raw_sequencing_id = r.id
+-- join extraction e on r.extraction_id = e.id
+-- join sample s on e.sample_id = s.id;
 
 -- get readset batch, readset id, sample id
 
@@ -94,6 +94,8 @@ select distinct on(sample_identifier) readset_identifier, sample_identifier, pct
         left join artic_covid_result on read_set.id = artic_covid_result.readset_id
         left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
         left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
+            and pangolin_result.pangolearn_version = (select max(pangolearn_version) from pangolin_result where artic_covid_result.id = pangolin_result.artic_covid_result_id)
+
         left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
         left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
         left join extraction e on rs.extraction_id = e.id
@@ -154,6 +156,7 @@ from read_set
 left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
 left join artic_covid_result on read_set.id = artic_covid_result.readset_id
 left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
+            and pangolin_result.pangolearn_version = (select max(pangolearn_version) from pangolin_result where artic_covid_result.id = pangolin_result.artic_covid_result_id)
 left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
 left join tiling_pcr tp on rs.tiling_pcr_id = tp.id
 left join extraction e on rs.extraction_id = e.id
