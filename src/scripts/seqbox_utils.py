@@ -209,7 +209,7 @@ def get_artic_covid_result(artic_covid_result_info):
 
 
 def get_pangolin_result(pangolin_result_info):
-    matching_pangolin_result = PangolinResult.query.filter_by(pangolearn_version=datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%d/%m/%Y')) \
+    matching_pangolin_result = PangolinResult.query.filter_by(pangolearn_version=datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')) \
         .join(ArticCovidResult)\
         .filter_by(profile=pangolin_result_info['artic_profile'], workflow=pangolin_result_info['artic_workflow'])\
         .join(ReadSet)\
@@ -384,7 +384,7 @@ def read_in_pangolin_result(pangolin_result_info):
 
     pangolin_result.version = pangolin_result_info['version']
     pangolin_result.pangolin_version = pangolin_result_info['pangolin_version']
-    pangolin_result.pangolearn_version = datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%d/%m/%Y')
+    pangolin_result.pangolearn_version = datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')
     pangolin_result.pango_version = pangolin_result_info['pango_version']
     pangolin_result.status = pangolin_result_info['status']
     pangolin_result.note = pangolin_result_info['note']
