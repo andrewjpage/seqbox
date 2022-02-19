@@ -15,7 +15,7 @@ left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
 left join read_set r on rs.id = r.raw_sequencing_id
 where species = 'SARS-CoV-2'
   and pr.pcr_result like 'Positive%'
-  and (project_name = any(array['ISARIC', 'COCOA']) or (project_name = 'COCOSU' and year_received >= 2021 and month_received >= 8 and day_received >= 4))
+  and (project_name = any(array['ISARIC', 'COCOA', 'COCOSU', 'MARVELS']))
 order by sample.year_received desc, sample.month_received desc, sample.day_received desc;
 
 -- get pangolin results for plotting
@@ -45,16 +45,7 @@ join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
 join extraction e on rs.extraction_id = e.id
 join sample s on e.sample_id = s.id
 
--- get all the samples from a run
 
-select readset_identifier, sample_identifier, barcode, name, pct_covered_bases from read_set
-join read_set_nanopore rsn on read_set.id = rsn.readset_id
-join read_set_batch rsb on read_set.readset_batch_id = rsb.id
-join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
-join artic_covid_result on read_set.id = artic_covid_result.readset_id
-join extraction e on rs.extraction_id = e.id
-join sample s on e.sample_id = s.id
-where name = '20210810_1431_MN34547_FAO36609_68382386';
 
 -- get all info on sample, need to add some more info to this and rename column headings
 
@@ -82,13 +73,42 @@ where sample.sample_identifier like 'CMU%'
 and sample_source_project.sample_source_id = sample_source.id
 and sample_source.id = sample.sample_source_id;
 
+
+-- get all the samples from a run
+
+select read_set.id, readset_identifier, sample_identifier, barcode, name, pct_covered_bases from read_set
+left join read_set_nanopore rsn on read_set.id = rsn.readset_id
+left join read_set_batch rsb on read_set.readset_batch_id = rsb.id
+left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+left join artic_covid_result on read_set.id = artic_covid_result.readset_id
+left join extraction e on rs.extraction_id = e.id
+left join sample s on e.sample_id = s.id
+where name = '20211221_1403_MN34547_FAQ92318_c38ea5f7';
+
+-- all info on a run for routine report
+
+select project_name, sample_source_identifier, sample_identifier, ct as confirmatory_pcr_ct, readset_identifier, barcode, name as batch_name, pct_covered_bases, lineage, scorpio_call from read_set
+left join read_set_nanopore rsn on read_set.id = rsn.readset_id
+left join read_set_batch rsb on read_set.readset_batch_id = rsb.id
+left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+left join artic_covid_result on read_set.id = artic_covid_result.readset_id
+left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
+            and pangolin_result.pangolearn_version = (select max(pangolearn_version) from pangolin_result where artic_covid_result.id = pangolin_result.artic_covid_result_id)
+left join extraction e on rs.extraction_id = e.id
+left join covid_confirmatory_pcr on e.id = covid_confirmatory_pcr.extraction_id
+left join sample s on e.sample_id = s.id
+left join sample_source ss on s.sample_source_id = ss.id
+left join sample_source_project ssp on ss.id = ssp.sample_source_id
+left join project p on ssp.project_id = p.id
+where name = '20211221_1403_MN34547_FAQ92318_c38ea5f7';
+
 -- AAP report, distinct samples sequenced, which arent super script, aren't on duplicated runs, etc.
 -- add in/remove the pct_covered_bases for the proportion >90
 -- add in/remove the lineage section as required
 
 -- select lineage, count(lineage) from (
-select distinct on(sample_identifier) readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, name, protocol from
-    (select readset_identifier, sample_identifier, pct_covered_bases, project_name, barcode, rsb.name, protocol, lineage
+select distinct on(sample_identifier) readset_identifier, sample_identifier, sample_source_identifier, pct_covered_bases, project_name, barcode, name, protocol, lineage, scorpio_call, year_received, month_received, day_received from
+    (select readset_identifier, sample_identifier, sample_source_identifier, pct_covered_bases, project_name, barcode, rsb.name, protocol, lineage, scorpio_call, year_received, month_received, day_received
         from read_set
         left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
         left join artic_covid_result on read_set.id = artic_covid_result.readset_id
@@ -104,10 +124,10 @@ select distinct on(sample_identifier) readset_identifier, sample_identifier, pct
         left join sample_source_project ssp on ss.id = ssp.sample_source_id
         left join project p on ssp.project_id = p.id
         where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0', '20210818_1510_MN34547_FAQ69577_004054cc'])
-        and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger']) or tiling_pcr.protocol is Null)
-        and (project_name = any(array['ISARIC', 'COCOA', 'COCOSU'])
+        and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger', 'UNZA']) or tiling_pcr.protocol is Null)
+        and (project_name = any(array['ISARIC', 'COCOA', 'COCOSU', 'MARVELS']))
         and sample_identifier != any(array['Neg ex', 'Neg_ex', 'Neg_ex', 'Neg_extract'])
-        and pct_covered_bases >= 90
+        and pct_covered_bases >= 70
     ) as foo
 order by sample_identifier, pct_covered_bases desc NULLS LAST
 -- ) as bar
@@ -131,7 +151,7 @@ order by sample_identifier, pct_covered_bases desc NULLS LAST
 -- and project_name = any(array['ISARIC', 'COCOA'])
 -- and sample_identifier != 'Neg ex'
 -- and (year_received >= 2021 and month_received >= 6)
--- and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger']) or tiling_pcr.protocol is Null)
+-- and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger', 'UNZA']) or tiling_pcr.protocol is Null)
 -- order by sample_identifier, pct_covered_bases desc NULLS LAST) as foo
 -- group by project_name, pct_covered_bases >= 80;
 
@@ -168,7 +188,7 @@ where pct_covered_bases is not Null
 and project_name = any(array['ISARIC', 'COCOA'])
 and sample_identifier != any(array['Neg ex', 'Neg_ex', 'Neg_ex', 'Neg_extract'])
 and (year_received >= 2021 and month_received >= 6)
-and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger']) or tiling_pcr.protocol is Null)
+and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger', 'UNZA']) or tiling_pcr.protocol is Null)
 order by sample_identifier, pct_covered_bases desc) as foo
 group by lineage
 
