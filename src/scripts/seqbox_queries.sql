@@ -1,6 +1,6 @@
 -- get covid todo list - returning duplicates where there are multiple tiling PCRs
 
-select sample.sample_identifier, sample.day_received, sample.month_received, sample.year_received, pr.pcr_result as qech_pcr_result, project_name, e.extraction_identifier, DATE(e.date_extracted) as date_extracted, ccp.pcr_identifier, DATE(ccp.date_pcred) as date_covid_confirmatory_pcred,
+select sample.sample_identifier, sample.day_received, sample.month_received, sample.year_received, pr.pcr_result as qech_pcr_result, pr.ct as original_ct, project_name, e.extraction_identifier, DATE(e.date_extracted) as date_extracted, ccp.pcr_identifier, DATE(ccp.date_pcred) as date_covid_confirmatory_pcred,
        ccp.ct as covid_confirmation_pcr_ct, tp.pcr_identifier as tiling_pcr_identifier, DATE(tp.date_pcred) as date_tiling_pcrer, rsb.name as read_set_batch_name, r.readset_identifier
 from sample
 left join sample_source ss on sample.sample_source_id = ss.id
@@ -107,15 +107,14 @@ where name = '20211221_1403_MN34547_FAQ92318_c38ea5f7';
 -- add in/remove the lineage section as required
 
 -- select lineage, count(lineage) from (
-select distinct on(sample_identifier) readset_identifier, sample_identifier, sample_source_identifier, pct_covered_bases, project_name, barcode, name, protocol, lineage, scorpio_call, year_received, month_received, day_received from
-    (select readset_identifier, sample_identifier, sample_source_identifier, pct_covered_bases, project_name, barcode, rsb.name, protocol, lineage, scorpio_call, year_received, month_received, day_received
+select distinct on(sample_identifier) readset_identifier, sample_identifier, sample_source_identifier, original_ct, confirmatory_ct, pct_covered_bases, project_name, barcode, name, protocol, lineage, scorpio_call, year_received, month_received, day_received from
+    (select readset_identifier, sample_identifier, sample_source_identifier, pr.ct as original_ct, ccp.ct as confirmatory_ct, pct_covered_bases, project_name, barcode, rsb.name, tiling_pcr.protocol, lineage, scorpio_call, year_received, month_received, day_received
         from read_set
         left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
         left join artic_covid_result on read_set.id = artic_covid_result.readset_id
         left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
         left join pangolin_result on artic_covid_result.id = pangolin_result.artic_covid_result_id
             and pangolin_result.pangolearn_version = (select max(pangolearn_version) from pangolin_result where artic_covid_result.id = pangolin_result.artic_covid_result_id)
-
         left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
         left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
         left join extraction e on rs.extraction_id = e.id
@@ -123,11 +122,12 @@ select distinct on(sample_identifier) readset_identifier, sample_identifier, sam
         left join sample_source ss on s.sample_source_id = ss.id
         left join sample_source_project ssp on ss.id = ssp.sample_source_id
         left join project p on ssp.project_id = p.id
+        left join pcr_result pr on s.id = pr.sample_id
+        left join covid_confirmatory_pcr ccp on e.id = ccp.extraction_id
         where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0', '20210818_1510_MN34547_FAQ69577_004054cc'])
         and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger', 'UNZA']) or tiling_pcr.protocol is Null)
         and (project_name = any(array['ISARIC', 'COCOA', 'COCOSU', 'MARVELS']))
         and sample_identifier != any(array['Neg ex', 'Neg_ex', 'Neg_ex', 'Neg_extract'])
-        and pct_covered_bases >= 70
     ) as foo
 order by sample_identifier, pct_covered_bases desc NULLS LAST
 -- ) as bar
@@ -220,3 +220,29 @@ delete from tiling_pcr where id in (select tp.id from tiling_pcr tp
 left join raw_sequencing rs on tp.id = rs.tiling_pcr_id
 left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
 where name = any(array['20210713_1422_MN33881_FAO36609_d9ac6fbd', '20210714_0925_MN33881_FAO60975_a0da1913']) );
+
+
+-- get the filenames for gisaid upload
+
+select distinct on(sample_identifier) concat(group_name, '/', readset_identifier, '-', sample_identifier, '/artic_pipeline/', readset_identifier, '-', sample_identifier, '.artic.consensus.fasta')  from
+    (select group_name, readset_identifier, sample_identifier, pct_covered_bases
+        from read_set
+        left join read_set_nanopore on read_set.id = read_set_nanopore.readset_id
+        left join artic_covid_result on read_set.id = artic_covid_result.readset_id
+        left join raw_sequencing rs on read_set.raw_sequencing_id = rs.id
+        left join tiling_pcr on rs.tiling_pcr_id = tiling_pcr.id
+        left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
+        left join extraction e on rs.extraction_id = e.id
+        left join sample s on e.sample_id = s.id
+        left join sample_source ss on s.sample_source_id = ss.id
+        left join sample_source_project ssp on ss.id = ssp.sample_source_id
+        left join project p on ssp.project_id = p.id
+        left join groups g on p.groups_id = g.id
+        where not rsb.name = any(array['20210623_1513_MN33881_FAO36636_d6fbf869', '20210628_1538_MN33881_FAO36636_219737d0', '20210818_1510_MN34547_FAQ69577_004054cc'])
+        and pct_covered_bases > 70
+        and (tiling_pcr.protocol = any(array['ARTIC v3', 'UNZA Sanger', 'UNZA']) or tiling_pcr.protocol is Null)
+        and (project_name = any(array['ISARIC', 'COCOA', 'COCOSU', 'MARVELS']))
+        and sample_identifier != any(array['Neg ex', 'Neg_ex', 'Neg_ex', 'Neg_extract'])
+    ) as foo
+order by sample_identifier, pct_covered_bases desc NULLS LAST
+
