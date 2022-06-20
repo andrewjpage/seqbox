@@ -988,7 +988,7 @@ def basic_check_readset_fields(readset_info):
     # need two flavours of check read set fields, this one is to not try and make a readset record when
     # it looks like the readset is totally missing, which would be the case in teh combined input file if the
     # covid confirmatory pcr was negative.
-    to_check = ['barcode', 'data_storage_device', 'readset_batch_name']
+    to_check = ['data_storage_device', 'readset_batch_name']
     for r in to_check:
         if readset_info[r].strip() == '':
             print(f'Warning - {r} column should not be empty. it is for \n{readset_info}.')

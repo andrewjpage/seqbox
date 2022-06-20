@@ -1,4 +1,4 @@
-﻿sample_identifier,extraction_identifier,extraction_machine,extraction_kit,what_was_extracted,date_extracted,processing_institution,group_name,extraction_from
+﻿sample_identifier,extraction_identifier,extraction_machine,extraction_kit,what_was_extracted,date_extracted,extraction_processing_institution,group_name,extraction_from
 PTS15G_sample1,1,QiaSymphony,MiniKit,DNA,01/06/2021,MLW,Core,isolate
 PTS67H_sample1,1,QiaSymphony,MiniKit,DNA,01/06/2021,MLW,Core,isolate
 PTS34D_sample1,1,QiaSymphony,MiniKit,DNA,01/06/2021,MLW,Core,isolate

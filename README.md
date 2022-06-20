@@ -110,8 +110,36 @@ ii) end to end testing for covid workflow, nanopore default.
 
     b. uploads everything in `01.test_todo_list_query` dir
     
-    c. run the query in `get_covid_todo_list.sql` and check 
-    that it returns properly ordered todo list.
+    c. run this query
+    ```
+    select sample.sample_identifier, sample.day_received, sample.month_received, sample.year_received, pr.pcr_result as qech_pcr_result, pr.ct as original_ct, project_name, e.extraction_identifier, DATE(e.date_extracted) as date_extracted, ccp.pcr_identifier, DATE(ccp.date_pcred) as date_covid_confirmatory_pcred,
+    ccp.ct as covid_confirmation_pcr_ct, tp.pcr_identifier as tiling_pcr_identifier, DATE(tp.date_pcred) as date_tiling_pcrer, rsb.name as read_set_batch_name, r.readset_identifier
+    from sample
+    left join sample_source ss on sample.sample_source_id = ss.id
+    left join sample_source_project ssp on ss.id = ssp.sample_source_id
+    left join project on ssp.project_id = project.id
+    left join pcr_result pr on sample.id = pr.sample_id
+    left join extraction e on sample.id = e.sample_id
+    left join covid_confirmatory_pcr ccp on e.id = ccp.extraction_id
+    left join raw_sequencing rs on e.id = rs.extraction_id
+    left join tiling_pcr tp on rs.tiling_pcr_id = tp.id
+    left join raw_sequencing_batch rsb on rs.raw_sequencing_batch_id = rsb.id
+    left join read_set r on rs.id = r.raw_sequencing_id
+    order by sample.year_received desc, sample.month_received desc, sample.day_received desc
+   ```
+    Check that it gives this output:
+    ```CMT15I,,,,Positive,15.4,COVIDseq,1,2021-06-01,1,2021-06-01,15.4,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,1
+    CMT1XD,,,,Positive,15.4,COVIDseq,1,2021-06-01,1,2021-06-01,15.4,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,2
+    CMT15J,,,,Positive,33.4,COVIDseq,1,2021-06-01,1,2021-06-01,33.4,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,3
+    CMT15V,,,,Positive,22.5,COVIDseq,1,2021-06-01,1,2021-06-01,22.5,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,4
+    CMT1KL,,,,Positive,38.5,COVIDseq,1,2021-06-01,1,2021-06-01,38.5,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,5
+    CMT1KQ,,,,Positive,12.5,COVIDseq,1,2021-06-01,1,2021-06-01,12.5,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,6
+    CMT16X,,,,Positive,12.4,COVIDseq,1,2021-06-01,1,2021-06-01,12.4,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,7
+    CMT16E,,,,Positive,19.6,COVIDseq,1,2021-06-01,1,2021-06-01,19.6,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,8
+    CMT15Q,,,,Negative,,COVIDseq,1,2021-06-01,1,2021-06-01,,1,2021-06-01,20201201_1355_MN33881_FAO20804_109641e0,9
+    CPH121,,,,Positive,23.4,COVIDseq,1,2021-06-01,1,2021-06-01,23.4,,,,
+    CMT163,,,,,,COVIDseq,1,2021-06-01,,,,,,,
+    CMT16W,,,,,,COVIDseq,,,,,,,,,```
    
 2. Nanopore, default, covid. If we add the same records multiple times, what happens?
 
