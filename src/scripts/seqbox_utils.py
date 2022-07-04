@@ -321,6 +321,11 @@ def check_pangolin_result(pangolin_result_info):
     if pangolin_result_info['lineage'].strip() == '':
         print(f'lineage column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
+    # the name of the output column changed from status to qc_status 2022-07-04
+    if 'qc_status' in pangolin_result_info:
+        if 'status' not in pangolin_result_info:
+            pangolin_result_info['status'] = pangolin_result_info['qc_status']
+
     if pangolin_result_info['status'].strip() == '':
         print(f'status column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
