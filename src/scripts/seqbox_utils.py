@@ -390,7 +390,11 @@ def read_in_pangolin_result(pangolin_result_info):
     pangolin_result.version = pangolin_result_info['version']
     pangolin_result.pangolin_version = pangolin_result_info['pangolin_version']
     # pangolin_result.pangolearn_version = datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')
-    pangolin_result.pango_version = pangolin_result_info['pango_version']
+    # pango_version was removed from pangolin v4
+    if 'pango_version' in pangolin_result_info:
+        pangolin_result.pango_version = pangolin_result_info['pango_version']
+    else:
+        pangolin_result.pango_version = None
     pangolin_result.status = pangolin_result_info['status']
     pangolin_result.note = pangolin_result_info['note']
     return pangolin_result
