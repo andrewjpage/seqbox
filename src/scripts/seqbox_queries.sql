@@ -246,3 +246,5 @@ select distinct on(sample_identifier) concat(group_name, '/', readset_identifier
     ) as foo
 order by sample_identifier, pct_covered_bases desc NULLS LAST
 
+
+-- 

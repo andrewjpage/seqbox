@@ -209,7 +209,7 @@ def get_artic_covid_result(artic_covid_result_info):
 
 
 def get_pangolin_result(pangolin_result_info):
-    matching_pangolin_result = PangolinResult.query.filter_by(pangolearn_version=datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')) \
+    matching_pangolin_result = PangolinResult.query.filter_by(version=datetime.datetime.strptime(pangolin_result_info['version'], '%Y-%m-%d')) \
         .join(ArticCovidResult)\
         .filter_by(profile=pangolin_result_info['artic_profile'], workflow=pangolin_result_info['artic_workflow'])\
         .join(ReadSet)\
@@ -221,7 +221,7 @@ def get_pangolin_result(pangolin_result_info):
         return False
     else:
         print(f"Trying to get pangolin_result. "
-              f"More than one PangolinResult for pangoLEARN version {pangolin_result_info['pangoLEARN_version']} "
+              f"More than one PangolinResult for version {pangolin_result_info['version']} "
               f"barcode {pangolin_result_info['barcode']} for readset batch"
               f"{pangolin_result_info['readset_batch_name']}, run with profile {pangolin_result_info['artic_profile']} "
               f"and workflow {pangolin_result_info['artic_workflow']}. Shouldn't happen, exiting.")
@@ -384,7 +384,7 @@ def read_in_pangolin_result(pangolin_result_info):
 
     pangolin_result.version = pangolin_result_info['version']
     pangolin_result.pangolin_version = pangolin_result_info['pangolin_version']
-    pangolin_result.pangolearn_version = datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')
+    # pangolin_result.pangolearn_version = datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')
     pangolin_result.pango_version = pangolin_result_info['pango_version']
     pangolin_result.status = pangolin_result_info['status']
     pangolin_result.note = pangolin_result_info['note']
