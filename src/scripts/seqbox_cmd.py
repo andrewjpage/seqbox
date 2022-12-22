@@ -291,6 +291,7 @@ def main():
     parser_add_pangolin_results.add_argument('-n', dest='nanopore_default', action='store_true', default=False,
                                      help='Are the data for these readsets arranged in nanopore default format? Need to'
                                           ' follow a different template for the inhandle.')
+
     # print the help if no arguments passed
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)

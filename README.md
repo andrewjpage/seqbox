@@ -103,6 +103,10 @@ underscores
 
 ## tests
 
+Before running tests run `export DATABASE_URL="postgresql:///test_seqbox"`, and also run `conda activate seqbox`.
+
+
+
 1. Nanopore, default, covid. Test 1 tests multiple things i) that the todo list query is working ok 
 ii) end to end testing for covid workflow, nanopore default.
 

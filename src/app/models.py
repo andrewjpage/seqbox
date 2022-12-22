@@ -220,6 +220,7 @@ class Extraction(db.Model):
     raw_sequencing = db.relationship("RawSequencing", backref=backref("extraction", passive_deletes=True))
     tiling_pcrs = db.relationship("TilingPcr", backref=backref("extraction", passive_deletes=True))
     covid_confirmatory_pcrs = db.relationship("CovidConfirmatoryPcr", backref=backref("extraction", passive_deletes=True))
+    nucleic_acid_concentration = db.Column(db.Numeric, comment="The concentration of nucleic acid in ng/ul.")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):

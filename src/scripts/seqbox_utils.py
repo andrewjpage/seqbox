@@ -287,6 +287,8 @@ def read_in_extraction(extraction_info):
         extraction.processing_institution = extraction_info['extraction_processing_institution']
     if extraction_info['extraction_from'] != '':
         extraction.extraction_from = extraction_info['extraction_from']
+    if extraction_info['nucleic_acid_concentration'] != '':
+        extraction.nucleic_acid_concentration = extraction_info['nucleic_acid_concentration']
     return extraction
 
 
