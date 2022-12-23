@@ -1,0 +1,9 @@
+taxon,lineage,conflict,ambiguity_score,scorpio_call,scorpio_support,scorpio_conflict,version,pangolin_version,pangoLEARN_version,pango_version,status,note
+20201201_1355_MN33881_FAO20804_109641e0_barcode01/ARTIC/medaka_MN908947.3,B.1.351-updated,0,0.933810738,Beta (B.1.351-like),0.8571,0,PLEARN-v1.2.13,3.1.5,18/11/2021,v1.2.13,passed_qc,scorpio call: Alt alleles 12; Ref alleles 0; Amb alleles 0
+20201201_1355_MN33881_FAO20804_109641e0_barcode02/ARTIC/medaka_MN908947.3,B.1.351-updated,0,0.968531058,Beta (B.1.351-like),0.8571,0,PLEARN-v1.2.13,3.1.5,18/11/2021,v1.2.13,passed_qc,scorpio call: Alt alleles 12; Ref alleles 0; Amb alleles 0
+20201201_1355_MN33881_FAO20804_109641e0_barcode03/ARTIC/medaka_MN908947.3,B.1.351-updated,0,0.958008778,Beta (B.1.351-like),0.8571,0,PLEARN-v1.2.13,3.1.5,18/11/2021,v1.2.13,passed_qc,scorpio call: Alt alleles 12; Ref alleles 0; Amb alleles 0
+20201201_1355_MN33881_FAO20804_109641e0_barcode04/ARTIC/medaka_MN908947.3,B.1.351-updated,0,0.946343609,Beta (B.1.351-like),0.7857,0,PLEARN-v1.2.13,3.1.5,18/11/2021,v1.2.13,passed_qc,scorpio call: Alt alleles 11; Ref alleles 0; Amb alleles 1
+20201201_1355_MN33881_FAO20804_109641e0_barcode05/ARTIC/medaka_MN908947.3,B.1.617.2-updated,0,0.888902943,Delta (B.1.617.2-like),0.6923,0,PLEARN-v1.2.13,3.1.5,18/11/2021,v1.2.13,passed_qc,scorpio call: Alt alleles 9; Ref alleles 0; Amb alleles 4; scorpio replaced lineage assignment B.1.214.2
+20201201_1355_MN33881_FAO20804_109641e0_barcode06/ARTIC/medaka_MN908947.3,B.1.351-updated,0,0.814316566,Beta (B.1.351-like),0.7143,0,PLEARN-v1.2.13,3.1.5,18/11/2021,v1.2.13,passed_qc,scorpio call: Alt alleles 10; Ref alleles 0; Amb alleles 3
+20201201_1355_MN33881_FAO20804_109641e0_barcode08/ARTIC/medaka_MN908947.3,None,,,,,,PANGO-v1.2.13,3.1.5,18/11/2021,v1.2.13,fail,N_content:0.4
+20201201_1355_MN33881_FAO20804_109641e0_barcode09/ARTIC/medaka_MN908947.3,None,,,,,,PANGO-v1.2.13,3.1.5,17/12/2021,v1.2.13,fail,N_content:0.35
