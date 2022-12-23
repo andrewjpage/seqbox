@@ -262,6 +262,7 @@ class RawSequencingNanopore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id", ondelete="cascade", onupdate="cascade"))
     path_fast5 = db.Column(db.VARCHAR(250))
+    library_prep_method = db.Column(db.VARCHAR(64))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
@@ -273,6 +274,7 @@ class RawSequencingIllumina(db.Model):
     raw_sequencing_id = db.Column(db.ForeignKey("raw_sequencing.id", ondelete="cascade", onupdate="cascade"))
     path_r1 = db.Column(db.VARCHAR(250))
     path_r2 = db.Column(db.VARCHAR(250))
+    library_prep_method = db.Column(db.VARCHAR(64))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):
@@ -296,7 +298,6 @@ class RawSequencingBatch(db.Model):
     instrument_name = db.Column(db.VARCHAR(64), comment="For MLW machines, which exact machine was it run on")
     # primer = db.Column(db.VARCHAR(100))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    library_prep_method = db.Column(db.VARCHAR(64))
     sequencing_centre = db.Column(db.VARCHAR(64), comment="E.g. Sanger, CGR, MLW, etc.")
     flowcell_type = db.Column(db.VARCHAR(64))
     raw_sequencings = db.relationship("RawSequencing", backref=backref("raw_sequencing_batch", passive_deletes=True))

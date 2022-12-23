@@ -726,7 +726,6 @@ def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
     raw_sequencing_batch.date_run = datetime.datetime.strptime(raw_sequencing_batch_info['date_run'], '%d/%m/%Y')
     raw_sequencing_batch.instrument_model = raw_sequencing_batch_info['instrument_model']
     raw_sequencing_batch.instrument_name = raw_sequencing_batch_info['instrument_name']
-    raw_sequencing_batch.library_prep_method = raw_sequencing_batch_info['library_prep_method']
     raw_sequencing_batch.sequencing_centre = raw_sequencing_batch_info['sequencing_centre']
     raw_sequencing_batch.flowcell_type = raw_sequencing_batch_info['flowcell_type']
     raw_sequencing_batch.sequencing_type = raw_sequencing_batch_info['sequencing_type']
@@ -759,6 +758,7 @@ def get_raw_sequencing_batch(batch_name):
     else:
         print(f"Getting raw_sequencing batch. More than one match for {batch_name}. Shouldn't happen, exiting.")
         sys.exit(1)
+
 
 
 def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
@@ -811,11 +811,13 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
         raw_sequencing.raw_sequencing_illumina = RawSequencingIllumina()
         raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
         raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r2']
+        raw_sequencing.raw_sequencing_illumina.library_prep_method = readset_info['library_prep_method']
     if sequencing_type == 'nanopore':
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
         if nanopore_default is True:
             path = os.path.join(batch_directory, 'fast5_pass', readset_info['barcode'], '*fast5')
             raw_sequencing.raw_sequencing_nanopore.path_fast5 = path
+            raw_sequencing.raw_sequencing_nanopore.library_prep_method = readset_info['library_prep_method']
             fast5s = glob.glob(path)
             if len(fast5s) == 0:
                 print(f'Warning - No fast5 found in {path}. Continuing, but check this.')
@@ -843,9 +845,7 @@ def check_raw_sequencing_batch(raw_sequencing_batch_info):
     if raw_sequencing_batch_info['instrument_name'].strip() == '':
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if raw_sequencing_batch_info['library_prep_method'].strip() == '':
-        print(f'batch_name column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
-        sys.exit(1)
+
     if raw_sequencing_batch_info['flowcell_type'].strip() == '':
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
