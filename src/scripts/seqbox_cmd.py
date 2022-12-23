@@ -7,7 +7,7 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
     add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result, \
-    check_tiling_pcr, basic_check_readset_fields, check_pcr_result
+    check_tiling_pcr, basic_check_readset_fields, check_pcr_result, add_culture, get_culture
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -75,6 +75,16 @@ def add_readsets(args):
             elif args.nanopore_default is True:
                 print(f"The readset for sample {readset_info['sample_identifier']} for batch {readset_info['readset_batch_name']} "
                       f"is already in the database for group {readset_info['group_name']}. Not adding it to the database.")
+
+
+def add_cultures(args):
+    all_cultures_info = read_in_as_dict(args.cultures_inhandle)
+    for culture_info in all_cultures_info:
+        if get_culture(culture_info) is False:
+            add_culture(culture_info)
+        else:
+            print(f"Culture {culture_info['sample_identifier']} already exists for {culture_info['group_name']}. Not adding this "
+                  f"culture.")
 
 
 def add_extractions(args):
@@ -223,6 +233,8 @@ def run_command(args):
         add_artic_covid_results(args=args)
     if args.command == 'add_pangolin_results':
         add_pangolin_results(args=args)
+    if args.command == 'add_cultures':
+        add_cultures(args=args)
 
 
 def main():
@@ -291,6 +303,10 @@ def main():
     parser_add_pangolin_results.add_argument('-n', dest='nanopore_default', action='store_true', default=False,
                                      help='Are the data for these readsets arranged in nanopore default format? Need to'
                                           ' follow a different template for the inhandle.')
+    parser_add_cultures = subparsers.add_parser('add_cultures',
+                                                   help='Take a csv of cultures and add to the DB.')
+    parser_add_cultures.add_argument('-i', dest='cultures_inhandle',
+                                        help='A CSV file containing cultuers info', required=True)
 
     # print the help if no arguments passed
     if len(sys.argv) == 1:

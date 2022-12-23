@@ -63,6 +63,8 @@ samples wiht the identifier "Neg_ex" (the underscore is important as sample name
 paths, so shouldn't have spaces etc. they will all be grouped togehter into
 those samples/sample sources, but will of course have different extractions. 
 they can be assigned to thge same project/group as the run (or arbitrary, doesnt matter). 
+* need extraction_from in readsets so that the db knows whether the join the extraction to a sample directly or to a culture
+
 
 ### covid confirmatory pcrs & other PCRs
 
@@ -179,8 +181,12 @@ with illumina data instead of nanopore.
 
 7. nanopore, not default, not covid. test for adding another readset to same raw sequencing
 
-8. nanopore, default, covid. testing combined sample source, sample, covid confirmatory pcr, 
+?. nanopore, default, covid. testing combined sample source, sample, covid confirmatory pcr, 
 extraction, tiling pcr, readset.
+
+8. illumina, extract is from cultures, not covid. testing a combined submission tracker input file with multiple samples.
+
+9. illumina, extract is from sample.
 
 ## How to add a new table
 

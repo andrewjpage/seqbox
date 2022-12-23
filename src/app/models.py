@@ -8,7 +8,7 @@ from sqlalchemy.orm import backref  # relationship
 from sqlalchemy.schema import Sequence, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from sqlalchemy.schema import (CheckConstraint)
 
 class User(UserMixin, db.Model):
     """This is a Class for User inherits from db.Model,a base class for all models from Flask-SQLAlchemy.
@@ -196,6 +196,7 @@ class Sample(db.Model):
     processing_institution = db.Column(db.VARCHAR(60), comment="The institution which processed the sample.")
     # locations = db.relationship("Location", backref=backref("sample", passive_updates=True, passive_deletes=True))
     extractions = db.relationship("Extraction", backref=backref("sample", passive_deletes=True))
+    cultures = db.relationship("Culture", backref=backref("sample", passive_deletes=True))
     pcr_results = db.relationship("PcrResult", backref=backref("sample", passive_deletes=True))
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
@@ -203,9 +204,24 @@ class Sample(db.Model):
         return f"Sample({self.id}, {self.sample_identifier}, {self.species})"
 
 
+class Culture(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    culture_identifier = db.Column(db.VARCHAR(30), comment="An identifier to differentiate multiple cultures from the "
+                                                          "same sample on the same day. It will usually be 1, but if "
+                                                          "this is the second culture done on this sample on this day, "
+                                                          "it needs to be 2 (and so on).")
+    date_cultured = db.Column(db.DateTime, comment="Date this culture was done")
+    sample_id = db.Column(db.Integer, db.ForeignKey("sample.id", ondelete="cascade", onupdate="cascade"))
+    extractions = db.relationship("Extraction", backref=backref("culture", passive_deletes=True))
+
+
 class Extraction(db.Model):
+    __table_args__ = (
+        CheckConstraint('(sample_id IS NULL) <> (culture_id IS NULL)', name='foreign_key_xor'),
+    )
     id = db.Column(db.Integer, primary_key=True)
     sample_id = db.Column(db.ForeignKey("sample.id", ondelete="cascade", onupdate="cascade"))
+    culture_id = db.Column(db.ForeignKey("culture.id", ondelete="cascade", onupdate="cascade"))
     extraction_identifier = db.Column(db.Integer, comment="An identifier to differentiate multiple extracts from the "
                                                           "ame sample on the same day. It will usually be 1, but if "
                                                           "this is the second extract done on this sample on this day, "

@@ -7,6 +7,7 @@ python src/scripts/seqbox_cmd.py add_groups -i test/08.test/groups.csv
 python src/scripts/seqbox_cmd.py add_projects -i test/08.test/projects.csv
 python src/scripts/seqbox_cmd.py add_sample_sources -i test/08.test/submission_tracker.csv
 python src/scripts/seqbox_cmd.py add_samples -i test/08.test/submission_tracker.csv
+python src/scripts/seqbox_cmd.py add_cultures -i test/08.test/submission_tracker.csv
 python src/scripts/seqbox_cmd.py add_extractions -i test/08.test/submission_tracker.csv
 
 python src/scripts/seqbox_cmd.py add_raw_sequencing_batches -i test/08.test/raw_sequencing_batch.csv

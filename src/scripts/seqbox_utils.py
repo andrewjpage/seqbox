@@ -6,7 +6,7 @@ import datetime
 from app import db
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
-    ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult
+    ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture
 
 
 def read_in_as_dict(inhandle):
@@ -109,15 +109,27 @@ def get_sample(readset_info):
 
 
 def get_extraction(readset_info):
-    matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                     date_extracted=datetime.datetime.strptime(
-                                                         readset_info['date_extracted'], '%d/%m/%Y')) \
-        .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
-        .join(SampleSource)\
-        .join(SampleSource.projects) \
-        .join(Groups) \
-        .filter_by(group_name=readset_info['group_name'])\
-        .all()
+    if readset_info['extraction_from'] == 'whole_sample':
+        matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
+                                                         date_extracted=datetime.datetime.strptime(
+                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
+            .join(SampleSource)\
+            .join(SampleSource.projects) \
+            .join(Groups) \
+            .filter_by(group_name=readset_info['group_name'])\
+            .all()
+    elif readset_info['extraction_from'] == 'cultured_isolate':
+        matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
+                                                         date_extracted=datetime.datetime.strptime(
+                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+            .join(Culture) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
+            .join(SampleSource) \
+            .join(SampleSource.projects) \
+            .join(Groups) \
+            .filter_by(group_name=readset_info['group_name']) \
+            .all()
     if len(matching_extraction) == 1:
         return matching_extraction[0]
     elif len(matching_extraction) == 0:
@@ -125,6 +137,26 @@ def get_extraction(readset_info):
     else:
         print(f"Trying to get extraction. "
               f"More than one Extraction match for {readset_info['sample_identifier']}. Shouldn't happen, exiting.")
+        sys.exit(1)
+
+
+def get_culture(culture_info):
+    matching_culture = Culture.query.filter_by(culture_identifier=culture_info['culture_identifier'],
+                                               date_cultured=datetime.datetime.strptime(
+                                                   culture_info['date_cultured'], '%d/%m/%Y')) \
+        .join(Sample).filter_by(sample_identifier=culture_info['sample_identifier']) \
+        .join(SampleSource) \
+        .join(SampleSource.projects) \
+        .join(Groups) \
+        .filter_by(group_name=culture_info['group_name']) \
+        .all()
+    if len(matching_culture) == 1:
+        return matching_culture[0]
+    elif len(matching_culture) == 0:
+        return False
+    else:
+        print(f"Trying to get culture. "
+              f"More than one Culture match for {culture_info['sample_identifier']}. Shouldn't happen, exiting.")
         sys.exit(1)
 
 
@@ -268,6 +300,14 @@ def read_in_sample_source_info(sample_source_info):
     if sample_source_info['longitude'] != '':
         sample_source.longitude = sample_source_info['longitude']
     return sample_source
+
+
+def read_in_culture(culture_info):
+    check_cultures(culture_info)
+    culture = Culture()
+    culture.date_cultured = culture_info['date_cultured']
+    culture.culture_identifier = culture_info['culture_identifier']
+    return culture
 
 
 def read_in_extraction(extraction_info):
@@ -534,15 +574,37 @@ def add_pcr_result(pcr_result_info):
           f"database.")
 
 
-def add_extraction(extraction_info):
-    sample = get_sample(extraction_info)
+def add_culture(culture_info):
+    sample = get_sample(culture_info)
     if sample is False:
-        print(f"Adding extraction. There is no matching sample with the sample_source_identifier "
-              f"{extraction_info['sample_identifier']} for group {extraction_info['group_name']}, please add using "
-              f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
+        print(f"Adding culture, cant find sample for this result:\n{culture_info['sample_identifier']} for "
+              f"{culture_info['group_name']}\nExiting.")
         sys.exit(1)
+    culture = read_in_culture(culture_info)
+    sample.cultures.append(culture)
+    db.session.add(culture)
+    db.session.commit()
+    print(f"Adding culture for {culture_info['sample_identifier']} to database.")
+
+
+def add_extraction(extraction_info):
     extraction = read_in_extraction(extraction_info)
-    sample.extractions.append(extraction)
+    if extraction_info['extraction_from'] == 'whole_sample':
+        sample = get_sample(extraction_info)
+        if sample is False:
+            print(f"Adding extraction. There is no matching sample with the sample_source_identifier "
+                  f"{extraction_info['sample_identifier']} for group {extraction_info['group_name']}, please add using "
+                  f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
+            sys.exit(1)
+        sample.extractions.append(extraction)
+    elif extraction_info['extraction_from'] == 'cultured_isolate':
+        culture = get_culture(extraction_info)
+        if culture is False:
+            print(f"Adding extraction. There is no matching culture with the sample_source_identifier "
+                  f"{extraction_info['sample_identifier']} for group {extraction_info['group_name']}, please add using "
+                  f"python seqbox_cmd.py add_culture and then re-run this command. Exiting.")
+            sys.exit(1)
+        culture.extractions.append(extraction)
     db.session.add(extraction)
     db.session.commit()
     print(f"Adding {extraction_info['sample_identifier']} extraction on {extraction_info['date_extracted']} to the DB")
@@ -866,6 +928,15 @@ def check_readset_batches(readset_batch_info):
         sys.exit(1)
 
 
+def check_cultures(culture_info):
+    if culture_info['culture_identifier'].strip() == '':
+        print(f'culture_identifier column should not be empty. it is for \n{culture_info}\nExiting.')
+        sys.exit(1)
+    if culture_info['date_cultured'].strip() == '':
+        print(f'date_cultured column should not be empty. it is for \n{culture_info}\nExiting.')
+        sys.exit(1)
+
+
 def check_extraction_fields(extraction_info):
     if extraction_info['sample_identifier'].strip() == '':
         print(f'sample_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
@@ -879,9 +950,14 @@ def check_extraction_fields(extraction_info):
     if extraction_info['group_name'].strip() == '':
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    # if extraction_info['extraction_from'].strip() == '':
-    #     print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
-    #     sys.exit(1)
+    if extraction_info['extraction_from'].strip() == '':
+         print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
+         sys.exit(1)
+    allowed_extraction_from = ['cultured_isolate', 'whole_sample']
+    if extraction_info['extraction_from'] not in allowed_extraction_from:
+         print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
+               f'Exiting.')
+         sys.exit(1)
 
 
 def check_group(group_info):
