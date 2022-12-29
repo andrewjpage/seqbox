@@ -14,4 +14,4 @@ MLW,Core,AcinetobacterSeq,ABS15I,patient,,,,,,ABS15I_sample1,Acinetobacter bauma
 MLW,Core,AcinetobacterSeq,ABS1XD,patient,,,,,,ABS1XD_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,,,EXT001,E2,22/12/2022,1,,,,,whole_sample,50,ELU001,
 MLW,Core,AcinetobacterSeq,ABS15J,patient,,,,,,ABS15J_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,,,EXT001,F2,22/12/2022,1,,,,,whole_sample,50,ELU001,
 MLW,Core,AcinetobacterSeq,ABS15V,patient,,,,,,ABS15V_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,,,EXT001,G2,22/12/2022,1,,,,,whole_sample,50,ELU001,
-MLW,Core,AcinetobacterSeq,ABS15V,patient,,,,,,ABS15V_sample2,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,,,EXT001,,22/12/2022,1,,,,,whole_sample,0.001,ELU001,
+MLW,Core,AcinetobacterSeq,ABS15V,patient,,,,,,ABS15V_sample2,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,,,EXT001,H2,22/12/2022,1,,,,,whole_sample,0.001,ELU001,
