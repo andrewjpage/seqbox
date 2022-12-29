@@ -7,7 +7,8 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
     add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result, \
-    check_tiling_pcr, basic_check_readset_fields, check_pcr_result, add_culture, get_culture
+    check_tiling_pcr, basic_check_readset_fields, check_pcr_result, add_culture, get_culture, \
+    add_elution_info_to_extraction
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -96,6 +97,18 @@ def add_extractions(args):
             print(f"This extraction ({extraction_info['sample_identifier']}, {extraction_info['extraction_identifier']})"
                   f" on {extraction_info['date_extracted']} already exists in the database for the group "
                   f"{extraction_info['group_name']}")
+
+
+def add_elution_info_to_extractions(args):
+    all_elution_info = read_in_as_dict(args.elution_info_inhandle)
+    for elution_info in all_elution_info:
+        if get_extraction(elution_info) is False:
+            print(f"Extraction {elution_info['sample_identifier']} {elution_info['extraction_identifier']} "
+                  f" on {elution_info['date_extracted']} already exists in the database for the group "
+                  f"does not exist in the database. Exiting.")
+            sys.exit(1)
+        else:
+            add_elution_info_to_extraction(elution_info)
 
 
 def add_samples(args):
@@ -235,6 +248,8 @@ def run_command(args):
         add_pangolin_results(args=args)
     if args.command == 'add_cultures':
         add_cultures(args=args)
+    if args.command == 'add_elution_info_to_extractions':
+        add_elution_info_to_extractions(args=args)
 
 
 def main():
@@ -307,7 +322,9 @@ def main():
                                                    help='Take a csv of cultures and add to the DB.')
     parser_add_cultures.add_argument('-i', dest='cultures_inhandle',
                                         help='A CSV file containing cultuers info', required=True)
-
+    parser_add_elution_info_to_extractions = subparsers.add_parser('add_elution_info_to_extractions',
+                                                                   help='Add elution info to extractions')
+    parser_add_elution_info_to_extractions.add_argument('-i', dest='elution_info_inhandle', required=True, help = 'A CSV containing elution info for extractions')
     # print the help if no arguments passed
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)

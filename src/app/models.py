@@ -223,7 +223,8 @@ class Culture(db.Model):
 class Extraction(db.Model):
     __table_args__ = (
         CheckConstraint('(sample_id IS NULL) <> (culture_id IS NULL)', name='foreign_key_xor'),
-        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_extraction_plateid_platewell_uc')
+        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_extraction_plateid_platewell_uc'),
+        UniqueConstraint('elution_plate_id', 'elution_plate_well', name='_elution_plateid_platewell_uc')
     )
     id = db.Column(db.Integer, primary_key=True)
     sample_id = db.Column(db.ForeignKey("sample.id", ondelete="cascade", onupdate="cascade"))
