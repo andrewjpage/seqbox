@@ -205,6 +205,9 @@ class Sample(db.Model):
 
 
 class Culture(db.Model):
+    __table_args__ = (
+        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_culture_plateid_platewell_uc'),
+    )
     id = db.Column(db.Integer, primary_key=True)
     culture_identifier = db.Column(db.VARCHAR(30), comment="An identifier to differentiate multiple cultures from the "
                                                           "same sample on the same day. It will usually be 1, but if "
@@ -213,11 +216,14 @@ class Culture(db.Model):
     date_cultured = db.Column(db.DateTime, comment="Date this culture was done")
     sample_id = db.Column(db.Integer, db.ForeignKey("sample.id", ondelete="cascade", onupdate="cascade"))
     extractions = db.relationship("Extraction", backref=backref("culture", passive_deletes=True))
+    submitter_plate_id = db.Column(db.VARCHAR(60), comment="The plate ID given by the submitter.")
+    submitter_plate_well = db.Column(db.VARCHAR(60), comment="The well ID given by the submitter.")
 
 
 class Extraction(db.Model):
     __table_args__ = (
         CheckConstraint('(sample_id IS NULL) <> (culture_id IS NULL)', name='foreign_key_xor'),
+        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_extraction_plateid_platewell_uc')
     )
     id = db.Column(db.Integer, primary_key=True)
     sample_id = db.Column(db.ForeignKey("sample.id", ondelete="cascade", onupdate="cascade"))
@@ -237,6 +243,10 @@ class Extraction(db.Model):
     tiling_pcrs = db.relationship("TilingPcr", backref=backref("extraction", passive_deletes=True))
     covid_confirmatory_pcrs = db.relationship("CovidConfirmatoryPcr", backref=backref("extraction", passive_deletes=True))
     nucleic_acid_concentration = db.Column(db.Numeric, comment="The concentration of nucleic acid in ng/ul.")
+    submitter_plate_id = db.Column(db.VARCHAR(60), comment="The plate ID given by the submitter.")
+    submitter_plate_well = db.Column(db.VARCHAR(60), comment="The well ID given by the submitter.")
+    elution_plate_id = db.Column(db.VARCHAR(60), comment="The elution plate ID given by the lab.")
+    elution_plate_well = db.Column(db.VARCHAR(60), comment="The elution well ID given by the lab.")
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
 
     def __repr__(self):

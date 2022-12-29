@@ -307,6 +307,8 @@ def read_in_culture(culture_info):
     culture = Culture()
     culture.date_cultured = culture_info['date_cultured']
     culture.culture_identifier = culture_info['culture_identifier']
+    culture.submitter_plate_id = culture_info['submitter_plate_id']
+    culture.submitter_plate_well = culture_info['submitter_plate_well']
     return culture
 
 
@@ -329,6 +331,9 @@ def read_in_extraction(extraction_info):
         extraction.extraction_from = extraction_info['extraction_from']
     if extraction_info['nucleic_acid_concentration'] != '':
         extraction.nucleic_acid_concentration = extraction_info['nucleic_acid_concentration']
+    if extraction_info['submitter_plate_id'].startswith('EXT'):
+        extraction.submitter_plate_id = extraction_info['submitter_plate_id']
+        extraction.submitter_plate_well = extraction_info['submitter_plate_well']
     return extraction
 
 
@@ -935,6 +940,7 @@ def check_cultures(culture_info):
     if culture_info['date_cultured'].strip() == '':
         print(f'date_cultured column should not be empty. it is for \n{culture_info}\nExiting.')
         sys.exit(1)
+    assert culture_info['submitter_plate_id'].startswith('CUL')
 
 
 def check_extraction_fields(extraction_info):
@@ -958,6 +964,16 @@ def check_extraction_fields(extraction_info):
          print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
                f'Exiting.')
          sys.exit(1)
+    allowed_submitter_plate_prefixes = ('EXT', 'CUL')
+    if not extraction_info['submitter_plate_id'].startswith(allowed_submitter_plate_prefixes):
+       print(f'submitter_plate_id column should start with one of {allowed_submitter_plate_prefixes}. it doesnt for \n{extraction_info}\nExiting.')
+       sys.exit(1)
+    if extraction_info['submitter_plate_well'].strip() == '':
+         print(f'submitter_plate_well column should not be empty. it is for \n{extraction_info}\nExiting.')
+         sys.exit(1)
+
+    # if the lab guys have done the extraction from a culture, there might not be an submitter
+
 
 
 def check_group(group_info):
