@@ -4,6 +4,8 @@ import sys
 import glob
 import datetime
 from app import db#, engine, conn
+import sqlalchemy
+from sqlalchemy.orm import sessionmaker
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
     ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture
@@ -903,16 +905,14 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
 
 
 def query_info_on_all_samples(args):
-    import sqlalchemy
-    from sqlalchemy.orm import sessionmaker
     # at the moment args just being passed through in case needs to be used in future
+    # need to use the sqlalchemy native option rather than the flask-sqlalchemy option as the latter doesn't nicely
+    # return the join, have to do it manually from the results (?i think?)
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     # from here https://stackoverflow.com/questions/43459182/proper-sqlalchemy-use-in-flask
     engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
     Session = sessionmaker(bind=engine)
     s = Session()
-    # #group_name, project_name, sample_identifier, culture.submitter_plate_id, culture.submitter_plate_well, elution_plate_id, elution_plate_well, readset_identifier
-
     # need to do a union query to get samples from both the sample-culture-extract and sample-extract paths.
     #
     # the filter(Culture.submitter_plate_id.is_not(None)) and filter(Extraction.submitter_plate_id.is_not(None))
@@ -942,74 +942,7 @@ def query_info_on_all_samples(args):
     print('\t'.join(header))
     for x in union_of_both:
         print('\t'.join([str(y) for y in x[1:]]))
-
-
-
-    # returns a "keyed tuple" https://stackoverflow.com/questions/31624530/return-sqlalchemy-results-as-dicts-instead-of-lists
-    # so, we can convert to dict
-    # fastqs = [r._asdict() for r in fastqs]
-    # for x in fastqs:
-        # print(x['data_storage_device'], x['group_name'], x['readset_identifier'], x['sample_identifier'])
-        # print(x)
     s.close()
-
-    #from sqlalchemy import select
-    #from sqlalchemy.orm import Session
-    #res = db.session.query(Sample).union_all(db.session.query(SampleSource)).all()
-    # res = Sample.query\
-    #     .join(SampleSource)\
-    #     .join(SampleSource.projects)\
-    #     .join(Groups)\
-    #     .join(Culture) \
-    #     .filter(Culture.submitter_plate_id.is_not(None)) \
-    #     .join(Extraction, isouter=True) \
-    #     .union(Sample.query\
-    #                 .join(SampleSource)\
-    #                 .join(SampleSource.projects)\
-    #                 .join(Groups)\
-    #                 .join(Extraction, isouter=True) \
-    #                 .filter(Extraction.submitter_plate_id.is_not(None)) \
-    #                ).all()
-    #
-    # # here - frustrating that i have to parse the output in the below way, should just be able to do the select
-    # # as part of the query command, but i can't figure out how to do it.
-    # print(dir(res))
-    # print(len(res))
-    # # print_tree()
-    #
-    # for sample in res:
-    #     print(dir(sample))
-    #     for p in range(0, len(sample.sample_source.projects)):
-    #         group_name = sample.sample_source.projects[p].groups.group_name
-    #         project_name = sample.sample_source.projects[p].project_name
-    #         sample_identifier = sample.sample_identifier
-    #         submitter_plate = sample.cultures[0].submitter_plate_id
-    #         print(f"{group_name}, {project_name}, {sample_identifier}")
-        #submitter_plate = sample.cultures
-        #submitter_plate = find_submitter_plate(sample)
-
-        #print()
-        #print(sample.sample_source.sample_source_projects[0].group.group_name)
-    #print(dir(res))
-    #s1 = select()
-    #s2 = select()
-    #q = Sample.select()
-    #res = conn.execute(q)
-    #print(res)
-    # with Session(engine) as session:
-    #     #q = s1.union(s2).alias('blah')
-    #
-    #     q = select([Sample.sample_identifier])
-    #     session.query(q)
-
-
-    # print('blah')
-    # all_samples = Sample.query\
-    #     .join(SampleSource)\
-    #     .join(SampleSource.projects)\
-    #     .join(Groups).all()
-    # print(dir(all_samples))
-
 
 
 def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batch_directory):
