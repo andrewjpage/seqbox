@@ -5,8 +5,8 @@ MLW,Core,PseudomonasSeq,PTS34D,patient,,,,,,PTS34D_sample1,Pseudomonas aeruginos
 MLW,Core,PseudomonasSeq,PTS65H,patient,,,,,,PTS65H_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,D1,22/12/2022,1,,,,,cultured_isolate,50,ELU001,D1
 MLW,Core,PseudomonasSeq,PTS13P,patient,,,,,,PTS13P_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,E1,22/12/2022,1,,,,,cultured_isolate,50,ELU001,E1
 MLW,Core,PseudomonasSeq,PTS74E,patient,,,,,,PTS74E_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,F1,22/12/2022,1,,,,,cultured_isolate,50,ELU001,F1
-MLW,Core,PseudomonasSeq,PTS77C,patient,,,,,,PTS77C_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,G1,22/12/2022,1,,,,,cultured_isolate,50,ELU001,G1
-MLW,Core,PseudomonasSeq,PTS33N,patient,,,,,,PTS33N_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,H1,22/12/2022,1,,,,,cultured_isolate,50,ELU001,H1
+MLW,Core,PseudomonasSeq,PTS77C,patient,,,,,,PTS77C_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,G1,,,,,,,,,,
+MLW,Core,PseudomonasSeq,PTS33N,patient,,,,,,PTS33N_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,H1,,,,,,,,,,
 MLW,Core,PseudomonasSeq,PTS70M,patient,,,,,,PTS70M_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,A2,22/12/2022,1,,,,,cultured_isolate,50,ELU001,A2
 MLW,Core,PseudomonasSeq,PTS89D,patient,,,,,,PTS89D_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,B2,22/12/2022,1,,,,,cultured_isolate,50,ELU001,B2
 MLW,Core,PseudomonasSeq,PTS89D,patient,,,,,,PTS89D_sample2,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,C2,22/12/2022,1,,,,,cultured_isolate,50,ELU001,C2

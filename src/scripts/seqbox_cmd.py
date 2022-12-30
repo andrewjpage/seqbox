@@ -88,27 +88,57 @@ def add_cultures(args):
                   f"culture.")
 
 
+def is_extraction_info_present(extraction_info):
+    if (extraction_info['date_extracted'] == '') & (extraction_info['extraction_identifier'] == ''):
+        return False
+    elif (extraction_info['date_extracted'] != '') & (extraction_info['extraction_identifier'] != ''):
+        return True
+    else:
+        print(f"extraction_date and extraction_identifier must both be present or both be absent for this line "
+              f"{extraction_info}. Exiting.")
+        sys.exit(1)
+
+
 def add_extractions(args):
     all_extractions_info = read_in_as_dict(args.extractions_inhandle)
     for extraction_info in all_extractions_info:
-        if get_extraction(extraction_info) is False:
-            add_extraction(extraction_info)
+        if is_extraction_info_present(extraction_info) is True:
+            if get_extraction(extraction_info) is False:
+                add_extraction(extraction_info)
+            else:
+                print(f"This extraction ({extraction_info['sample_identifier']}, {extraction_info['extraction_identifier']})"
+                      f" on {extraction_info['date_extracted']} already exists in the database for the group "
+                      f"{extraction_info['group_name']}")
         else:
-            print(f"This extraction ({extraction_info['sample_identifier']}, {extraction_info['extraction_identifier']})"
-                  f" on {extraction_info['date_extracted']} already exists in the database for the group "
-                  f"{extraction_info['group_name']}")
+            print(f"Extraction information is not present for {extraction_info['sample_identifier']} from "
+                  f"{extraction_info['group_name']}. Not adding to DB.")
+
+
+def is_elution_info_present(elution_info):
+    if (elution_info['elution_plate_id'] == '') & (elution_info['elution_plate_well'] == ''):
+        return False
+    elif (elution_info['elution_plate_id'] != '') & (elution_info['elution_plate_well'] != ''):
+        return True
+    else:
+        print(f"elution_plate_id and elution_plate_well must both be present or both be absent for this line "
+              f"{elution_info}. Exiting.")
+        sys.exit(1)
 
 
 def add_elution_info_to_extractions(args):
     all_elution_info = read_in_as_dict(args.elution_info_inhandle)
     for elution_info in all_elution_info:
-        if get_extraction(elution_info) is False:
-            print(f"Extraction {elution_info['sample_identifier']} {elution_info['extraction_identifier']} "
-                  f" on {elution_info['date_extracted']} already exists in the database for the group "
-                  f"does not exist in the database. Exiting.")
-            sys.exit(1)
+        if is_elution_info_present(elution_info) is True:
+            if get_extraction(elution_info) is False:
+                print(f"Extraction {elution_info['sample_identifier']} {elution_info['extraction_identifier']} "
+                      f" on {elution_info['date_extracted']} does not exist in the database. It needs to be added "
+                      f"before this is run again. Exiting.")
+                sys.exit(1)
+            else:
+                add_elution_info_to_extraction(elution_info)
         else:
-            add_elution_info_to_extraction(elution_info)
+            print(f"Elution information is not present for {elution_info['sample_identifier']} from "
+                  f"{elution_info['group_name']}. Not adding to DB.")
 
 
 def add_samples(args):
