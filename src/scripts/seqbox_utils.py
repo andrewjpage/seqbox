@@ -912,18 +912,36 @@ def query_info_on_all_samples(args):
     Session = sessionmaker(bind=engine)
     s = Session()
     # #group_name, project_name, sample_identifier, culture.submitter_plate_id, culture.submitter_plate_well, elution_plate_id, elution_plate_well, readset_identifier
-    samples = s.query(Sample, Groups.group_name, Project.project_name, Sample.sample_identifier, Culture.submitter_plate_id, Culture.submitter_plate_well,
+
+    # need to do a union query to get samples from both the sample-culture-extract and sample-extract paths.
+    #
+    # the filter(Culture.submitter_plate_id.is_not(None)) and filter(Extraction.submitter_plate_id.is_not(None))
+    # are to ensure that samples from the other path are not included in the results of the query (i.e. samples that are
+    # None for Culture.submitter_plate_id will be ones where the submitter gave in extracts, and that hence so sample-extract).
+    sample_culture_extract = s.query(Sample, Groups.group_name, Project.project_name, Sample.sample_identifier, Culture.submitter_plate_id, Culture.submitter_plate_well,
                      Extraction.elution_plate_id, Extraction.elution_plate_well, ReadSet.readset_identifier) \
         .join(SampleSource)\
         .join(SampleSource.projects)\
         .join(Groups) \
-        .join(Culture, isouter=True) \
+        .join(Culture, isouter=True).filter(Culture.submitter_plate_id.is_not(None)) \
         .join(Extraction, isouter=True) \
         .join(RawSequencing, isouter=True) \
-        .join(ReadSet, isouter=True).all()
+        .join(ReadSet, isouter=True)
     #samples = [r._asdict() for r in samples]
-    for x in samples:
-        print('\t'.join([str(y) for y in x]))
+    sample_extract = s.query(Sample, Groups.group_name, Project.project_name, Sample.sample_identifier, Extraction.submitter_plate_id, Extraction.submitter_plate_well,
+                     Extraction.elution_plate_id, Extraction.elution_plate_well, ReadSet.readset_identifier)\
+        .join(SampleSource)\
+        .join(SampleSource.projects)\
+        .join(Groups) \
+        .join(Extraction, isouter=True).filter(Extraction.submitter_plate_id.is_not(None)) \
+        .join(RawSequencing, isouter=True) \
+        .join(ReadSet, isouter=True)
+    union_of_both = sample_culture_extract.union(sample_extract).all()
+
+    header = ['group_name', 'project_name', 'sample_identifier', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'readset_identifier']
+    print('\t'.join(header))
+    for x in union_of_both:
+        print('\t'.join([str(y) for y in x[1:]]))
 
 
 
