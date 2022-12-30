@@ -128,3 +128,6 @@ dmypy.json
 # ignore vscode settings
 .vscode
 seqbox.code-workspace
+
+# ignore pycharm settings
+/.idea
