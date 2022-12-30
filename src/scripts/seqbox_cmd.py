@@ -102,6 +102,8 @@ def is_extraction_info_present(extraction_info):
 def add_extractions(args):
     all_extractions_info = read_in_as_dict(args.extractions_inhandle)
     for extraction_info in all_extractions_info:
+        # need to check this because, as the user will be submitting a unified sample sheet, there may be samples
+        # that dont have extractions associated with them.
         if is_extraction_info_present(extraction_info) is True:
             if get_extraction(extraction_info) is False:
                 add_extraction(extraction_info)
@@ -128,6 +130,8 @@ def is_elution_info_present(elution_info):
 def add_elution_info_to_extractions(args):
     all_elution_info = read_in_as_dict(args.elution_info_inhandle)
     for elution_info in all_elution_info:
+        # need to check this because, as the user will be submitting a unified sample sheet, there may be samples
+        # that dont have elutions associated with them.
         if is_elution_info_present(elution_info) is True:
             if get_extraction(elution_info) is False:
                 print(f"Extraction {elution_info['sample_identifier']} {elution_info['extraction_identifier']} "
