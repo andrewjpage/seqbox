@@ -4,7 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from flask_migrate import Migrate
-
+#from sqlalchemy import create_engine
+#import os
 
 app = Flask(__name__) # Create a Flask app instance
 app.config.from_object(Config)
@@ -18,3 +19,6 @@ login = LoginManager(app)
 login.login_view = 'login'
 
 from app import routes, models
+
+#engine = create_engine(os.environ['DATABASE_URL'])
+#conn = engine.connect()
