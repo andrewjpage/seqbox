@@ -110,8 +110,29 @@ def get_sample(readset_info):
         sys.exit(1)
 
 
+def get_mykrobe_result(mykrobe_result_info):
+    matching_mykrobe_result = Mykrobe.query. \
+        filter_by(mykrobe_version=mykrobe_result_info['mykrobe_version']) \
+        .join(ReadSet) \
+        .join(RawSequencing) \
+        .join(Sample).filter_by(sample_identifier=mykrobe_result_info['sample_identifier']) \
+        .join(SampleSource) \
+        .join(SampleSource.projects) \
+        .join(Groups) \
+        .filter_by(group_name=mykrobe_result_info['group_name']).distinct().all()
+    if len(matching_mykrobe_result) == 0:
+        return False
+    elif len(matching_mykrobe_result) == 1:
+        return matching_mykrobe_result[0]
+    else:
+        print(f"Trying to get mykrobe_result. There is more than one matching mykrobe_result with the sample_identifier "
+              f"{mykrobe_result_info['sample_identifier']} for group {mykrobe_result_info['group_name']}, "
+              f"This shouldn't happen. Exiting.")
+        sys.exit(1)
+
 def get_extraction(readset_info):
     matching_extraction = None
+    # todo - could replace this with a union query
     if readset_info['extraction_from'] == 'whole_sample':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                          date_extracted=datetime.datetime.strptime(
@@ -784,18 +805,32 @@ def get_readset(readset_info, covid):
     #  (should spin out the get fastq path functionality from add readset to filesystem into sep func)
     # if it's nanopore, but not default, the fastq path will be in the readset_info.
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
+
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
             .join(RawSequencing) \
             .join(Extraction).filter_by(date_extracted=readset_info['date_extracted'],
-                                        extraction_identifier=readset_info['extraction_identifier']) \
+                                        extraction_identifier=readset_info['extraction_identifier'])\
+            .filter(Extraction.submitter_plate_id.is_not(None)) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource)\
             .join(SampleSource.projects) \
             .join(Groups)\
             .filter_by(group_name=readset_info['group_name'])\
-            .distinct().all()
+            .distinct().union(readset_type.query
+                              .join(ReadSet)
+                              .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name']) \
+                              .join(RawSequencing)
+                              .join(Extraction)
+                              .filter_by(date_extracted=readset_info['date_extracted'],
+                                         extraction_identifier=readset_info['extraction_identifier'])
+                              .filter(Culture.submitter_plate_id.is_not(None)) \
+                              .join(Culture) \
+                              .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
+                              .join(SampleSource).join(SampleSource.projects) \
+                              .join(Groups).filter_by(group_name=readset_info['group_name']) \
+                              .distinct()).all()
     # if the sample is covid, then need to match against the tiling pcr
     elif covid is True:
         matching_readset = readset_type.query.join(ReadSet)\
@@ -815,6 +850,10 @@ def get_readset(readset_info, covid):
         return False
     elif len(matching_readset) == 1:
         return matching_readset[0]
+    else:
+        print(f"Getting readset. More than one match for {readset_info['readset_batch_name']}. "
+              f"Shouldn't happen, exiting.")
+        sys.exit(1)
 
 
 def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
@@ -1284,6 +1323,10 @@ def add_artic_covid_result(artic_covid_result_info):
     # db.session.add(extraction)
     db.session.commit()
     print(f"Adding artic_covid_result {artic_covid_result_info['sample_name']} from {artic_covid_result_info['readset_batch_name']} to database.")
+
+
+def add_mykrobe_result():
+    pass
 
 
 def add_pangolin_result(pangolin_result_info):
