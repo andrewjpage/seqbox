@@ -251,11 +251,11 @@ def add_pangolin_results(args):
 def add_mykrobes(args):
     all_mykrobes_info = read_in_as_dict(args.mykrobes_inhandle)
     for mykrobe_result_info in all_mykrobes_info:
+        mykrobe_result_info['readset_identifier'] = mykrobe_result_info['sample'].split('-')[0]
         if get_mykrobe_result(mykrobe_result_info) is False:
             add_mykrobe_result(mykrobe_result_info)
         else:
-            print(f"There is already a mykrobe result for barcode {mykrobe_result_info['barcode']} batch "
-                  f"{mykrobe_result_info['readset_batch_name']} in the database. No action taken.")
+            print(f"There is already a mykrobe result for {mykrobe_result_info['sample']} in the database. No action taken.")
 
 
 def run_command(args):

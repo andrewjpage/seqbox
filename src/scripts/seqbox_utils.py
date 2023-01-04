@@ -8,7 +8,7 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, ReadSetNanopore, RawSequencingBatch,\
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
-    ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture
+    ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture, Mykrobe
 
 
 def read_in_as_dict(inhandle):
@@ -112,14 +112,8 @@ def get_sample(readset_info):
 
 def get_mykrobe_result(mykrobe_result_info):
     matching_mykrobe_result = Mykrobe.query. \
-        filter_by(mykrobe_version=mykrobe_result_info['mykrobe_version']) \
-        .join(ReadSet) \
-        .join(RawSequencing) \
-        .join(Sample).filter_by(sample_identifier=mykrobe_result_info['sample_identifier']) \
-        .join(SampleSource) \
-        .join(SampleSource.projects) \
-        .join(Groups) \
-        .filter_by(group_name=mykrobe_result_info['group_name']).distinct().all()
+        filter_by(mykrobe_version=mykrobe_result_info['mykrobe_version'], drug=mykrobe_result_info['drug']) \
+        .join(ReadSet).filter_by(readset_identifier=mykrobe_result_info['readset_identifier']).distinct().all()
     if len(matching_mykrobe_result) == 0:
         return False
     elif len(matching_mykrobe_result) == 1:
@@ -370,6 +364,45 @@ def read_in_group(group_info):
     return group
 
 
+def check_mykrobe_res(mykrobe_res_info):
+    for field in ['sample', 'drug', 'susceptibility', 'mykrobe_version']:
+        if mykrobe_res_info[field] == '':
+            print(f"Trying to read in mykrobe resistance. "
+                  f"Field {field} should not be blank. Exiting.")
+            sys.exit(1)
+
+
+def read_in_mykrobe(mykrobe_result_info):
+    check_mykrobe_res(mykrobe_result_info)
+    mykrobe = Mykrobe()
+    mykrobe.mykrobe_version = mykrobe_result_info['mykrobe_version']
+    mykrobe.drug = mykrobe_result_info['drug']
+    mykrobe.susceptibility = mykrobe_result_info['susceptibility']
+    if mykrobe_result_info['variants'] != '':
+        mykrobe.variants = mykrobe_result_info['variants']
+    if mykrobe_result_info['genes'] != '':
+        mykrobe.genes = mykrobe_result_info['genes']
+    if mykrobe_result_info['phylo_group'] != '':
+        mykrobe.phylo_grp = mykrobe_result_info['phylo_group']
+    if mykrobe_result_info['species'] != '':
+        mykrobe.species = mykrobe_result_info['species']
+    if mykrobe_result_info['lineage'] != '':
+        mykrobe.lineage = mykrobe_result_info['lineage']
+    if mykrobe_result_info['phylo_group_per_covg'] != '':
+        mykrobe.phylo_grp_covg = mykrobe_result_info['phylo_group_per_covg']
+    if mykrobe_result_info['species_per_covg'] != '':
+        mykrobe.species_covg = mykrobe_result_info['species_per_covg']
+    if mykrobe_result_info['lineage_per_covg'] != '':
+        mykrobe.lineage_covg = mykrobe_result_info['lineage_per_covg']
+    if mykrobe_result_info['phylo_group_depth'] != '':
+        mykrobe.phylo_grp_depth = mykrobe_result_info['phylo_group_depth']
+    if mykrobe_result_info['species_depth'] != '':
+        mykrobe.species_depth = mykrobe_result_info['species_depth']
+    if mykrobe_result_info['lineage_depth'] != '':
+        mykrobe.lineage_depth = mykrobe_result_info['lineage_depth']
+    return mykrobe
+
+
 def read_in_tiling_pcr(tiling_pcr_info):
     # doing this earlier in the process now
     # check_tiling_pcr(tiling_pcr_info)
@@ -521,6 +554,32 @@ def add_sample(sample_info):
     db.session.add(sample)
     db.session.commit()
     print(f"Adding sample {sample_info['sample_identifier']}")
+
+
+def rename_dodgy_mykrobe_variables(mykrobe_result_info):
+    if 'variants (dna_variant-AA_variant:ref_kmer_count:alt_kmer_count:conf) [use --format json for more info]' in mykrobe_result_info:
+        if 'variants' not in mykrobe_result_info:
+            mykrobe_result_info['variants'] = mykrobe_result_info['variants (dna_variant-AA_variant:ref_kmer_count:alt_kmer_count:conf) [use --format json for more info]']
+    if 'genes (prot_mut-ref_mut:percent_covg:depth) [use --format json for more info]' in mykrobe_result_info:
+        if 'genes' not in mykrobe_result_info:
+            mykrobe_result_info['genes'] = mykrobe_result_info['genes (prot_mut-ref_mut:percent_covg:depth) [use --format json for more info]']
+    return mykrobe_result_info
+
+
+def add_mykrobe_result(mykrobe_result_info):
+    mykrobe_result_info = rename_dodgy_mykrobe_variables(mykrobe_result_info)
+    #print(mykrobe_result_info)
+    readset = get_readset_from_readset_identifier(mykrobe_result_info)
+    if readset is False:
+        print(f"Adding mykrobe result. There is no matching readset with the readset_identifier "
+              f"{mykrobe_result_info['readset_identifier']}, please add using "
+              f"python seqbox_cmd.py add_readset and then re-run this command. Exiting.")
+        sys.exit(1)
+
+    mykrobe = read_in_mykrobe(mykrobe_result_info)
+    readset.mykrobes.append(mykrobe)
+    db.session.add(mykrobe)
+    db.session.commit()
 
 
 def add_sample_source(sample_source_info):
@@ -768,6 +827,18 @@ def get_group(group_info):
         sys.exit(1)
 
 
+def get_readset_from_readset_identifier(readset_info):
+    matching_readset = ReadSet.query.filter_by(readset_identifier=readset_info['readset_identifier']).all()
+    if len(matching_readset) == 0:
+        return False
+    elif len(matching_readset) == 1:
+        return matching_readset[0]
+    else:
+        print(f"Getting readset. "
+              f"More than one match for {readset_info['readset_identifier']}. Shouldn't happen, exiting.")
+        sys.exit(1)
+
+
 def get_readset(readset_info, covid):
     # first we get the readset batch so that we can get the raw sequencing batch so that we can get the sequencing type
     readset_batch = get_readset_batch(readset_info)
@@ -825,8 +896,7 @@ def get_readset(readset_info, covid):
                               .join(Extraction)
                               .filter_by(date_extracted=readset_info['date_extracted'],
                                          extraction_identifier=readset_info['extraction_identifier'])
-                              .filter(Culture.submitter_plate_id.is_not(None)) \
-                              .join(Culture) \
+                              .join(Culture).filter(Culture.submitter_plate_id.is_not(None)) \
                               .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
                               .join(SampleSource).join(SampleSource.projects) \
                               .join(Groups).filter_by(group_name=readset_info['group_name']) \
@@ -923,6 +993,28 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
             .join(Groups) \
             .filter_by(group_name=readset_info['group_name']) \
             .all()
+
+        matching_raw_sequencing = RawSequencing.query \
+            .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
+            .join(Extraction)\
+            .filter_by(date_extracted=readset_info['date_extracted'],
+                       extraction_identifier=readset_info['extraction_identifier']) \
+            .filter(Extraction.submitter_plate_id.is_not(None)) \
+            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
+            .join(SampleSource) \
+            .join(SampleSource.projects) \
+            .join(Groups) \
+            .filter_by(group_name=readset_info['group_name']) \
+            .distinct().union(RawSequencing.query
+                              .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
+                              .join(Extraction)
+                              .filter_by(date_extracted=readset_info['date_extracted'],
+                                         extraction_identifier=readset_info['extraction_identifier'])
+                              .join(Culture).filter(Culture.submitter_plate_id.is_not(None)) \
+                              .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
+                              .join(SampleSource).join(SampleSource.projects) \
+                              .join(Groups).filter_by(group_name=readset_info['group_name']) \
+                              .distinct()).all()
     if len(matching_raw_sequencing) == 0:
         # no matching raw sequencing will be the case for 99.999% of illumina (all illumina?) and most nanopore
         return False
@@ -1325,8 +1417,7 @@ def add_artic_covid_result(artic_covid_result_info):
     print(f"Adding artic_covid_result {artic_covid_result_info['sample_name']} from {artic_covid_result_info['readset_batch_name']} to database.")
 
 
-def add_mykrobe_result():
-    pass
+
 
 
 def add_pangolin_result(pangolin_result_info):
