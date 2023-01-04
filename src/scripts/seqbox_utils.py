@@ -111,6 +111,7 @@ def get_sample(readset_info):
 
 
 def get_extraction(readset_info):
+    matching_extraction = None
     if readset_info['extraction_from'] == 'whole_sample':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                          date_extracted=datetime.datetime.strptime(
@@ -918,8 +919,8 @@ def query_info_on_all_samples(args):
     # the filter(Culture.submitter_plate_id.is_not(None)) and filter(Extraction.submitter_plate_id.is_not(None))
     # are to ensure that samples from the other path are not included in the results of the query (i.e. samples that are
     # None for Culture.submitter_plate_id will be ones where the submitter gave in extracts, and that hence so sample-extract).
-    sample_culture_extract = s.query(Sample, Groups.group_name, Project.project_name, Sample.sample_identifier, Culture.submitter_plate_id, Culture.submitter_plate_well,
-                     Extraction.elution_plate_id, Extraction.elution_plate_well, ReadSet.readset_identifier) \
+    sample_culture_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Culture.submitter_plate_id, Culture.submitter_plate_well,
+                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, ReadSet.readset_identifier) \
         .join(SampleSource)\
         .join(SampleSource.projects)\
         .join(Groups) \
@@ -928,8 +929,8 @@ def query_info_on_all_samples(args):
         .join(RawSequencing, isouter=True) \
         .join(ReadSet, isouter=True)
     #samples = [r._asdict() for r in samples]
-    sample_extract = s.query(Sample, Groups.group_name, Project.project_name, Sample.sample_identifier, Extraction.submitter_plate_id, Extraction.submitter_plate_well,
-                     Extraction.elution_plate_id, Extraction.elution_plate_well, ReadSet.readset_identifier)\
+    sample_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Extraction.submitter_plate_id, Extraction.submitter_plate_well,
+                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, ReadSet.readset_identifier)\
         .join(SampleSource)\
         .join(SampleSource.projects)\
         .join(Groups) \
@@ -938,9 +939,16 @@ def query_info_on_all_samples(args):
         .join(ReadSet, isouter=True)
     union_of_both = sample_culture_extract.union(sample_extract).all()
 
-    header = ['group_name', 'project_name', 'sample_identifier', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'readset_identifier']
+    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted', 'extraction_identifier', 'readset_identifier']
     print('\t'.join(header))
     for x in union_of_both:
+        # replace the Nones with empty strings because want to use the output as the input for a future upload and the
+        # Nones will cause problems
+        x = ['' if y is None else y for y in x]
+        #print(type(x[9]))
+        # want to get the date, not the datetime.
+        if not x[9] == '':
+            x[9] = x[9].date()
         print('\t'.join([str(y) for y in x[1:]]))
     s.close()
 

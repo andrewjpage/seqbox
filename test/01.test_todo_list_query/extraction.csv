@@ -1,12 +1,12 @@
-﻿sample_identifier,extraction_identifier,extraction_machine,extraction_kit,what_was_extracted,date_extracted,extraction_processing_institution,group_name,extraction_from
-CMT15I,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT1XD,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT15J,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT15V,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT1KL,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT1KQ,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT16X,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT16E,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT15Q,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CPH121,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
-CMT163,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole sample
+﻿sample_identifier,extraction_identifier,extraction_machine,extraction_kit,what_was_extracted,date_extracted,extraction_processing_institution,group_name,extraction_from,submitter_plate_id,submitter_plate_well,elution_plate_id,elution_plate_well,nucleic_acid_concentration
+CMT15I,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,A1,ELU001,A1,50
+CMT1XD,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,B1,ELU001,B1,50
+CMT15J,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,C1,ELU001,C1,50
+CMT15V,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,D1,ELU001,D1,50
+CMT1KL,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,E1,ELU001,E1,50
+CMT1KQ,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,F1,ELU001,F1,50
+CMT16X,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,G1,ELU001,G1,50
+CMT16E,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,H1,ELU001,H1,50
+CMT15Q,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,A2,ELU001,A2,50
+CPH121,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,B2,ELU001,B2,50
+CMT163,1,QiaSymphony,MiniKit,RNA,01/06/2021,MLW,Core,whole_sample,EXT001,C2,ELU001,C2,50
