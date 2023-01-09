@@ -1051,7 +1051,7 @@ def query_info_on_all_samples(args):
     # are to ensure that samples from the other path are not included in the results of the query (i.e. samples that are
     # None for Culture.submitter_plate_id will be ones where the submitter gave in extracts, and that hence so sample-extract).
     sample_culture_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Culture.submitter_plate_id, Culture.submitter_plate_well,
-                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, ReadSet.readset_identifier) \
+                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, Extraction.nucleic_acid_concentration, ReadSet.readset_identifier) \
         .join(SampleSource)\
         .join(SampleSource.projects)\
         .join(Groups) \
@@ -1061,7 +1061,7 @@ def query_info_on_all_samples(args):
         .join(ReadSet, isouter=True)
     #samples = [r._asdict() for r in samples]
     sample_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Extraction.submitter_plate_id, Extraction.submitter_plate_well,
-                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, ReadSet.readset_identifier)\
+                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, Extraction.nucleic_acid_concentration, ReadSet.readset_identifier)\
         .join(SampleSource)\
         .join(SampleSource.projects)\
         .join(Groups) \
@@ -1070,7 +1070,7 @@ def query_info_on_all_samples(args):
         .join(ReadSet, isouter=True)
     union_of_both = sample_culture_extract.union(sample_extract).all()
 
-    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted', 'extraction_identifier', 'readset_identifier']
+    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted', 'extraction_identifier', 'nucleic_acid_concentration', 'readset_identifier']
     print('\t'.join(header))
     for x in union_of_both:
         # replace the Nones with empty strings because want to use the output as the input for a future upload and the
@@ -1186,6 +1186,9 @@ def check_extraction_fields(extraction_info):
          print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
                f'Exiting.')
          sys.exit(1)
+    if extraction_info['nucleic_acid_concentration'].strip() == '':
+        print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
+        sys.exit(1)
     allowed_submitter_plate_prefixes = ('EXT', 'CUL')
     if not extraction_info['submitter_plate_id'].startswith(allowed_submitter_plate_prefixes):
        print(f'submitter_plate_id column should start with one of {allowed_submitter_plate_prefixes}. it doesnt for \n{extraction_info}\nExiting.')
