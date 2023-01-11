@@ -128,6 +128,9 @@ def is_elution_info_present(elution_info):
 
 
 def add_elution_info_to_extractions(args):
+    # we have this separate add elution info function because sometimes the lab guys might
+    # receive a plate of extraactions, and want to add that to the database, but not have
+    # time to move the extraction to an elution plate.
     all_elution_info = read_in_as_dict(args.elution_info_inhandle)
     for elution_info in all_elution_info:
         # need to check this because, as the user will be submitting a unified sample sheet, there may be samples
