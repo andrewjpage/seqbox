@@ -341,7 +341,7 @@ def read_in_sample_source_info(sample_source_info):
 def read_in_culture(culture_info):
     check_cultures(culture_info)
     culture = Culture()
-    culture.date_cultured = culture_info['date_cultured']
+    culture.date_cultured = datetime.datetime.strptime(culture_info['date_cultured'],'%d/%m/%Y')
     culture.culture_identifier = culture_info['culture_identifier']
     culture.submitter_plate_id = culture_info['submitter_plate_id']
     culture.submitter_plate_well = culture_info['submitter_plate_well']
