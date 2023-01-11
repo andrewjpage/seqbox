@@ -3,6 +3,8 @@ import csv
 import sys
 import glob
 import datetime
+import pathlib
+import pandas as pd
 from app import db#, engine, conn
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -10,11 +12,10 @@ from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, 
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
     ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture, Mykrobe
 
-
-def read_in_as_dict(inhandle):
+def read_in_csv(file):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.
-    info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
+    info = csv.DictReader(open(file, encoding='utf-8-sig'))
     # info is a list of ordered dicts, so convert each one to
     list_of_lines = []
     for each_dict in info:
@@ -38,6 +39,23 @@ def read_in_as_dict(inhandle):
             pass
             # print(f'This line not being processed - {new_info}')
     return list_of_lines
+
+def read_in_excel(file):
+    df = pd.read_excel(file)
+    df_len = len(df)
+    list_of_lines = [df.iloc[i].to_dict() for i in range(df_len)]
+    return list_of_lines
+
+def read_in_as_dict(inhandle):
+    # Check file type i.e is it a csv or xls(x)? then proceed to read accordingly
+    ext = pathlib.Path(inhandle).suffix
+
+    if ext == '.csv':
+        data = read_in_csv(inhandle)
+    else:
+        data = read_in_excel(inhandle)
+
+    return data
 
 
 def check_sample_source_associated_with_project(sample_source, sample_source_info):
