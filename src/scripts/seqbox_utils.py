@@ -5,6 +5,7 @@ import glob
 import datetime
 import pathlib
 import pandas as pd
+import numpy as np
 from app import db#, engine, conn
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -42,6 +43,11 @@ def read_in_csv(file):
 
 def read_in_excel(file):
     df = pd.read_excel(file)
+    # Get columns with date in them & convert them to datetime
+    dated_cols = df.filter(like='date').columns
+    convert_dict = {dated_col: 'datetime64[ns]' for dated_col in dated_cols}
+    df = df.astype(convert_dict)
+
     df_len = len(df)
     list_of_lines = [df.iloc[i].to_dict() for i in range(df_len)]
     return list_of_lines
@@ -145,10 +151,12 @@ def get_mykrobe_result(mykrobe_result_info):
 def get_extraction(readset_info):
     matching_extraction = None
     # todo - could replace this with a union query
+   
+
     if readset_info['extraction_from'] == 'whole_sample':
+       
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                         date_extracted=datetime.datetime.strptime(
-                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+                                                         date_extracted=readset_info['date_extracted']) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource)\
             .join(SampleSource.projects) \
@@ -157,8 +165,7 @@ def get_extraction(readset_info):
             .all()
     elif readset_info['extraction_from'] == 'cultured_isolate':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                         date_extracted=datetime.datetime.strptime(
-                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+                                                         date_extracted=readset_info['date_extracted']) \
             .join(Culture) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
@@ -296,6 +303,12 @@ def get_pangolin_result(pangolin_result_info):
         sys.exit(1)
 
 
+def check_nans(value):
+    if np.isnan(value) is False:
+        return None
+    else:
+        return value
+
 def read_in_sample_info(sample_info):
     check_samples(sample_info)
     sample = Sample(sample_identifier=sample_info['sample_identifier'])
@@ -312,11 +325,11 @@ def read_in_sample_info(sample_info):
     if sample_info['year_collected'] != '':
         sample.year_collected = sample_info['year_collected']
     if sample_info['day_received'] != '':
-        sample.day_received = sample_info['day_received']
+        sample.day_received = check_nans(sample_info['day_received']) 
     if sample_info['month_received'] != '':
-        sample.month_received = sample_info['month_received']
+        sample.month_received = check_nans(sample_info['month_received'])
     if sample_info['year_received'] != '':
-        sample.year_received = sample_info['year_received']
+        sample.year_received = check_nans(sample_info['year_received'])
     return sample
 
 
@@ -349,6 +362,8 @@ def read_in_culture(culture_info):
 
 
 def read_in_extraction(extraction_info):
+    # extraction_info['date_extracted'] = extraction_info['date_extracted'].to_pydatetime()
+    
     extraction = Extraction()
     check_extraction_fields(extraction_info)
     if extraction_info['extraction_identifier'] != '':
@@ -360,7 +375,7 @@ def read_in_extraction(extraction_info):
     if extraction_info['what_was_extracted'] != '':
         extraction.what_was_extracted = extraction_info['what_was_extracted']
     if extraction_info['date_extracted'] != '':
-        extraction.date_extracted = datetime.datetime.strptime(extraction_info['date_extracted'], '%d/%m/%Y')
+        extraction.date_extracted = extraction_info['date_extracted']
     if extraction_info['extraction_processing_institution'] != '':
         extraction.processing_institution = extraction_info['extraction_processing_institution']
     if extraction_info['extraction_from'] != '':
@@ -895,6 +910,8 @@ def get_readset(readset_info, covid):
     # if it's nanopore, but not default, the fastq path will be in the readset_info.
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
 
+
+    readset_info['date_extracted'] = datetime.datetime.strptime(readset_info['date_extracted'],'%d/%m/%Y')
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
@@ -1003,8 +1020,7 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name)\
             .join(Extraction).filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                        date_extracted=datetime.datetime \
-                                        .strptime(readset_info['date_extracted'], '%d/%m/%Y')) \
+                                        date_extracted=readset_info['date_extracted']) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource) \
             .join(SampleSource.projects)\
@@ -1187,10 +1203,11 @@ def check_extraction_fields(extraction_info):
     if extraction_info['sample_identifier'].strip() == '':
         print(f'sample_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if extraction_info['date_extracted'].strip() == '':
+    
+    if str(extraction_info['date_extracted']) == 'NaT':
         print(f'date_extracted column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if extraction_info['extraction_identifier'].strip() == '':
+    if np.isnan(extraction_info['extraction_identifier']):
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
     if extraction_info['group_name'].strip() == '':
@@ -1204,7 +1221,7 @@ def check_extraction_fields(extraction_info):
          print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
                f'Exiting.')
          sys.exit(1)
-    if extraction_info['nucleic_acid_concentration'].strip() == '':
+    if np.isnan(extraction_info['nucleic_acid_concentration']) is True:
         print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
     allowed_submitter_plate_prefixes = ('EXT', 'CUL')
@@ -1374,10 +1391,10 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
             print(f'tiling_pcr_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit(1)
     else:
-        if readset_info['date_extracted'].strip() == '':
+        if str(readset_info['date_extracted']) == 'NaT':
             print(f'date_extracted column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit(1)
-        if readset_info['extraction_identifier'].strip() == '':
+        if str(readset_info['extraction_identifier']).strip() == '':
             print(f'extraction_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit(1)
 
