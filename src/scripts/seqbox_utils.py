@@ -12,6 +12,23 @@ from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, 
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
     ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture, Mykrobe
 
+def replace_with_none(each_dict):
+    """
+    This func takes in a dict object & replaces the empty string values with None
+    """
+    return {k:None if not v else v for k,v in each_dict.items()}
+
+def convert_to_datetime_dict(each_dict):
+    """
+    This func takes in a dict & takes out keys containing 'date' & 
+    convert their values to a datetime object
+    """
+    dated_entry = [ key for key in each_dict.keys() if 'date' in key]
+    for entry in dated_entry:
+        if each_dict[entry]:
+            each_dict[entry] = datetime.datetime.strptime(each_dict[entry],'%d/%m/%Y')
+    return each_dict
+
 def read_in_csv(file):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.
@@ -23,9 +40,12 @@ def read_in_csv(file):
         # delete data from columns with no header, usually just empty fields
         if None in each_dict:
             del each_dict[None]
+        
+        # composition: replace nones & convert date keys values to datetime
+        each_dict = convert_to_datetime_dict(replace_with_none(each_dict))
         new_info = {x: each_dict[x] for x in each_dict}
         # print(new_info)
-        # sometimes excel saves blank lines, so only take lines where the lenght of the set of teh values is > 1
+        # sometimes excel saves blank lines, so only take lines where the lenght of the set of the values is > 1
         # it will be 1 where they are all blank i.e. ''
         if len(set(new_info.values())) > 1:
             list_of_lines.append(new_info)
@@ -40,9 +60,9 @@ def read_in_csv(file):
             # print(f'This line not being processed - {new_info}')
     return list_of_lines
 
-def convert_to_datetime(df):
+def convert_to_datetime_df(df):
     """
-    This func takes in a df & returns a df with cols containing 'date'
+    This func takes in a dataframe & returns a dataframe with cols containing 'date'
     in them properly converted to a datetime obj 
     """
     # Get columns with date in them & convert them to datetime
@@ -54,7 +74,7 @@ def read_in_excel(file):
     df = pd.read_excel(file)
     df_len = len(df)
 
-    df = convert_to_datetime(df)
+    df = convert_to_datetime_df(df)
     # convert nans to None
     df.replace(np.nan,None,inplace=True)
 
@@ -63,7 +83,6 @@ def read_in_excel(file):
 
 def read_in_as_dict(inhandle):
     # Check file type i.e is it a csv or xls(x)? then proceed to read accordingly
-
     if inhandle.endswith('.csv'):
         data = read_in_csv(inhandle)
     elif inhandle.endswith('.xlsx') or inhandle.endswith('.xlx'):
@@ -162,7 +181,6 @@ def get_extraction(readset_info):
     matching_extraction = None
     # todo - could replace this with a union query
    
-
     if readset_info['extraction_from'] == 'whole_sample':
        
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
@@ -195,8 +213,7 @@ def get_extraction(readset_info):
 
 def get_culture(culture_info):
     matching_culture = Culture.query.filter_by(culture_identifier=culture_info['culture_identifier'],
-                                               date_cultured=datetime.datetime.strptime(
-                                                   culture_info['date_cultured'], '%d/%m/%Y')) \
+                                               date_cultured=culture_info['date_cultured']) \
         .join(Sample).filter_by(sample_identifier=culture_info['sample_identifier']) \
         .join(SampleSource) \
         .join(SampleSource.projects) \
@@ -358,7 +375,7 @@ def read_in_sample_source_info(sample_source_info):
 def read_in_culture(culture_info):
     check_cultures(culture_info)
     culture = Culture()
-    culture.date_cultured = datetime.datetime.strptime(culture_info['date_cultured'],'%d/%m/%Y')
+    culture.date_cultured = culture_info['date_cultured']
     culture.culture_identifier = culture_info['culture_identifier']
     culture.submitter_plate_id = culture_info['submitter_plate_id']
     culture.submitter_plate_well = culture_info['submitter_plate_well']
@@ -366,8 +383,6 @@ def read_in_culture(culture_info):
 
 
 def read_in_extraction(extraction_info):
-    # extraction_info['date_extracted'] = extraction_info['date_extracted'].to_pydatetime()
-    
     extraction = Extraction()
     check_extraction_fields(extraction_info)
     if extraction_info['extraction_identifier'] != '':
@@ -915,7 +930,6 @@ def get_readset(readset_info, covid):
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
 
 
-    readset_info['date_extracted'] = datetime.datetime.strptime(readset_info['date_extracted'],'%d/%m/%Y')
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
@@ -969,7 +983,7 @@ def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
     check_raw_sequencing_batch(raw_sequencing_batch_info)
     raw_sequencing_batch = RawSequencingBatch()
     raw_sequencing_batch.name = raw_sequencing_batch_info['batch_name']
-    raw_sequencing_batch.date_run = datetime.datetime.strptime(raw_sequencing_batch_info['date_run'], '%d/%m/%Y')
+    raw_sequencing_batch.date_run = raw_sequencing_batch_info['date_run']
     raw_sequencing_batch.instrument_model = raw_sequencing_batch_info['instrument_model']
     raw_sequencing_batch.instrument_name = raw_sequencing_batch_info['instrument_name']
     raw_sequencing_batch.sequencing_centre = raw_sequencing_batch_info['sequencing_centre']
@@ -1153,7 +1167,7 @@ def check_raw_sequencing_batch(raw_sequencing_batch_info):
     if raw_sequencing_batch_info['batch_name'].strip() == '':
         print(f'batch_name column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if raw_sequencing_batch_info['date_run'].strip() == '':
+    if not raw_sequencing_batch_info['date_run']:
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
     if raw_sequencing_batch_info['sequencing_type'].strip() == '':
@@ -1187,7 +1201,7 @@ def check_cultures(culture_info):
     if culture_info['culture_identifier'].strip() == '':
         print(f'culture_identifier column should not be empty. it is for \n{culture_info}\nExiting.')
         sys.exit(1)
-    if culture_info['date_cultured'].strip() == '':
+    if not (culture_info['date_cultured']):
         print(f'date_cultured column should not be empty. it is for \n{culture_info}\nExiting.')
         sys.exit(1)
     assert culture_info['submitter_plate_id'].startswith('CUL')
@@ -1204,20 +1218,20 @@ def check_cultures(culture_info):
 
 
 def check_extraction_fields(extraction_info):
-    if extraction_info['sample_identifier'].strip() == '':
+    if not extraction_info['sample_identifier']:
         print(f'sample_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
     
-    if str(extraction_info['date_extracted']) == 'NaT':
+    if not extraction_info['date_extracted']:
         print(f'date_extracted column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if np.isnan(extraction_info['extraction_identifier']):
+    if not (extraction_info['extraction_identifier']):
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if extraction_info['group_name'].strip() == '':
+    if not extraction_info['group_name']:
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if extraction_info['extraction_from'].strip() == '':
+    if not extraction_info['extraction_from']:
          print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
          sys.exit(1)
     allowed_extraction_from = ['cultured_isolate', 'whole_sample']
@@ -1225,7 +1239,7 @@ def check_extraction_fields(extraction_info):
          print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
                f'Exiting.')
          sys.exit(1)
-    if np.isnan(extraction_info['nucleic_acid_concentration']) is True:
+    if not (extraction_info['nucleic_acid_concentration']):
         print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
     allowed_submitter_plate_prefixes = ('EXT', 'CUL')
