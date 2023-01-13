@@ -2,7 +2,7 @@ import sys
 import argparse
 from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
-    get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
+    get_extraction, add_extraction,check_extraction_fields, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
@@ -105,6 +105,13 @@ def add_extractions(args):
         # need to check this because, as the user will be submitting a unified sample sheet, there may be samples
         # that dont have extractions associated with them.
         if is_extraction_info_present(extraction_info) is True:
+            # Before get_extraction ensure all the extraction_info fields are valid
+            check_extraction_fields(extraction_info)
+            # The problem with above code is that it exists before adding
+            # other extraction info that has valid values
+            # Add code to skip problematic entries while adding all that are valid entries
+            # e.g check return value of check_extraction_fields & continue looping if that is the case
+            # This entails manipulating check_extraction_fields to return a value than sys.exiting if validation fails 
             if get_extraction(extraction_info) is False:
                 add_extraction(extraction_info)
             else:
