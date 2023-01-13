@@ -3,7 +3,6 @@ import csv
 import sys
 import glob
 import datetime
-import pathlib
 import pandas as pd
 import numpy as np
 from app import db#, engine, conn
@@ -41,26 +40,37 @@ def read_in_csv(file):
             # print(f'This line not being processed - {new_info}')
     return list_of_lines
 
-def read_in_excel(file):
-    df = pd.read_excel(file)
+def convert_to_datetime(df):
+    """
+    This func takes in a df & returns a df with cols containing 'date'
+    in them properly converted to a datetime obj 
+    """
     # Get columns with date in them & convert them to datetime
     dated_cols = df.filter(like='date').columns
     convert_dict = {dated_col: 'datetime64[ns]' for dated_col in dated_cols}
-    df = df.astype(convert_dict)
+    return df.astype(convert_dict)
 
+def read_in_excel(file):
+    df = pd.read_excel(file)
     df_len = len(df)
+
+    df = convert_to_datetime(df)
+    # convert nans to None
+    df.replace(np.nan,None,inplace=True)
+
     list_of_lines = [df.iloc[i].to_dict() for i in range(df_len)]
     return list_of_lines
 
 def read_in_as_dict(inhandle):
     # Check file type i.e is it a csv or xls(x)? then proceed to read accordingly
-    ext = pathlib.Path(inhandle).suffix
 
-    if ext == '.csv':
+    if inhandle.endswith('.csv'):
         data = read_in_csv(inhandle)
-    else:
+    elif inhandle.endswith('.xlsx') or inhandle.endswith('.xlx'):
         data = read_in_excel(inhandle)
-
+    else:
+        print("Invalid file format")
+        sys.exit(1)
     return data
 
 
@@ -303,12 +313,6 @@ def get_pangolin_result(pangolin_result_info):
         sys.exit(1)
 
 
-def check_nans(value):
-    if np.isnan(value) is False:
-        return None
-    else:
-        return value
-
 def read_in_sample_info(sample_info):
     check_samples(sample_info)
     sample = Sample(sample_identifier=sample_info['sample_identifier'])
@@ -325,11 +329,11 @@ def read_in_sample_info(sample_info):
     if sample_info['year_collected'] != '':
         sample.year_collected = sample_info['year_collected']
     if sample_info['day_received'] != '':
-        sample.day_received = check_nans(sample_info['day_received']) 
+        sample.day_received = sample_info['day_received'] 
     if sample_info['month_received'] != '':
-        sample.month_received = check_nans(sample_info['month_received'])
+        sample.month_received = sample_info['month_received']
     if sample_info['year_received'] != '':
-        sample.year_received = check_nans(sample_info['year_received'])
+        sample.year_received = sample_info['year_received']
     return sample
 
 
