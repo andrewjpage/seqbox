@@ -75,8 +75,8 @@ def read_in_excel(file):
     df_len = len(df)
 
     df = convert_to_datetime_df(df)
-    # convert nans to None
-    df.replace(np.nan,None,inplace=True)
+    # convert both nans & NaT to None
+    df.replace({pd.NaT:None,np.nan:None},inplace=True)
 
     list_of_lines = [df.iloc[i].to_dict() for i in range(df_len)]
     return list_of_lines
