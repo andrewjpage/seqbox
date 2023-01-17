@@ -460,7 +460,7 @@ def read_in_tiling_pcr(tiling_pcr_info):
     # check_tiling_pcr(tiling_pcr_info)
     tiling_pcr = TilingPcr()
     if tiling_pcr_info['date_tiling_pcred'] != '':
-        tiling_pcr.date_pcred = datetime.datetime.strptime(tiling_pcr_info['date_tiling_pcred'], '%d/%m/%Y')
+        tiling_pcr.date_pcred = tiling_pcr_info['date_tiling_pcred'] 
     if tiling_pcr_info['tiling_pcr_identifier'] != '':
         tiling_pcr.pcr_identifier = tiling_pcr_info['tiling_pcr_identifier']
     if tiling_pcr_info['tiling_pcr_protocol'] != '':
@@ -545,7 +545,7 @@ def read_in_pangolin_result(pangolin_result_info):
 
     pangolin_result.version = pangolin_result_info['version']
     pangolin_result.pangolin_version = pangolin_result_info['pangolin_version']
-    # pangolin_result.pangolearn_version = datetime.datetime.strptime(pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')
+    # pangolin_result.pangolearn_version = pangolin_result_info['pangoLEARN_version'], '%Y-%m-%d')
     # pango_version was removed from pangolin v4
     if 'pango_version' in pangolin_result_info:
         pangolin_result.pango_version = pangolin_result_info['pango_version']
@@ -560,7 +560,7 @@ def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     check_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
     covid_confirmatory_pcr = CovidConfirmatoryPcr()
     if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'] != '':
-        covid_confirmatory_pcr.date_pcred = datetime.datetime.strptime(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'], '%d/%m/%Y')
+        covid_confirmatory_pcr.date_pcred = covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'] != '':
         covid_confirmatory_pcr.pcr_identifier = covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol'] != '':
@@ -577,7 +577,7 @@ def read_in_pcr_result(pcr_result_info):
         sys.exit(1)
     pcr_result = PcrResult()
     if pcr_result_info['date_pcred'] != '':
-        pcr_result.date_pcred = datetime.datetime.strptime(pcr_result_info['date_pcred'], '%d/%m/%Y')
+        pcr_result.date_pcred = pcr_result_info['date_pcred']
     if pcr_result_info['pcr_identifier'] != '':
         pcr_result.pcr_identifier = pcr_result_info['pcr_identifier']
     if pcr_result_info['ct'] == '':
@@ -782,7 +782,7 @@ def get_tiling_pcr(tiling_pcr_info):
     matching_tiling_pcr = TilingPcr.query\
         .filter_by(
             pcr_identifier=tiling_pcr_info['tiling_pcr_identifier'],
-            date_pcred=datetime.datetime.strptime(tiling_pcr_info['date_tiling_pcred'], '%d/%m/%Y'))\
+            date_pcred=tiling_pcr_info['date_tiling_pcred'])\
         .join(Extraction).join(Sample).filter_by(sample_identifier=tiling_pcr_info['sample_identifier']).all()
     if len(matching_tiling_pcr) == 1:
         return matching_tiling_pcr[0]
@@ -798,10 +798,10 @@ def get_tiling_pcr(tiling_pcr_info):
 def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     matching_covid_confirmatory_pcr = CovidConfirmatoryPcr.query.filter_by(
         pcr_identifier=covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'],
-        date_pcred=datetime.datetime.strptime(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'], '%d/%m/%Y'))\
+        date_pcred=covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'] )\
         .join(Extraction).filter_by(extraction_identifier=covid_confirmatory_pcr_info['extraction_identifier'],
-                                                     date_extracted=datetime.datetime.strptime(
-                                                         covid_confirmatory_pcr_info['date_extracted'], '%d/%m/%Y')) \
+                                                     date_extracted=
+                                                         covid_confirmatory_pcr_info['date_extracted'] ) \
         .join(Sample).filter_by(sample_identifier=covid_confirmatory_pcr_info['sample_identifier'])\
         .all()
     if len(matching_covid_confirmatory_pcr) == 0:
@@ -1025,8 +1025,7 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
             .join(TilingPcr).filter_by(pcr_identifier=readset_info['tiling_pcr_identifier'],
-                                       date_pcred=datetime.datetime \
-                                       .strptime(readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
+                                       date_pcred=readset_info['date_tiling_pcred'] ) \
             .join(Extraction) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
