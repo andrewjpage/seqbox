@@ -1092,7 +1092,7 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
     if sequencing_type == 'illumina':
         raw_sequencing.raw_sequencing_illumina = RawSequencingIllumina()
         raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
-        raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r2']
+        raw_sequencing.raw_sequencing_illumina.path_r2 = readset_info['path_r2']
         raw_sequencing.raw_sequencing_illumina.library_prep_method = readset_info['library_prep_method']
     if sequencing_type == 'nanopore':
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()

@@ -140,22 +140,15 @@ def run_add_artic_consensus_to_filestructure(args):
                 print(f"More than one bam at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.primertrimmed.rg.sorted.bam")
 
 
-def coreseq_add_readset_to_filestructure(args):
-    '''
-    0. We have a config that contains:
-        a. the fast directory (i.e. where the data will be put for temporary processing)
-        b. the slow directory (i.e. where the data will be archived to)
-        c. the config file is specified by an environment variable
-    1. sequencing run and corresponding sequencing run file are added by core guys to the right place on the workstation
-        a. this is somewhere on the fast storage
-    2. this script re-arranges the data on the fast storage into per sample folders, named according to readset ids.
-    3. adds the archive paths to the fastqs (based on the config file) to the seq tracker file, uploads to the database.
+'''
 
-    out of scope of this script:
-    1. run bactopia
-    2. upload bactopia results to the database
-    '''
-    pass
+we want:
+
+1. the final fastq location to be saved in the database.
+2. the original fastq location is on a different volume, and so it cant be symlinked.
+3. 
+
+'''
 
 
 def run_command(args):
@@ -175,6 +168,8 @@ def main():
                                      , required=True)
     parser_add_readset_to_filestructure.add_argument('-c', dest='seqbox_config',
                                      help='The path to a seqbox_config file.', required=True)
+    # this is needed because need to do the join through tiling pcr for covid samples.
+    # should replace the query that is done here with a union query so don't need to do this.
     parser_add_readset_to_filestructure.add_argument('-s', dest='covid', action='store_true', default=False,
                                      help='Are these readsets SARS-CoV-2?')
     parser_add_readset_to_filestructure.add_argument('-n', dest='nanopore_default', action='store_true', default=False,
