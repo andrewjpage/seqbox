@@ -188,6 +188,22 @@ extraction, tiling pcr, readset.
 
 9. illumina, extract is from sample.
 
+10. test for combined submission tracker input file.
+
+    a. run setup.sh - wipes/makes the db, adds the group and project.
+ 
+    b. run upload_a.sh - adds sample sources, samples, and cultures.
+
+    c. run upload_b.sh - adds extractions and elutions to the cultures from upload_a (models common lab flow)
+    
+    d. run upload_c.sh - adds sample sources, samples, extractions, and elutions from whole_sample
+    
+    e. run query_a.sh - gets the "to sequence" list
+
+    f. run upload_d.sh - add sequencing information to the samples/extractions from upload_a/b
+    
+    g. run upload_e.sh - add sample sources, samples, cultures and extractions when the client submits extractions from culture (testing this logic, rather than submitting extractions from whole_sample or cultures)
+ 
 ## How to add a new table
 
 1. Commit to the flask migrate repo?
@@ -198,7 +214,7 @@ extraction, tiling pcr, readset.
 3. In seqbox_utils:
     
     a. add a new get_* function
-    
+
         i. this runs a check_* function
         
         ii. need to come back and check this function after we have added somethign

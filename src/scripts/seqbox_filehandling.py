@@ -13,7 +13,7 @@ def read_in_config(config_inhandle):
         return yaml.safe_load(fi)
 
 
-def add_readset_to_filestructure(readset, config):
+def add_readset_to_filestructure(readset, config, extraction_from):
     '''
     1. Check that input files exist
     2. get readset_identifier-filename for this sample
@@ -27,7 +27,16 @@ def add_readset_to_filestructure(readset, config):
         assert os.path.isfile(readset.readset_illumina.path_r1)
         assert os.path.isfile(readset.readset_illumina.path_r2)
     # data is going to be stored in a directory with the group name, so need to get the group name of this readset.
-    projects = readset.raw_sequencing.extraction.sample.sample_source.projects
+    # check that extraction_from is one of the expected values
+    assert extraction_from in {'whole_sample', 'cultured_isolate'}
+    # get the project name, accounting for either extracts that are linked to samples, or extracts that are linked to
+    # cultures. we can tell which of these we need from the readset_info['extraction_from'] field.
+    if extraction_from == 'whole_sample':
+        projects = readset.raw_sequencing.extraction.sample.sample_source.projects
+    elif extraction_from == 'cultured_isolate':
+        projects = readset.raw_sequencing.extraction.culture.sample.sample_source.projects
+
+
     group_names = [x.groups.group_name for x in projects]
     # a sample can only belong to one group, so this assertion should always be true.
     assert len(set(group_names)) == 1
@@ -36,7 +45,11 @@ def add_readset_to_filestructure(readset, config):
     if not os.path.isdir(group_dir):
         os.mkdir(group_dir)
     # going to name the linked file with the sample name and readset_identifier
-    sample_name = readset.raw_sequencing.extraction.sample.sample_identifier
+    if extraction_from == 'whole_sample':
+        sample_name = readset.raw_sequencing.extraction.sample.sample_identifier
+    elif extraction_from == 'cultured_isolate':
+        sample_name = readset.raw_sequencing.extraction.culture.sample.sample_identifier
+
     readset_dir = os.path.join(group_dir, f"{readset.readset_identifier}-{sample_name}")
     if not os.path.isdir(readset_dir):
         os.mkdir(readset_dir)
@@ -63,13 +76,15 @@ def run_add_readset_to_filestructure(args):
     for readset_info in all_readsets_info:
         if basic_check_readset_fields(readset_info) is False:
             continue
+        # nanopore default means that the sequencing run is in the default nanopore file structure
+        # i.e. batchname/barcodeXX/XX.fastq.gz
         if args.nanopore_default is True:
-            readset_nanopre = get_nanopore_readset_from_batch_and_barcode(readset_info)
-            if readset_nanopre is False:
+            readset_nanopore = get_nanopore_readset_from_batch_and_barcode(readset_info)
+            if readset_nanopore is False:
                 print(f"There is no readset for\n{readset_info}\nExiting.")
                 sys.exit()
             else:
-                add_readset_to_filestructure(readset_nanopre.readset, config)
+                add_readset_to_filestructure(readset_nanopore.readset, config)
         elif args.nanopore_default is False:
             # readset_tech is either readset_illumina or readset_nanopore
             readset_tech = get_readset(readset_info, args.covid)
@@ -77,7 +92,7 @@ def run_add_readset_to_filestructure(args):
                 print(f"There is no readset for\n{readset_info}\nExiting.")
                 sys.exit()
             else:
-                add_readset_to_filestructure(readset_tech.readset, config)
+                add_readset_to_filestructure(readset_tech.readset, config, readset_info['extraction_from'])
 
 
 def run_add_artic_consensus_to_filestructure(args):
@@ -123,6 +138,24 @@ def run_add_artic_consensus_to_filestructure(args):
                 print(f"No bam at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.primertrimmed.rg.sorted.bam")
             elif len(source_bam) > 1:
                 print(f"More than one bam at {args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.primertrimmed.rg.sorted.bam")
+
+
+def coreseq_add_readset_to_filestructure(args):
+    '''
+    0. We have a config that contains:
+        a. the fast directory (i.e. where the data will be put for temporary processing)
+        b. the slow directory (i.e. where the data will be archived to)
+        c. the config file is specified by an environment variable
+    1. sequencing run and corresponding sequencing run file are added by core guys to the right place on the workstation
+        a. this is somewhere on the fast storage
+    2. this script re-arranges the data on the fast storage into per sample folders, named according to readset ids.
+    3. adds the archive paths to the fastqs (based on the config file) to the seq tracker file, uploads to the database.
+
+    out of scope of this script:
+    1. run bactopia
+    2. upload bactopia results to the database
+    '''
+    pass
 
 
 def run_command(args):

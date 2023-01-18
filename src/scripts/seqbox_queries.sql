@@ -250,3 +250,20 @@ order by sample_identifier, pct_covered_bases desc NULLS LAST
 
 
 -- 
+
+select readset_identifier, sample_identifier, drug, susceptibility from read_set rs
+left join raw_sequencing r on rs.raw_sequencing_id = r.id
+left join extraction e on r.extraction_id = e.id
+left join sample s on e.sample_id = s.id
+left join mykrobe m on rs.id = m.readset_id
+where e.submitter_plate_id is not null
+
+union
+
+select readset_identifier, sample_identifier, drug, susceptibility from read_set rs
+left join raw_sequencing r on rs.raw_sequencing_id = r.id
+left join extraction e on r.extraction_id = e.id
+left join culture c on e.culture_id = c.id
+left join sample s on c.sample_id = s.id
+left join mykrobe m on rs.id = m.readset_id
+where c.submitter_plate_id is not null

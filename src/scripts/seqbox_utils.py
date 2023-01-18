@@ -677,6 +677,7 @@ def add_culture(culture_info):
 
 def add_extraction(extraction_info):
     extraction = read_in_extraction(extraction_info)
+    # if the extraciton is from a whole sample, then we will want to link the extraction to the sample
     if extraction_info['extraction_from'] == 'whole_sample':
         sample = get_sample(extraction_info)
         if sample is False:
@@ -685,6 +686,7 @@ def add_extraction(extraction_info):
                   f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
             sys.exit(1)
         sample.extractions.append(extraction)
+    # if the extraciton is from a cultured isolate, then we will want to link the extraction to the culture.
     elif extraction_info['extraction_from'] == 'cultured_isolate':
         culture = get_culture(extraction_info)
         if culture is False:
@@ -877,6 +879,7 @@ def get_readset(readset_info, covid):
     # if it's nanopore, but not default, the fastq path will be in the readset_info.
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
 
+    # todo - replace these combined queries with a union query going through tiling pcr for COVID
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
@@ -1152,7 +1155,9 @@ def check_cultures(culture_info):
     if culture_info['date_cultured'].strip() == '':
         print(f'date_cultured column should not be empty. it is for \n{culture_info}\nExiting.')
         sys.exit(1)
-    assert culture_info['submitter_plate_id'].startswith('CUL')
+    # we assert that the submitter plate is for cultures or, if the client submitted extracts from a culture,
+    # that the extraction_from is cultured_isolate
+    assert culture_info['submitter_plate_id'].startswith('CUL') or culture_info['extraction_from'] == 'cultured_isolate'
     assert culture_info['submitter_plate_well'] in {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10',
                                                        'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8',
                                                        'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
