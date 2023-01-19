@@ -89,9 +89,9 @@ def add_cultures(args):
 
 
 def is_extraction_info_present(extraction_info):
-    if (extraction_info['date_extracted'] == '') & (extraction_info['extraction_identifier'] == ''):
+    if (not extraction_info['date_extracted']) & (not extraction_info['extraction_identifier']):
         return False
-    elif (extraction_info['date_extracted'] != '') & (extraction_info['extraction_identifier'] != ''):
+    elif (extraction_info['date_extracted']) & (extraction_info['extraction_identifier']):
         return True
     else:
         print(f"extraction_date and extraction_identifier must both be present or both be absent for this line "
@@ -124,9 +124,9 @@ def add_extractions(args):
 
 
 def is_elution_info_present(elution_info):
-    if (elution_info['elution_plate_id'] == '') & (elution_info['elution_plate_well'] == ''):
+    if (not elution_info['elution_plate_id']) & (elution_info['elution_plate_well']):
         return False
-    elif (elution_info['elution_plate_id'] != '') & (elution_info['elution_plate_well'] != ''):
+    elif (elution_info['elution_plate_id']) & (elution_info['elution_plate_well']):
         return True
     else:
         print(f"elution_plate_id and elution_plate_well must both be present or both be absent for this line "
