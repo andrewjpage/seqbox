@@ -88,50 +88,31 @@ def add_cultures(args):
                   f"culture.")
 
 
-def is_extraction_info_present(extraction_info):
-    if (not extraction_info['date_extracted']) & (not extraction_info['extraction_identifier']):
-        return False
-    elif (extraction_info['date_extracted']) & (extraction_info['extraction_identifier']):
-        return True
-    else:
-        print(f"extraction_date and extraction_identifier must both be present or both be absent for this line "
-              f"{extraction_info}. Exiting.")
-        sys.exit(1)
-
 
 def add_extractions(args):
     all_extractions_info = read_in_as_dict(args.extractions_inhandle)
     for extraction_info in all_extractions_info:
         # need to check this because, as the user will be submitting a unified sample sheet, there may be samples
         # that dont have extractions associated with them.
-        if is_extraction_info_present(extraction_info) is True:
-            # Before get_extraction ensure all the extraction_info fields are valid
-            check_extraction_fields(extraction_info)
-            # The problem with above code is that it exists before adding
-            # other extraction info that has valid values
-            # Add code to skip problematic entries while adding all that are valid entries
-            # e.g check return value of check_extraction_fields & continue looping if that is the case
-            # This entails manipulating check_extraction_fields to return a value than sys.exiting if validation fails 
+        if check_extraction_fields(extraction_info): 
             if get_extraction(extraction_info) is False:
                 add_extraction(extraction_info)
             else:
                 print(f"This extraction ({extraction_info['sample_identifier']}, {extraction_info['extraction_identifier']})"
                       f" on {extraction_info['date_extracted']} already exists in the database for the group "
                       f"{extraction_info['group_name']}")
+                continue
         else:
             print(f"Extraction information is not present for {extraction_info['sample_identifier']} from "
-                  f"{extraction_info['group_name']}. Not adding to DB.")
+                f"{extraction_info['group_name']}. Not adding to DB.")
+            
 
 
 def is_elution_info_present(elution_info):
-    if (not elution_info['elution_plate_id']) & (elution_info['elution_plate_well']):
+    if (not elution_info['elution_plate_id']) and (not elution_info['elution_plate_well']):
         return False
-    elif (elution_info['elution_plate_id']) & (elution_info['elution_plate_well']):
+    elif (elution_info['elution_plate_id']) and (elution_info['elution_plate_well']):
         return True
-    else:
-        print(f"elution_plate_id and elution_plate_well must both be present or both be absent for this line "
-              f"{elution_info}. Exiting.")
-        sys.exit(1)
 
 
 def add_elution_info_to_extractions(args):
@@ -147,7 +128,7 @@ def add_elution_info_to_extractions(args):
                 print(f"Extraction {elution_info['sample_identifier']} {elution_info['extraction_identifier']} "
                       f" on {elution_info['date_extracted']} does not exist in the database. It needs to be added "
                       f"before this is run again. Exiting.")
-                sys.exit(1)
+                continue
             else:
                 add_elution_info_to_extraction(elution_info)
         else:
