@@ -1091,8 +1091,9 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
     raw_sequencing = RawSequencing()
     if sequencing_type == 'illumina':
         raw_sequencing.raw_sequencing_illumina = RawSequencingIllumina()
-        raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
-        raw_sequencing.raw_sequencing_illumina.path_r2 = readset_info['path_r2']
+        # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
+        #raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
+        #raw_sequencing.raw_sequencing_illumina.path_r2 = readset_info['path_r2']
         raw_sequencing.raw_sequencing_illumina.library_prep_method = readset_info['library_prep_method']
     if sequencing_type == 'nanopore':
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
@@ -1346,13 +1347,14 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
             if readset_info['path_fast5'].strip() == '':
                 print(f'path_fast5 column should not be empty. it is for \n{readset_info}\nExiting.')
                 sys.exit(1)
-    elif raw_sequencing_batch.sequencing_type == 'illumina':
-        if readset_info['path_r1'].strip() == '':
-            print(f'path_r1 column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit(1)
-        if readset_info['path_r2'].strip() == '':
-            print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit(1)
+    # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
+    # elif raw_sequencing_batch.sequencing_type == 'illumina':
+    #     if readset_info['path_r1'].strip() == '':
+    #         print(f'path_r1 column should not be empty. it is for \n{readset_info}\nExiting.')
+    #         sys.exit(1)
+    #     if readset_info['path_r2'].strip() == '':
+    #         print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
+    #         sys.exit(1)
     if covid is True:
         if readset_info['date_tiling_pcred'].strip() == '':
             print(f'date_tiling_pcred column should not be empty. it is for \n{readset_info}\nExiting.')
@@ -1393,11 +1395,12 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
                 sys.exit(1)
         return readset
     elif raw_sequencing_batch.sequencing_type == 'illumina':
+        # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
         readset.readset_illumina = ReadSetIllumina()
-        assert readset_info['path_r1'].endswith('fastq.gz')
-        assert readset_info['path_r2'].endswith('fastq.gz')
-        readset.readset_illumina.path_r1 = readset_info['path_r1']
-        readset.readset_illumina.path_r2 = readset_info['path_r2']
+        # assert readset_info['path_r1'].endswith('fastq.gz')
+        # assert readset_info['path_r2'].endswith('fastq.gz')
+        # readset.readset_illumina.path_r1 = readset_info['path_r1']
+        # readset.readset_illumina.path_r2 = readset_info['path_r2']
         return readset
 
 

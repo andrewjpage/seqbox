@@ -1,2 +1,3 @@
 ---
-seqbox_directory: '/Users/flashton/Dropbox/non-project/test_seqbox_data/'
+seqbox_directory_fast: '/Users/flashton/Dropbox/non-project/test_seqbox_data'
+sequencing_inbox: '/Users/flashton/Dropbox/non-project/test_seqbox_data/fast/inbox'

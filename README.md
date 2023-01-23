@@ -31,6 +31,7 @@ in the project.
 ### read set batch/raw sequencing batch
 * raw_sequencing_batch name has to be unique across all projects/groups
 * readset_batch_name and raw sequencing batch namespace is shared across all groups/institutions (i.e. has to be unique)
+* readset batch name is also expected to be the name of the folder in which the fastqs are stored.
 
 ### readset/raw sequencing
 * currently assuming that whenever you have new raw sequencing, 
