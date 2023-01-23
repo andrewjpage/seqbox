@@ -4,6 +4,7 @@ import yaml
 import glob
 import shutil
 import argparse
+from app import db
 from app.models import ReadSetBatch
 from seqbox_utils import read_in_as_dict, get_readset, get_nanopore_readset_from_batch_and_barcode, \
     basic_check_readset_fields
@@ -148,6 +149,12 @@ def add_readset_to_filestructure(readset, config, extraction_from, args_nanopore
     print(f"Added readset to slow filestructure {readset.readset_identifier}-{sample_name} to {slow_group_dir}")
     # if not os.path.isdir(slow_readset_dir):
     #     os.mkdir(slow_readset_dir)
+    if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
+        readset.readset_nanopore.fastq_path = os.path.join(slow_readset_dir, f"{readset.readset_identifier}-{sample_name}.fastq.gz")
+    elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
+        readset.readset_illumina.path_r1 = os.path.join(slow_readset_dir, f"{readset.readset_identifier}-{sample_name}_R1.fastq.gz")
+        readset.readset_illumina.path_r2 = os.path.join(slow_readset_dir, f"{readset.readset_identifier}-{sample_name}_R2.fastq.gz")
+    db.session.commit()
 
 
 def run_add_readset_to_filestructure(args):
