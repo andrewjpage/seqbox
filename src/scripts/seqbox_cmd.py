@@ -128,7 +128,7 @@ def add_elution_info_to_extractions(args):
                 print(f"Extraction {elution_info['sample_identifier']} {elution_info['extraction_identifier']} "
                       f" on {elution_info['date_extracted']} does not exist in the database. It needs to be added "
                       f"before this is run again. Exiting.")
-                continue
+                sys.exit(1)
             else:
                 add_elution_info_to_extraction(elution_info)
         else:
