@@ -113,6 +113,10 @@ def is_elution_info_present(elution_info):
         return False
     elif (elution_info['elution_plate_id']) and (elution_info['elution_plate_well']):
         return True
+    else:
+        print(f"elution_plate_id and elution_plate_well must both be present or both be absent for this line "
+              f"{elution_info}. Exiting.")
+        sys.exit(1)
 
 
 def add_elution_info_to_extractions(args):
