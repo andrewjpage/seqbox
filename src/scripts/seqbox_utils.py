@@ -93,12 +93,13 @@ def get_sample_source(sample_info):
 
 
 def get_sample(readset_info):
-    matching_sample = Sample.query. \
-        filter_by(sample_identifier=readset_info['sample_identifier']) \
+    matching_sample = Sample.query \
+        .filter_by(sample_identifier=readset_info['sample_identifier']) \
         .join(SampleSource) \
         .join(SampleSource.projects) \
         .join(Groups) \
         .filter_by(group_name=readset_info['group_name']).distinct().all()
+
     if len(matching_sample) == 0:
         return False
     elif len(matching_sample) == 1:
@@ -108,6 +109,11 @@ def get_sample(readset_info):
               f"{readset_info['sample_identifier']} for group {readset_info['group_name']}, This shouldn't happen. "
               f"Exiting.")
         sys.exit(1)
+
+
+def update_sample(sample):
+    sample.submitted_for_sequencing = True
+    db.session.commit()
 
 
 def get_mykrobe_result(mykrobe_result_info):
@@ -324,7 +330,8 @@ def read_in_sample_source_info(sample_source_info):
 
 
 def read_in_culture(culture_info):
-    check_cultures(culture_info)
+    if check_cultures(culture_info) is False:
+        sys.exit(1)
     culture = Culture()
     culture.date_cultured = culture_info['date_cultured']
     culture.culture_identifier = culture_info['culture_identifier']
@@ -540,7 +547,7 @@ def read_in_pcr_result(pcr_result_info):
     return pcr_result
 
 
-def add_sample(sample_info):
+def add_sample(sample_info, submitted_for_sequencing):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
@@ -554,6 +561,7 @@ def add_sample(sample_info):
     # instantiate a new Sample
     sample = read_in_sample_info(sample_info)
     sample_source.samples.append(sample)
+    sample.submitted_for_sequencing = submitted_for_sequencing
     db.session.add(sample)
     db.session.commit()
     print(f"Adding sample {sample_info['sample_identifier']}")
@@ -1158,12 +1166,15 @@ def check_readset_batches(readset_batch_info):
 
 
 def check_cultures(culture_info):
-    if culture_info['culture_identifier'].strip() == '':
-        print(f'culture_identifier column should not be empty. it is for \n{culture_info}\nExiting.')
-        sys.exit(1)
-    if culture_info['date_cultured'].strip() == '':
-        print(f'date_cultured column should not be empty. it is for \n{culture_info}\nExiting.')
-        sys.exit(1)
+    if (culture_info['culture_identifier'].strip() == '') and (culture_info['date_cultured'].strip() == ''):
+        print(f'There is no culture information fo this sample - {culture_info["sample_identifier"]}. Continuing.')
+        return False
+    elif (culture_info['culture_identifier'].strip() != '') and (culture_info['date_cultured'].strip() != ''):
+        return True
+    else:
+        print(f'date_cultured and culture_identifier column should not both be empty. '
+              f'it is for \n{culture_info}\nExiting.')
+        sys.exit()
     # we assert that the submitter plate is for cultures or, if the client submitted extracts from a culture,
     # that the extraction_from is cultured_isolate
     assert culture_info['submitter_plate_id'].startswith('CUL') or culture_info['extraction_from'] == 'cultured_isolate'
