@@ -933,7 +933,7 @@ def get_readset(readset_info, covid):
     # if it's nanopore, but not default, the fastq path will be in the readset_info.
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
 
-
+    # todo - replace these combined queries with a union query going through tiling pcr for COVID
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
@@ -1420,13 +1420,14 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
             if not readset_info['path_fast5']:
                 print(f'path_fast5 column should not be empty. it is for \n{readset_info}\nExiting.')
                 sys.exit(1)
-    elif raw_sequencing_batch.sequencing_type == 'illumina':
-        if not readset_info['path_r1']:
-            print(f'path_r1 column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit(1)
-        if not readset_info['path_r2']:
-            print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
-            sys.exit(1)
+    # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
+    # elif raw_sequencing_batch.sequencing_type == 'illumina':
+    #     if not readset_info['path_r1']:
+    #         print(f'path_r1 column should not be empty. it is for \n{readset_info}\nExiting.')
+    #         sys.exit(1)
+    #     if not readset_info['path_r2']:
+    #         print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
+    #         sys.exit(1)
     if covid is True:
         if not readset_info['date_tiling_pcred']:
             print(f'date_tiling_pcred column should not be empty. it is for \n{readset_info}\nExiting.')
