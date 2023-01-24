@@ -1221,17 +1221,16 @@ def check_cultures(culture_info):
 
 
 def check_extraction_fields(extraction_info):
-    """ This function should return:
-     1. True if all extraction fields are present
-     2. False if all fields are blank 
-     3. sys.exit some extraction fields are not present
-    else return False
+    """ This function should:
+     1. return True if all extraction fields are present
+     2. return False if all fields are blank 
+     3. sys.exit if some extraction fields are not present
     """
 
     extraction_info_values = extraction_info.values()
     # Check if all columns are blank i.e contain None
-    extraction_info_blank = all(e_value == None for e_value in extraction_info_values)
-    if extraction_info_blank:
+    extraction_info_blank = all(e_value is None for e_value in extraction_info_values)
+    if extraction_info_blank is True:
         print("Warning:all columns are blank")
         return False
     
