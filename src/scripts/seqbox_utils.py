@@ -1056,7 +1056,7 @@ def query_info_on_all_samples(args):
     # the filter(Culture.submitter_plate_id.is_not(None)) and filter(Extraction.submitter_plate_id.is_not(None))
     # are to ensure that samples from the other path are not included in the results of the query (i.e. samples that are
     # None for Culture.submitter_plate_id will be ones where the submitter gave in extracts, and that hence so sample-extract).
-    sample_culture_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Culture.submitter_plate_id, Culture.submitter_plate_well,
+    sample_culture_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Sample.species, Sample.sequencing_type_requested, Culture.submitter_plate_id, Culture.submitter_plate_well,
                      Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, Extraction.nucleic_acid_concentration, ReadSet.readset_identifier) \
         .join(SampleSource)\
         .join(SampleSource.projects)\
@@ -1066,7 +1066,7 @@ def query_info_on_all_samples(args):
         .join(RawSequencing, isouter=True) \
         .join(ReadSet, isouter=True)
     #samples = [r._asdict() for r in samples]
-    sample_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Extraction.submitter_plate_id, Extraction.submitter_plate_well,
+    sample_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Sample.species, Sample.sequencing_type_requested, Extraction.submitter_plate_id, Extraction.submitter_plate_well,
                      Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, Extraction.nucleic_acid_concentration, ReadSet.readset_identifier)\
         .join(SampleSource)\
         .join(SampleSource.projects)\
