@@ -121,13 +121,11 @@ def add_readset_to_filestructure(readset, config, extraction_from, args_nanopore
             # but the output for non-Core samples will be e.g. fast/Salmonella, which is a different volume so we need
             # to copy.
             shutil.copy(input_fastq_path, output_readset_fastq_path)
-            #os.symlink(input_fastq_path, output_readset_fastq_path)
     elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
         # get_input_fastq_path() will return one fastq path if the sequencing type is nanopore, or two if it's illumina
         input_r1_path, input_r2_path = get_input_fastq_path(readset, args_nanopore_default, config, sample_name)
         output_readset_r1_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R1.fastq.gz")
         output_readset_r2_fastq_path = os.path.join(readset_dir, f"{readset.readset_identifier}-{sample_name}_R2.fastq.gz")
-
         assert os.path.isfile(output_readset_r2_fastq_path) is False
         # copy r1 and r2 to the readset dir
         # doing a copy instead of a symlink because we're going to have the dropbox always be on the fast/Core,
@@ -135,8 +133,6 @@ def add_readset_to_filestructure(readset, config, extraction_from, args_nanopore
         # to copy.
         shutil.copy(input_r1_path, output_readset_r1_fastq_path)
         shutil.copy(input_r2_path, output_readset_r2_fastq_path)
-        #os.symlink(input_r1_path, output_readset_r1_fastq_path)
-        #os.symlink(input_r2_path, output_readset_r2_fastq_path)
     print(f"Added readset to fast filestructure {readset.readset_identifier}-{sample_name} to {group_dir}")
     # copy the readset to the slow directory
     # make the slow dir group path and readset dir.
@@ -147,8 +143,7 @@ def add_readset_to_filestructure(readset, config, extraction_from, args_nanopore
     # recursively copy the readset dir from the fast dir to the slow dir
     shutil.copytree(readset_dir, slow_readset_dir)
     print(f"Added readset to slow filestructure {readset.readset_identifier}-{sample_name} to {slow_group_dir}")
-    # if not os.path.isdir(slow_readset_dir):
-    #     os.mkdir(slow_readset_dir)
+    print(f"Adding slow path to database for {readset.readset_identifier}-{sample_name}")
     if readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'nanopore':
         readset.readset_nanopore.fastq_path = os.path.join(slow_readset_dir, f"{readset.readset_identifier}-{sample_name}.fastq.gz")
     elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
