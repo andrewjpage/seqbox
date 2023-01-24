@@ -124,6 +124,7 @@ def get_mykrobe_result(mykrobe_result_info):
               f"This shouldn't happen. Exiting.")
         sys.exit(1)
 
+
 def get_extraction(readset_info):
     matching_extraction = None
     # todo - could replace this with a union query
