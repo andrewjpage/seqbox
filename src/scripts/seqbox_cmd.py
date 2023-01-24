@@ -94,14 +94,13 @@ def add_extractions(args):
     for extraction_info in all_extractions_info:
         # need to check this because, as the user will be submitting a unified sample sheet, there may be samples
         # that dont have extractions associated with them.
-        if check_extraction_fields(extraction_info): 
+        if check_extraction_fields(extraction_info) is True: 
             if get_extraction(extraction_info) is False:
                 add_extraction(extraction_info)
             else:
                 print(f"This extraction ({extraction_info['sample_identifier']}, {extraction_info['extraction_identifier']})"
                       f" on {extraction_info['date_extracted']} already exists in the database for the group "
                       f"{extraction_info['group_name']}")
-                continue
         else:
             print(f"Extraction information is not present for {extraction_info['sample_identifier']} from "
                 f"{extraction_info['group_name']}. Not adding to DB.")
