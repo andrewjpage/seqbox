@@ -1230,9 +1230,9 @@ def check_extraction_fields(extraction_info):
 
     extraction_info_values = extraction_info.values()
     # Check if all columns are blank i.e contain None
-    is_extraction_info_blank = all(e_value == None for e_value in extraction_info_values)
-    if is_extraction_info_blank:
-        print("all columns are blank")
+    extraction_info_blank = all(e_value == None for e_value in extraction_info_values)
+    if extraction_info_blank:
+        print("Warning:all columns are blank")
         return False
     
     # Check individual columns if they are blank
