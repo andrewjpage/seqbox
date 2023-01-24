@@ -185,6 +185,7 @@ class Sample(db.Model):
     sample_type = db.Column(db.VARCHAR(60), comment="What was DNA extracted from? An isolate, clinical sample (for "
                                                     "covid), a plate sweep, whole stools, etc.")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this sample, if known/appropriate.")
+    sequencing_type_requested = db.Column(db.ARRAY(db.VARCHAR(60)), comment="What type of sequencing was requested for this sample?")
     sample_source_id = db.Column(db.ForeignKey("sample_source.id", ondelete="cascade", onupdate="cascade"))
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")

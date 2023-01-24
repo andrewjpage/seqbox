@@ -299,6 +299,8 @@ def read_in_sample_info(sample_info):
         sample.month_received = sample_info['month_received']
     if sample_info['year_received'] != '':
         sample.year_received = sample_info['year_received']
+    if sample_info['sequencing_type_requested'] != '':
+        sample.sequencing_type_requested = sample_info['sequencing_type_requested'].split(';')
     return sample
 
 
@@ -1261,6 +1263,9 @@ def check_samples(sample_info):
         print(f'group_name column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
     if sample_info['institution'].strip() == '':
+        print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
+        sys.exit(1)
+    if sample_info['sequencing_type_requested'].strip() == '':
         print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
 
