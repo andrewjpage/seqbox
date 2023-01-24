@@ -882,7 +882,8 @@ def get_readset(readset_info, covid):
     # if it's nanopore, but not default, the fastq path will be in the readset_info.
     # then, if it's nanopore, then filter the read_set_nanopore by the fastq path.
 
-    # todo - replace these combined queries with a union query going through tiling pcr for COVID
+    # todo - replace these combined queries with a union query going through tiling pcr for COVID, and then can get
+    # rid of the covid flag for this function (i think).
     if covid is False:
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
@@ -1076,9 +1077,13 @@ def query_info_on_all_samples(args):
         .join(ReadSet, isouter=True)
     union_of_both = sample_culture_extract.union(sample_extract).all()
 
-    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted', 'extraction_identifier', 'nucleic_acid_concentration', 'readset_identifier']
+    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'species', 'sequencing_type_requested', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted', 'extraction_identifier', 'nucleic_acid_concentration', 'readset_identifier']
     print('\t'.join(header))
     for x in union_of_both:
+        # check that the header is the same length as each return of the query
+        # this is in case we add something to the return, but forget to add it to the header
+        # we add 1 to the length of the query return because the first element is the sample object, which we don't print
+        assert len(header) == len(x) + 1
         # replace the Nones with empty strings because want to use the output as the input for a future upload and the
         # Nones will cause problems
         x = ['' if y is None else y for y in x]
@@ -1198,7 +1203,7 @@ def check_extraction_fields(extraction_info):
     if extraction_info['nucleic_acid_concentration'].strip() == '':
         print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    allowed_submitter_plate_prefixes = ('EXT', 'CUL')
+    allowed_submitter_plate_prefixes = ('EXT', 'CUL', 'SAM')
     if not extraction_info['submitter_plate_id'].startswith(allowed_submitter_plate_prefixes):
        print(f'submitter_plate_id column should start with one of {allowed_submitter_plate_prefixes}. it doesnt for \n{extraction_info}\nExiting.')
        sys.exit(1)
