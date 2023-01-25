@@ -180,6 +180,9 @@ class Mykrobe(db.Model):
 
 class Sample(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    __table_args__ = (
+        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_extraction_plateid_platewell_uc'),
+    )
     sample_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for the sample which DNA was extracted from. "
                                                           "Has to be unique within a group.")
     sample_type = db.Column(db.VARCHAR(60), comment="What was DNA extracted from? An isolate, clinical sample (for "
@@ -187,6 +190,8 @@ class Sample(db.Model):
     species = db.Column(db.VARCHAR(120), comment="Putative species of this sample, if known/appropriate.")
     sequencing_type_requested = db.Column(db.ARRAY(db.VARCHAR(60)), comment="What type of sequencing was requested for this sample?")
     submitted_for_sequencing = db.Column(db.Boolean, comment="Has this sample been submitted for sequencing?")
+    submitter_plate_id = db.Column(db.VARCHAR(60), comment="The plate ID this sample was submitted on.")
+    submitter_plate_well = db.Column(db.VARCHAR(60), comment="The well ID this sample was submitted on.")
     sample_source_id = db.Column(db.ForeignKey("sample_source.id", ondelete="cascade", onupdate="cascade"))
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")

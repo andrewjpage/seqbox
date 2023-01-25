@@ -308,6 +308,9 @@ def read_in_sample_info(sample_info):
         sample.year_received = sample_info['year_received']
     if sample_info['sequencing_type_requested'] != '':
         sample.sequencing_type_requested = sample_info['sequencing_type_requested'].split(';')
+    if sample_info['submitter_plate_id'].startswith('SAM'):
+        sample.submitter_plate_id = sample_info['submitter_plate_id']
+        sample.submitter_plate_well = sample_info['submitter_plate_well']
     return sample
 
 
@@ -1060,7 +1063,8 @@ def query_info_on_all_samples(args):
     engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
     Session = sessionmaker(bind=engine)
     s = Session()
-    # need to do a union query to get samples from both the sample-culture-extract and sample-extract paths.
+    # need to do a union query to get samples from both the sample-culture-extract, sample-extract paths, and
+    # just samples (i.e. whole samples submitted for extraction).
     #
     # the filter(Culture.submitter_plate_id.is_not(None)) and filter(Extraction.submitter_plate_id.is_not(None))
     # are to ensure that samples from the other path are not included in the results of the query (i.e. samples that are
@@ -1075,23 +1079,43 @@ def query_info_on_all_samples(args):
         .join(RawSequencing, isouter=True) \
         .join(ReadSet, isouter=True)
     #samples = [r._asdict() for r in samples]
-    sample_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Sample.species, Sample.sequencing_type_requested, Extraction.submitter_plate_id, Extraction.submitter_plate_well,
-                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, Extraction.nucleic_acid_concentration, ReadSet.readset_identifier)\
+    sample_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name,
+                             Sample.sample_identifier, Sample.species, Sample.sequencing_type_requested,
+                             Extraction.submitter_plate_id, Extraction.submitter_plate_well,
+                             Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted,
+                             Extraction.extraction_identifier, Extraction.nucleic_acid_concentration,
+                             ReadSet.readset_identifier)\
         .join(SampleSource)\
         .join(SampleSource.projects)\
         .join(Groups) \
         .join(Extraction, isouter=True).filter(Extraction.submitter_plate_id.is_not(None)) \
         .join(RawSequencing, isouter=True) \
         .join(ReadSet, isouter=True)
-    union_of_both = sample_culture_extract.union(sample_extract).all()
+
+    sample = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name,
+                             Sample.sample_identifier, Sample.species, Sample.sequencing_type_requested,
+                             Sample.submitter_plate_id, Sample.submitter_plate_well,
+                             Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted,
+                             Extraction.extraction_identifier, Extraction.nucleic_acid_concentration,
+                             ReadSet.readset_identifier) \
+        .filter(Sample.submitter_plate_id.is_not(None))        \
+        .join(SampleSource) \
+        .join(SampleSource.projects) \
+        .join(Groups) \
+        .join(Extraction, isouter=True) \
+        .join(RawSequencing, isouter=True) \
+        .join(ReadSet, isouter=True)
+
+    union_of_both = sample_culture_extract.union(sample_extract).union(sample).all()
 
     header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'species', 'sequencing_type_requested', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted', 'extraction_identifier', 'nucleic_acid_concentration', 'readset_identifier']
     print('\t'.join(header))
     for x in union_of_both:
         # check that the header is the same length as each return of the query
         # this is in case we add something to the return, but forget to add it to the header
-        # we add 1 to the length of the query return because the first element is the sample object, which we don't print
-        assert len(header) == len(x) + 1
+        # we add 1 to the length of the header return because the first element of x is the sample object, which we
+        # don't print
+        assert len(header) +1 == len(x)
         # replace the Nones with empty strings because want to use the output as the input for a future upload and the
         # Nones will cause problems
         x = ['' if y is None else y for y in x]
