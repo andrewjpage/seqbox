@@ -31,7 +31,6 @@ in the project.
 ### read set batch/raw sequencing batch
 * raw_sequencing_batch name has to be unique across all projects/groups
 * readset_batch_name and raw sequencing batch namespace is shared across all groups/institutions (i.e. has to be unique)
-* readset batch name is also expected to be the name of the folder in which the fastqs are stored.
 
 ### readset/raw sequencing
 * currently assuming that whenever you have new raw sequencing, 
@@ -189,6 +188,7 @@ extraction, tiling pcr, readset.
 
 9. illumina, extract is from sample.
 
+<<<<<<< HEAD
 10. test for combined submission tracker input file.
 
     a. run setup.sh - wipes/makes the db, adds the group and project.
@@ -209,6 +209,8 @@ extraction, tiling pcr, readset.
 
 12. test for submitting reads generated elsewhere.
 
+=======
+>>>>>>> tmp
 ## How to add a new table
 
 1. Commit to the flask migrate repo?
@@ -219,7 +221,7 @@ extraction, tiling pcr, readset.
 3. In seqbox_utils:
     
     a. add a new get_* function
-
+    
         i. this runs a check_* function
         
         ii. need to come back and check this function after we have added somethign
