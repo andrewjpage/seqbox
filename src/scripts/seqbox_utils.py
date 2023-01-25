@@ -41,7 +41,7 @@ def read_in_csv(file):
         if None in each_dict:
             del each_dict[None]
         
-        # composition: replace nones & convert date keys values to datetime
+        # composition: replace empty strings with nones & convert date keys values to datetime
         each_dict = convert_to_datetime_dict(replace_with_none(each_dict))
         new_info = {x: each_dict[x] for x in each_dict}
         # print(new_info)
