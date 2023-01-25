@@ -177,7 +177,6 @@ def get_mykrobe_result(mykrobe_result_info):
               f"This shouldn't happen. Exiting.")
         sys.exit(1)
 
-
 def get_extraction(readset_info):
     matching_extraction = None
     # todo - could replace this with a union query
@@ -352,8 +351,6 @@ def read_in_sample_info(sample_info):
         sample.month_received = sample_info['month_received']
     if sample_info['year_received']:
         sample.year_received = sample_info['year_received']
-    if sample_info['sequencing_type_requested'] != '':
-        sample.sequencing_type_requested = sample_info['sequencing_type_requested'].split(';')
     return sample
 
 
@@ -736,7 +733,6 @@ def add_culture(culture_info):
 
 def add_extraction(extraction_info):
     extraction = read_in_extraction(extraction_info)
-    # if the extraciton is from a whole sample, then we will want to link the extraction to the sample
     if extraction_info['extraction_from'] == 'whole_sample':
         sample = get_sample(extraction_info)
         if sample is False:
@@ -745,7 +741,6 @@ def add_extraction(extraction_info):
                   f"python seqbox_cmd.py add_sample and then re-run this command. Exiting.")
             sys.exit(1)
         sample.extractions.append(extraction)
-    # if the extraciton is from a cultured isolate, then we will want to link the extraction to the culture.
     elif extraction_info['extraction_from'] == 'cultured_isolate':
         culture = get_culture(extraction_info)
         if culture is False:
@@ -1148,9 +1143,8 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
     raw_sequencing = RawSequencing()
     if sequencing_type == 'illumina':
         raw_sequencing.raw_sequencing_illumina = RawSequencingIllumina()
-        # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
-        #raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
-        #raw_sequencing.raw_sequencing_illumina.path_r2 = readset_info['path_r2']
+        raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
+        raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r2']
         raw_sequencing.raw_sequencing_illumina.library_prep_method = readset_info['library_prep_method']
     if sequencing_type == 'nanopore':
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
@@ -1213,9 +1207,7 @@ def check_cultures(culture_info):
     if not (culture_info['date_cultured']):
         print(f'date_cultured column should not be empty. it is for \n{culture_info}\nExiting.')
         sys.exit(1)
-    # we assert that the submitter plate is for cultures or, if the client submitted extracts from a culture,
-    # that the extraction_from is cultured_isolate
-    assert culture_info['submitter_plate_id'].startswith('CUL') or culture_info['extraction_from'] == 'cultured_isolate'
+    assert culture_info['submitter_plate_id'].startswith('CUL')
     assert culture_info['submitter_plate_well'] in {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10',
                                                        'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8',
                                                        'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
@@ -1344,9 +1336,6 @@ def check_samples(sample_info):
     if not sample_info['institution']:
         print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if sample_info['sequencing_type_requested'].strip() == '':
-        print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
-        sys.exit(1)
 
 
 def check_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
@@ -1433,10 +1422,10 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
                 sys.exit(1)
     # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
     # elif raw_sequencing_batch.sequencing_type == 'illumina':
-    #     if readset_info['path_r1'].strip() == '':
+    #     if not readset_info['path_r1']:
     #         print(f'path_r1 column should not be empty. it is for \n{readset_info}\nExiting.')
     #         sys.exit(1)
-    #     if readset_info['path_r2'].strip() == '':
+    #     if not readset_info['path_r2']:
     #         print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
     #         sys.exit(1)
     if covid is True:
@@ -1479,12 +1468,11 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
                 sys.exit(1)
         return readset
     elif raw_sequencing_batch.sequencing_type == 'illumina':
-        # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
         readset.readset_illumina = ReadSetIllumina()
-        # assert readset_info['path_r1'].endswith('fastq.gz')
-        # assert readset_info['path_r2'].endswith('fastq.gz')
-        # readset.readset_illumina.path_r1 = readset_info['path_r1']
-        # readset.readset_illumina.path_r2 = readset_info['path_r2']
+        assert readset_info['path_r1'].endswith('fastq.gz')
+        assert readset_info['path_r2'].endswith('fastq.gz')
+        readset.readset_illumina.path_r1 = readset_info['path_r1']
+        readset.readset_illumina.path_r2 = readset_info['path_r2']
         return readset
 
 
