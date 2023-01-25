@@ -22,6 +22,10 @@ def read_in_as_dict(inhandle):
         # delete data from columns with no header, usually just empty fields
         if None in each_dict:
             del each_dict[None]
+        
+        # composition: replace empty strings with nones & convert date keys values to datetime
+        each_dict = convert_to_datetime_dict(replace_with_none(each_dict))
+
         new_info = {x: each_dict[x] for x in each_dict}
         # print(new_info)
         # sometimes excel saves blank lines, so only take lines where the lenght of the set of teh values is > 1
