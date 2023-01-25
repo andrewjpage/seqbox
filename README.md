@@ -205,6 +205,10 @@ extraction, tiling pcr, readset.
     
     g. run upload_e.sh - add sample sources, samples, cultures and extractions when the client submits extractions from culture (testing this logic, rather than submitting extractions from whole_sample or cultures)
  
+11. test for submitting a sample in "dry" mode i.e. the sample isn't actually passed tp the sequencing service, we're just keeping track of it in the DB. and then at a later point it is submitted to the sequencing service.
+
+12. test for submitting reads generated elsewhere.
+
 ## How to add a new table
 
 1. Commit to the flask migrate repo?

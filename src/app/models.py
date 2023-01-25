@@ -91,12 +91,16 @@ class ReadSet(db.Model):
                                                       "{readset_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("readset", passive_updates=True,
                                                           passive_deletes=True))
-    readset_illumina = db.relationship("ReadSetIllumina", backref=backref("readset", passive_deletes=True), uselist=False)
-    readset_nanopore = db.relationship("ReadSetNanopore", backref=backref("readset", passive_deletes=True), uselist=False)
+    readset_illumina = db.relationship("ReadSetIllumina", backref=backref("readset", passive_deletes=True),
+                                       uselist=False)
+    readset_nanopore = db.relationship("ReadSetNanopore", backref=backref("readset", passive_deletes=True),
+                                       uselist=False)
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     include = db.Column(db.VARCHAR(128), comment="Should this readset be included in further analyses?")
     artic_covid_result = db.relationship("ArticCovidResult", backref=backref("readset", passive_deletes=True))
+    sequencing_institution = db.Column(db.VARCHAR(128), comment="Which institution sequenced this sample?",
+                                       default="MLW")
 
     # @hybrid_property
     # def readset_id(self):
@@ -181,7 +185,7 @@ class Mykrobe(db.Model):
 class Sample(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     __table_args__ = (
-        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_extraction_plateid_platewell_uc'),
+        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_sample_plateid_platewell_uc'),
     )
     sample_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for the sample which DNA was extracted from. "
                                                           "Has to be unique within a group.")

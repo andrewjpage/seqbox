@@ -311,6 +311,10 @@ def read_in_sample_info(sample_info):
     if sample_info['submitter_plate_id'].startswith('SAM'):
         sample.submitter_plate_id = sample_info['submitter_plate_id']
         sample.submitter_plate_well = sample_info['submitter_plate_well']
+    # if the submitter_plate_id starts with OUT, then the sample is an externally sequenced sample and has no plate info
+    elif sample_info['submitter_plate_id'].startswith('OUT'):
+        sample.submitter_library_plate_id = sample_info['submitter_plate_id']
+        sample.submitter_library_plate_well = None
     return sample
 
 
@@ -338,8 +342,15 @@ def read_in_culture(culture_info):
     culture = Culture()
     culture.date_cultured = culture_info['date_cultured']
     culture.culture_identifier = culture_info['culture_identifier']
-    culture.submitter_plate_id = culture_info['submitter_plate_id']
-    culture.submitter_plate_well = culture_info['submitter_plate_well']
+    # if the submitter_plate_id starts with SAM, then the culture is a culture that was created in the lab
+    # if the submitter_plate_id starts with OUT, then the culture is an externally sequenced culture and has no
+    # submitter plate info
+    if culture_info['submitter_plate_id'].startswith('SAM'):
+        culture.submitter_plate_id = culture_info['submitter_plate_id']
+        culture.submitter_plate_well = culture_info['submitter_plate_well']
+    elif culture_info['submitter_plate_id'].startswith('OUT'):
+        culture.submitter_plate_id = culture_info['submitter_plate_id']
+        culture.submitter_plate_well = None
     return culture
 
 
@@ -365,6 +376,9 @@ def read_in_extraction(extraction_info):
     if extraction_info['submitter_plate_id'].startswith('EXT'):
         extraction.submitter_plate_id = extraction_info['submitter_plate_id']
         extraction.submitter_plate_well = extraction_info['submitter_plate_well']
+    elif extraction_info['submitter_plate_id'].startswith('OUT'):
+        extraction.submitter_plate_id = extraction_info['submitter_plate_id']
+        extraction.submitter_plate_well = None
     return extraction
 
 
@@ -1001,18 +1015,6 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
             .all()
     elif covid is False:
         matching_raw_sequencing = RawSequencing.query \
-            .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name)\
-            .join(Extraction).filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                        date_extracted=datetime.datetime \
-                                        .strptime(readset_info['date_extracted'], '%d/%m/%Y')) \
-            .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
-            .join(SampleSource) \
-            .join(SampleSource.projects)\
-            .join(Groups) \
-            .filter_by(group_name=readset_info['group_name']) \
-            .all()
-
-        matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
             .join(Extraction)\
             .filter_by(date_extracted=readset_info['date_extracted'],
@@ -1134,7 +1136,10 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
         # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
         #raw_sequencing.raw_sequencing_illumina.path_r1 = readset_info['path_r1']
         #raw_sequencing.raw_sequencing_illumina.path_r2 = readset_info['path_r2']
-        raw_sequencing.raw_sequencing_illumina.library_prep_method = readset_info['library_prep_method']
+        # if the readset is externally sequenced, then the submitter_readset_id will start with OUT, and
+        # we don't want to add the library prep method
+        if not readset_info['submitter_plate_id'].startswith('OUT'):
+            raw_sequencing.raw_sequencing_illumina.library_prep_method = readset_info['library_prep_method']
     if sequencing_type == 'nanopore':
         raw_sequencing.raw_sequencing_nanopore = RawSequencingNanopore()
         if nanopore_default is True:
@@ -1201,7 +1206,10 @@ def check_cultures(culture_info):
         sys.exit()
     # we assert that the submitter plate is for cultures or, if the client submitted extracts from a culture,
     # that the extraction_from is cultured_isolate
-    assert culture_info['submitter_plate_id'].startswith('CUL') or culture_info['extraction_from'] == 'cultured_isolate'
+    # if the readset was sequenced elsewhere,  the submitter_plate_id will start with OUT
+    assert culture_info['submitter_plate_id'].startswith('CUL') or \
+           culture_info['extraction_from'] == 'cultured_isolate' or \
+           culture_info['submitter_plate_id'].startswith('OUT')
     assert culture_info['submitter_plate_well'] in {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10',
                                                        'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8',
                                                        'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
@@ -1235,14 +1243,26 @@ def check_extraction_fields(extraction_info):
          print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
                f'Exiting.')
          sys.exit(1)
-    if extraction_info['nucleic_acid_concentration'].strip() == '':
-        print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
-        sys.exit(1)
-    allowed_submitter_plate_prefixes = ('EXT', 'CUL', 'SAM')
+    if not extraction_info['submitter_plate_id'].strip().startswith('OUT'):
+        if extraction_info['nucleic_acid_concentration'].strip() == '':
+            print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
+            sys.exit(1)
+        assert extraction_info['submitter_plate_well'] in {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10',
+                                                           'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8',
+                                                           'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5',
+                                                           'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'D1', 'D2',
+                                                           'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11',
+                                                           'D12', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9',
+                                                           'E10', 'E11', 'E12', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6',
+                                                           'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'G1', 'G2', 'G3',
+                                                           'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12',
+                                                           'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10',
+                                                           'H11', 'H12'}
+    allowed_submitter_plate_prefixes = ('EXT', 'CUL', 'SAM', 'OUT')
     if not extraction_info['submitter_plate_id'].startswith(allowed_submitter_plate_prefixes):
        print(f'submitter_plate_id column should start with one of {allowed_submitter_plate_prefixes}. it doesnt for \n{extraction_info}\nExiting.')
        sys.exit(1)
-    assert extraction_info['submitter_plate_well'] in {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'H11', 'H12'}
+
 
     # if the lab guys have done the extraction from a culture, there might not be an submitter
 
