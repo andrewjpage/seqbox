@@ -91,12 +91,16 @@ class ReadSet(db.Model):
                                                       "{readset_id}-{sample.sample_identifier}")
     mykrobes = db.relationship("Mykrobe", backref=backref("readset", passive_updates=True,
                                                           passive_deletes=True))
-    readset_illumina = db.relationship("ReadSetIllumina", backref=backref("readset", passive_deletes=True), uselist=False)
-    readset_nanopore = db.relationship("ReadSetNanopore", backref=backref("readset", passive_deletes=True), uselist=False)
+    readset_illumina = db.relationship("ReadSetIllumina", backref=backref("readset", passive_deletes=True),
+                                       uselist=False)
+    readset_nanopore = db.relationship("ReadSetNanopore", backref=backref("readset", passive_deletes=True),
+                                       uselist=False)
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
     data_storage_device = db.Column(db.VARCHAR(64), comment="which machine is this data stored on?")
     include = db.Column(db.VARCHAR(128), comment="Should this readset be included in further analyses?")
     artic_covid_result = db.relationship("ArticCovidResult", backref=backref("readset", passive_deletes=True))
+    sequencing_institution = db.Column(db.VARCHAR(128), comment="Which institution sequenced this sample?",
+                                       default="MLW")
 
     # @hybrid_property
     # def readset_id(self):
@@ -180,12 +184,18 @@ class Mykrobe(db.Model):
 
 class Sample(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    __table_args__ = (
+        UniqueConstraint('submitter_plate_id', 'submitter_plate_well', name='_sample_plateid_platewell_uc'),
+    )
     sample_identifier = db.Column(db.VARCHAR(30), comment="Lab identifier for the sample which DNA was extracted from. "
                                                           "Has to be unique within a group.")
     sample_type = db.Column(db.VARCHAR(60), comment="What was DNA extracted from? An isolate, clinical sample (for "
                                                     "covid), a plate sweep, whole stools, etc.")
     species = db.Column(db.VARCHAR(120), comment="Putative species of this sample, if known/appropriate.")
     sequencing_type_requested = db.Column(db.ARRAY(db.VARCHAR(60)), comment="What type of sequencing was requested for this sample?")
+    submitted_for_sequencing = db.Column(db.Boolean, comment="Has this sample been submitted for sequencing?")
+    submitter_plate_id = db.Column(db.VARCHAR(60), comment="The plate ID this sample was submitted on.")
+    submitter_plate_well = db.Column(db.VARCHAR(60), comment="The well ID this sample was submitted on.")
     sample_source_id = db.Column(db.ForeignKey("sample_source.id", ondelete="cascade", onupdate="cascade"))
     day_collected = db.Column(db.Integer, comment="day of the month this was collected")
     month_collected = db.Column(db.Integer, comment="month this was collected")

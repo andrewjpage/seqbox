@@ -8,7 +8,8 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
     add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result, \
     check_tiling_pcr, basic_check_readset_fields, check_pcr_result, add_culture, get_culture, \
-    add_elution_info_to_extraction, query_info_on_all_samples, get_mykrobe_result, add_mykrobe_result
+    add_elution_info_to_extraction, query_info_on_all_samples, get_mykrobe_result, add_mykrobe_result, update_sample, \
+    check_cultures
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -81,6 +82,11 @@ def add_readsets(args):
 def add_cultures(args):
     all_cultures_info = read_in_as_dict(args.cultures_inhandle)
     for culture_info in all_cultures_info:
+        # check cultures will return False when both the culture date and culture identifier are empty.
+        # in this case, we just want to continue as there is nothing to add.
+        # if one is present and one is missing,
+        if check_cultures(culture_info) is False:
+            continue
         if get_culture(culture_info) is False:
             add_culture(culture_info)
         else:
@@ -142,8 +148,14 @@ def add_elution_info_to_extractions(args):
 def add_samples(args):
     all_samples_info = read_in_as_dict(args.samples_inhandle)
     for sample_info in all_samples_info:
-        if get_sample(sample_info) is False:
-            add_sample(sample_info)
+        sample = get_sample(sample_info)
+        if sample is False:
+            add_sample(sample_info, args.submitted_for_sequencing)
+        # if the sample in the database is not submitted for sequencing, but the user has specified that it should be,
+        # then update the sample in the database to be submitted for sequencing.
+        # has to be an elif because this will find a sample in the database
+        elif sample.submitted_for_sequencing is False and args.submitted_for_sequencing is True:
+            update_sample(sample)
         else:
             print(f"This sample ({sample_info['sample_identifier']}) already exists in the database for the group "
                   f"{sample_info['group_name']}")
@@ -301,6 +313,12 @@ def main():
     parser_add_samples = subparsers.add_parser('add_samples', help='Take a csv file of samples and add to the DB')
     parser_add_samples.add_argument('-i', dest='samples_inhandle', help='A CSV file containing samples'
                                      , required=True)
+    # if the sample is only being submitted for sample tracking, not because it has been submitted for sequencing
+    # i.e. usually this will only be Phil doing this, then pass the -d flag
+    # default to True because most samples will be submitted for sequencing, the action if the flag is passed is to set
+    # sample_submitted_for_sequencing to False
+    # -d stands for "dry" sample i.e. nothing submitted.
+    parser_add_samples.add_argument('-d', dest='submitted_for_sequencing', action='store_false', default=True)
     parser_add_projects = subparsers.add_parser('add_projects', help='take a csv file of projects and add to the DB')
     parser_add_projects.add_argument('-i', dest='projects_inhandle', help='A CSV file containing projects'
                                      , required=True)
