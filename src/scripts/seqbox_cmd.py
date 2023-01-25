@@ -2,7 +2,7 @@ import sys
 import argparse
 from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
-    get_extraction, add_extraction, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
+    get_extraction, add_extraction,check_extraction_fields, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
@@ -94,23 +94,13 @@ def add_cultures(args):
                   f"culture.")
 
 
-def is_extraction_info_present(extraction_info):
-    if (extraction_info['date_extracted'] == '') & (extraction_info['extraction_identifier'] == ''):
-        return False
-    elif (extraction_info['date_extracted'] != '') & (extraction_info['extraction_identifier'] != ''):
-        return True
-    else:
-        print(f"extraction_date and extraction_identifier must both be present or both be absent for this line "
-              f"{extraction_info}. Exiting.")
-        sys.exit(1)
-
 
 def add_extractions(args):
     all_extractions_info = read_in_as_dict(args.extractions_inhandle)
     for extraction_info in all_extractions_info:
         # need to check this because, as the user will be submitting a unified sample sheet, there may be samples
         # that dont have extractions associated with them.
-        if is_extraction_info_present(extraction_info) is True:
+        if check_extraction_fields(extraction_info) is True: 
             if get_extraction(extraction_info) is False:
                 add_extraction(extraction_info)
             else:
@@ -119,13 +109,14 @@ def add_extractions(args):
                       f"{extraction_info['group_name']}")
         else:
             print(f"Extraction information is not present for {extraction_info['sample_identifier']} from "
-                  f"{extraction_info['group_name']}. Not adding to DB.")
+                f"{extraction_info['group_name']}. Not adding to DB.")
+            
 
 
 def is_elution_info_present(elution_info):
-    if (elution_info['elution_plate_id'] == '') & (elution_info['elution_plate_well'] == ''):
+    if (not elution_info['elution_plate_id']) and (not elution_info['elution_plate_well']):
         return False
-    elif (elution_info['elution_plate_id'] != '') & (elution_info['elution_plate_well'] != ''):
+    elif (elution_info['elution_plate_id']) and (elution_info['elution_plate_well']):
         return True
     else:
         print(f"elution_plate_id and elution_plate_well must both be present or both be absent for this line "
