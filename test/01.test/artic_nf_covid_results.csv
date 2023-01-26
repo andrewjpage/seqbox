@@ -1,0 +1,10 @@
+sample_name,pct_N_bases,pct_covered_bases,longest_no_N_run,num_aligned_reads,fasta,bam,qc_pass
+20210702_barcode01,16.89,83.2,4611,43649,20210702_barcode01.consensus.fasta,20210702_barcode01.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode02,16.13,83.88,4611,36349,20210702_barcode02.consensus.fasta,20210702_barcode02.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode03,18.7,81.3,4597,37670,20210702_barcode03.consensus.fasta,20210702_barcode03.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode04,18.78,81.38,4597,35215,20210702_barcode04.consensus.fasta,20210702_barcode04.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode05,47.48,52.74,1833,12254,20210702_barcode05.consensus.fasta,20210702_barcode05.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode06,26.25,73.57,3701,22837,20210702_barcode06.consensus.fasta,20210702_barcode06.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode07,22.65,77.26,4597,29282,20210702_barcode07.consensus.fasta,20210702_barcode07.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode08,40.7,59.48,3010,7964,20210702_barcode08.consensus.fasta,20210702_barcode08.primertrimmed.rg.sorted.bam,TRUE
+20210702_barcode09,17.99,82,4597,38452,20210702_barcode09.consensus.fasta,20210702_barcode09.primertrimmed.rg.sorted.bam,TRUE

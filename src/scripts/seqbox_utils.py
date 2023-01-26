@@ -88,6 +88,20 @@ def read_in_excel(file):
     return list_of_lines
 
 
+def check_plate_ids(data, plate_id_type):
+    # data is a list of dicts
+    # check if the plate_id_type is in the data
+    if plate_id_type in data[0]:
+        # get the unique ones
+        plate_ids = set([x[plate_id_type] for x in data])
+        # if there are more than one
+        if len(plate_ids) > 1:
+            # print a warning
+            print(f"Warning: multiple {plate_id_type} in file. Are there supposed to be {plate_ids} "
+                  f"as {plate_id_type}? Progressing with upload, but if this was an error, you need to fix it (email"
+                  f" bioinformatics team).")
+
+
 def read_in_as_dict(inhandle):
     # Check file type i.e is it a csv or xls(x)? then proceed to read accordingly
     if inhandle.endswith('.csv'):
@@ -97,6 +111,12 @@ def read_in_as_dict(inhandle):
     else:
         print("Invalid file format")
         sys.exit(1)
+    # check the number of plate ids, this field (both elution plate and submitter plate) will be quite susceptible to
+    # Excel copy down errors (e.g. EXT001, EXT002 where only supposed to be EXT001), so throw a warning if there is
+    # more than one id.
+    check_plate_ids(data, 'elution_plate_id')
+    check_plate_ids(data, 'submitter_plate_id')
+
     return data
 
 
@@ -841,8 +861,7 @@ def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
 
         date_pcred=covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'] )\
         .join(Extraction).filter_by(extraction_identifier=covid_confirmatory_pcr_info['extraction_identifier'],
-                                                     date_extracted=datetime.datetime.strptime(
-                                                         covid_confirmatory_pcr_info['date_extracted'], '%d/%m/%Y')) \
+                                                     date_extracted=covid_confirmatory_pcr_info['date_extracted']) \
         .join(Sample).filter_by(sample_identifier=covid_confirmatory_pcr_info['sample_identifier'])\
         .all()
     if len(matching_covid_confirmatory_pcr) == 0:
@@ -1070,8 +1089,7 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
             .join(TilingPcr).filter_by(pcr_identifier=readset_info['tiling_pcr_identifier'],
-                                       date_pcred=datetime.datetime \
-                                       .strptime(readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
+                                       date_pcred=readset_info['date_tiling_pcred']) \
             .join(Extraction) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \

@@ -1,0 +1,10 @@
+﻿sample_identifier,date_tiling_pcred,tiling_pcr_identifier,date_extracted,extraction_identifier,group_name,barcode,data_storage_device,readset_batch_name,library_prep_method
+CMT15I,01/06/2021,1,,,Core,barcode01,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT1XD,01/06/2021,1,,,Core,barcode02,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT15J,01/06/2021,1,,,Core,barcode03,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT15V,01/06/2021,1,,,Core,barcode04,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT1KL,01/06/2021,1,,,Core,barcode05,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT1KQ,01/06/2021,1,,,Core,barcode06,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT16X,01/06/2021,1,,,Core,barcode07,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT16E,01/06/2021,1,,,Core,barcode08,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
+CMT15Q,01/06/2021,1,,,Core,barcode09,local,20201201_1355_MN33881_FAO20804_109641e0,rapid
