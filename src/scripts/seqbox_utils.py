@@ -218,6 +218,7 @@ def get_extraction(readset_info):
 
 
 def get_culture(culture_info):
+    
     matching_culture = Culture.query.filter_by(culture_identifier=culture_info['culture_identifier'],
                                                date_cultured=culture_info['date_cultured']) \
         .join(Sample).filter_by(sample_identifier=culture_info['sample_identifier']) \
