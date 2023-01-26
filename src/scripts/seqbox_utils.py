@@ -512,10 +512,10 @@ def read_in_tiling_pcr(tiling_pcr_info):
 
 
 def check_pangolin_result(pangolin_result_info):
-    if pangolin_result_info['taxon'].strip() == '':
+    if not(pangolin_result_info['taxon']):
         print(f'taxon column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
-    if pangolin_result_info['lineage'].strip() == '':
+    if not(pangolin_result_info['lineage']):
         print(f'lineage column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
     # the name of the output column changed from status to qc_status 2022-07-04
@@ -523,22 +523,22 @@ def check_pangolin_result(pangolin_result_info):
         if 'status' not in pangolin_result_info:
             pangolin_result_info['status'] = pangolin_result_info['qc_status']
 
-    if pangolin_result_info['status'].strip() == '':
+    if not(pangolin_result_info['status']):
         print(f'status column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
 
 
 def check_artic_covid_result(artic_covid_result_info):
-    if artic_covid_result_info['sample_name'].strip() == '':
+    if not(artic_covid_result_info['sample_name']):
         print(f'sample_name column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if artic_covid_result_info['pct_N_bases'].strip() == '':
+    if not(artic_covid_result_info['pct_N_bases']):
         print(f'pct_N_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if artic_covid_result_info['pct_covered_bases'].strip() == '':
+    if not(artic_covid_result_info['pct_covered_bases']):
         print(f'pct_covered_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if artic_covid_result_info['num_aligned_reads'].strip() == '':
+    if not(artic_covid_result_info['num_aligned_reads']):
         print(f'num_aligned_reads column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
 
@@ -1252,16 +1252,16 @@ def check_raw_sequencing_batch(raw_sequencing_batch_info):
 
 
 def check_readset_batches(readset_batch_info):
-    if readset_batch_info['raw_sequencing_batch_name'].strip() == '':
+    if not(readset_batch_info['raw_sequencing_batch_name']):
         print(f'raw_sequencing_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if readset_batch_info['readset_batch_name'].strip() == '':
+    if not(readset_batch_info['readset_batch_name']):
         print(f'readset_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if readset_batch_info['readset_batch_dir'].strip() == '':
+    if not(readset_batch_info['readset_batch_dir']):
         print(f'readset_batch_dir column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if readset_batch_info['basecaller'].strip() == '':
+    if not(readset_batch_info['basecaller']):
         print(f'basecaller column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
 
@@ -1347,81 +1347,81 @@ def check_group(group_info):
     if '/' in group_info['group_name']:
         print(f'group_name should not have any backslashes in in. there is one for \n{group_info}\nExiting.')
         sys.exit(1)
-    if group_info['group_name'].strip() == '':
+    if not(group_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{group_info}\nExiting.')
         sys.exit(1)
-    if group_info['institution'].strip() == '':
+    if not(group_info['institution']):
         print(f'institution column should not be empty. it is for \n{group_info}\nExiting.')
         sys.exit(1)
 
 
 def check_project(project_info):
-    if project_info['project_name'].strip() == '':
+    if not(project_info['project_name']):
         print(f'project_name column should not be empty. it is for \n{project_info}\nExiting.')
         sys.exit(1)
-    if project_info['group_name'].strip() == '':
+    if not(project_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{project_info}\nExiting.')
         sys.exit(1)
-    if project_info['institution'].strip() == '':
+    if not(project_info['institution']):
         print(f'institution column should not be empty. it is for \n{project_info}\nExiting.')
         sys.exit(1)
 
 
 def check_sample_sources(sample_source_info):
-    if sample_source_info['sample_source_identifier'].strip() == '':
+    if not(sample_source_info['sample_source_identifier']):
         print(f'sample_source_identifier column should not be empty. it is for \n{sample_source_info}\nExiting.')
         sys.exit(1)
-    if sample_source_info['sample_source_type'].strip() == '':
+    if not(sample_source_info['sample_source_type']):
         print(f'sample_source_type column should not be empty. it is for \n{sample_source_info}\nExiting.')
         sys.exit(1)
-    if sample_source_info['projects'].strip() == '':
+    if not(sample_source_info['projects']):
         print(f'projects column should not be empty. it is for \n{sample_source_info}\nExiting.')
         sys.exit(1)
-    if sample_source_info['group_name'].strip() == '':
+    if not(sample_source_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{sample_source_info}\nExiting.')
         sys.exit(1)
-    if sample_source_info['institution'].strip() == '':
+    if not(sample_source_info['institution']):
         print(f'institution column should not be empty. it is for \n{sample_source_info}\nExiting.')
         sys.exit(1)
 
 
 def check_samples(sample_info):
-    if sample_info['sample_source_identifier'].strip() == '':
+    if not(sample_info['sample_source_identifier']):
         print(f'sample_source_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if sample_info['sample_identifier'].strip() == '':
+    if not(sample_info['sample_identifier']):
         print(f'sample_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if sample_info['group_name'].strip() == '':
+    if not(sample_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if sample_info['institution'].strip() == '':
+    if not(sample_info['institution']):
         print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
 
 
 def check_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
-    if covid_confirmatory_pcr_info['sample_identifier'].strip() == '':
+    if not(covid_confirmatory_pcr_info['sample_identifier']):
         print(f'sample_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if covid_confirmatory_pcr_info['date_extracted'].strip() == '':
+    if not(covid_confirmatory_pcr_info['date_extracted']):
         print(f'date_extracted column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if covid_confirmatory_pcr_info['extraction_identifier'].strip() == '':
+    if not(covid_confirmatory_pcr_info['extraction_identifier']):
         print(f'extraction_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'].strip() == '':
+    if not(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']):
         print(f'date_covid_confirmatory_pcred column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'].strip() == '':
+    if not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']):
         print(f'covid_confirmatory_pcr_identifier column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if covid_confirmatory_pcr_info['group_name'].strip() == '':
+    if not(covid_confirmatory_pcr_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol'].strip() == '':
+    if not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']):
         print(f'covid_confirmatory_pcr_protocol column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
 
@@ -1430,7 +1430,7 @@ def check_tiling_pcr(tiling_pcr_info):
     to_check = ['sample_identifier', 'date_extracted', 'extraction_identifier', 'date_tiling_pcred',
                 'tiling_pcr_identifier', 'group_name', 'tiling_pcr_protocol']
     for r in to_check:
-        if tiling_pcr_info[r].strip() == '':
+        if not(tiling_pcr_info[r]):
             print(f'Warning - {r} column should not be empty. it is for \n{tiling_pcr_info}. Not adding this tiling pcr record.')
             return False
     return True
@@ -1439,7 +1439,7 @@ def check_tiling_pcr(tiling_pcr_info):
 def check_pcr_result(pcr_result_info):
     to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name']
     for r in to_check:
-        if pcr_result_info[r].strip() == '':
+        if not(pcr_result_info[r]):
             print(f'{r} column should not be empty. it is for \n{pcr_result_info}')
             return False
 
@@ -1457,7 +1457,7 @@ def basic_check_readset_fields(readset_info):
     # covid confirmatory pcr was negative.
     to_check = ['data_storage_device', 'readset_batch_name']
     for r in to_check:
-        if readset_info[r].strip() == '':
+        if not(readset_info[r]):
             print(f'Warning - {r} column should not be empty. it is for \n{readset_info}.')
             return False
 
@@ -1466,13 +1466,13 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
     # this is the full check of the readset fields, when it looks like the readset is present.
     to_check = ['data_storage_device', 'sample_identifier', 'group_name', 'readset_batch_name']
     for r in to_check:
-        if readset_info[r].strip() == '':
+        if not(readset_info[r]):
             print(f'{r} column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit()
 
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         if nanopore_default is True:
-            if readset_info['barcode'].strip() == '':
+            if not(readset_info['barcode']):
                 print(f'barcode column should not be empty. it is for \n{readset_info}\nExiting.')
                 sys.exit(1)
         else:
