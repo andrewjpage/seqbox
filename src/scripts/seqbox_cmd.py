@@ -47,6 +47,8 @@ def add_raw_sequencing_batches(args):
             sys.exit(1)
         if get_raw_sequencing_batch(raw_sequencing_batch_info['batch_name']) is False:
             add_raw_sequencing_batch(raw_sequencing_batch_info)
+        else:
+            print(f"This raw sequencing batch {raw_sequencing_batch_info['batch_name']} already exists. Not adding it.")
 
 
 def add_readset_batches(args):
@@ -68,15 +70,17 @@ def add_readsets(args):
             add_readset(readset_info=readset_info, covid=args.covid,
                         nanopore_default=args.nanopore_default)
         else:
-            if 'path_fastq' in readset_info:
-                print(f"This readset ({readset_info['path_fastq']}) already exists in the database for the group "
-                      f"{readset_info['group_name']}. Not adding it to the database.")
-            elif 'path_r1' in readset_info:
-                print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
-                      f"{readset_info['group_name']}. Not adding it to the database.")
-            elif args.nanopore_default is True:
-                print(f"The readset for sample {readset_info['sample_identifier']} for batch {readset_info['readset_batch_name']} "
-                      f"is already in the database for group {readset_info['group_name']}. Not adding it to the database.")
+            print(f"This readset for {readset_info['sample_identifier']} on {readset_info['readset_batch_name']} "
+                  f"already exists in the database, not adding it")
+            # if 'path_fastq' in readset_info:
+            #     print(f"This readset ({readset_info['path_fastq']}) already exists in the database for the group "
+            #           f"{readset_info['group_name']}. Not adding it to the database.")
+            # elif 'path_r1' in readset_info:
+            #     print(f"This readset ({readset_info['path_r1']}) already exists in the database for the group "
+            #           f"{readset_info['group_name']}. Not adding it to the database.")
+            # elif args.nanopore_default is True:
+            #     print(f"The readset for sample {readset_info['sample_identifier']} for batch {readset_info['readset_batch_name']} "
+            #           f"is already in the database for group {readset_info['group_name']}. Not adding it to the database.")
 
 
 def add_cultures(args):

@@ -1186,7 +1186,7 @@ def query_info_on_all_samples(args):
         # this is in case we add something to the return, but forget to add it to the header
         # we add 1 to the length of the header return because the first element of x is the sample object, which we
         # don't print
-        assert len(header) +1 == len(x)
+        assert len(header) + 1 == len(x)
         # replace the Nones with empty strings because want to use the output as the input for a future upload and the
         # Nones will cause problems
         x = ['' if y is None else y for y in x]
