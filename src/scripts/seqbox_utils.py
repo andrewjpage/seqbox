@@ -396,6 +396,7 @@ def read_in_extraction(extraction_info):
     
     extraction = Extraction()
     # Proposal: Get rid of the 'if checks' because by this time we have already checked the validity extraction_info fields
+    
     if extraction_info['extraction_identifier']:
         extraction.extraction_identifier = extraction_info['extraction_identifier']
     if extraction_info['extraction_machine']:
@@ -415,6 +416,7 @@ def read_in_extraction(extraction_info):
     if extraction_info['submitter_plate_id'].startswith('EXT'):
         extraction.submitter_plate_id = extraction_info['submitter_plate_id']
         extraction.submitter_plate_well = extraction_info['submitter_plate_well']
+    
     return extraction
 
 
