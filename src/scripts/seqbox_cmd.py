@@ -160,7 +160,6 @@ def add_sample_sources(args):
             print(
                 f"This sample source ({sample_source_info['sample_source_identifier']}) already exists in the database "
                 f"for the group {sample_source_info['group_name']}")
-
             check_sample_source_associated_with_project(sample_source, sample_source_info)
 
 
