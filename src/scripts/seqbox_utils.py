@@ -191,6 +191,7 @@ def get_extraction(readset_info):
        
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                          date_extracted=readset_info['date_extracted']) \
+            
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource)\
             .join(SampleSource.projects) \
@@ -200,6 +201,7 @@ def get_extraction(readset_info):
     elif readset_info['extraction_from'] == 'cultured_isolate':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                          date_extracted=readset_info['date_extracted']) \
+            
             .join(Culture) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
