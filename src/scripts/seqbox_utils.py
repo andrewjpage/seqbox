@@ -409,8 +409,9 @@ def read_in_culture(culture_info):
 
 def read_in_extraction(extraction_info):
     extraction = Extraction()
-    check_extraction_fields(extraction_info)
-    if extraction_info['extraction_identifier'] != '':
+    # Proposal: Get rid of the 'if checks' because by this time we have already checked the validity extraction_info fields
+
+    if extraction_info['extraction_identifier']:
         extraction.extraction_identifier = extraction_info['extraction_identifier']
     if extraction_info['extraction_machine'] != '':
         extraction.extraction_machine = extraction_info['extraction_machine']
