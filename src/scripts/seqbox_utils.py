@@ -12,11 +12,13 @@ from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, 
     Extraction, RawSequencing, RawSequencingNanopore, RawSequencingIllumina, TilingPcr, Groups, CovidConfirmatoryPcr, \
     ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture, Mykrobe
 
+
 def replace_with_none(each_dict):
     """
     This func takes in a dict object & replaces the empty string values with None
     """
     return {k:None if not v else v for k,v in each_dict.items()}
+
 
 def convert_to_datetime_dict(each_dict):
     """
@@ -28,6 +30,7 @@ def convert_to_datetime_dict(each_dict):
         if each_dict[entry]:
             each_dict[entry] = datetime.datetime.strptime(each_dict[entry],'%d/%m/%Y')
     return each_dict
+
 
 def read_in_csv(file):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
@@ -60,6 +63,7 @@ def read_in_csv(file):
             # print(f'This line not being processed - {new_info}')
     return list_of_lines
 
+
 def convert_to_datetime_df(df):
     """
     This func takes in a dataframe & returns a dataframe with cols containing 'date'
@@ -69,6 +73,7 @@ def convert_to_datetime_df(df):
     dated_cols = df.filter(like='date').columns
     convert_dict = {dated_col: 'datetime64[ns]' for dated_col in dated_cols}
     return df.astype(convert_dict)
+
 
 def read_in_excel(file):
     df = pd.read_excel(file)
@@ -80,6 +85,7 @@ def read_in_excel(file):
 
     list_of_lines = [df.iloc[i].to_dict() for i in range(df_len)]
     return list_of_lines
+
 
 def read_in_as_dict(inhandle):
     # Check file type i.e is it a csv or xls(x)? then proceed to read accordingly
