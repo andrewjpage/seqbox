@@ -189,8 +189,8 @@ def get_extraction(readset_info):
     # todo - could replace this with a union query
     if readset_info['extraction_from'] == 'whole_sample':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                         date_extracted=datetime.datetime.strptime(
-                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+                                                         date_extracted=readset_info['date_extracted']) \
+
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource)\
             .join(SampleSource.projects) \
@@ -199,8 +199,8 @@ def get_extraction(readset_info):
             .all()
     elif readset_info['extraction_from'] == 'cultured_isolate':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
-                                                         date_extracted=datetime.datetime.strptime(
-                                                             readset_info['date_extracted'], '%d/%m/%Y')) \
+                                                         date_extracted=readset_info['date_extracted']) \
+
             .join(Culture) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
@@ -219,7 +219,7 @@ def get_extraction(readset_info):
 
 
 def get_culture(culture_info):
-    
+
     matching_culture = Culture.query.filter_by(culture_identifier=culture_info['culture_identifier'],
                                                date_cultured=datetime.datetime.strptime(
                                                    culture_info['date_cultured'], '%d/%m/%Y')) \
