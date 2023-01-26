@@ -1230,23 +1230,23 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
 
 
 def check_raw_sequencing_batch(raw_sequencing_batch_info):
-    if raw_sequencing_batch_info['batch_directory'].strip() == '':
+    if not raw_sequencing_batch_info['batch_directory']:
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if raw_sequencing_batch_info['batch_name'].strip() == '':
+    if not raw_sequencing_batch_info['batch_name']:
         print(f'batch_name column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if raw_sequencing_batch_info['date_run'].strip() == '':
+    if not raw_sequencing_batch_info['date_run']:
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if raw_sequencing_batch_info['sequencing_type'].strip() == '':
+    if not raw_sequencing_batch_info['sequencing_type']:
         print(f'sequencing_type column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if raw_sequencing_batch_info['instrument_name'].strip() == '':
+    if not raw_sequencing_batch_info['instrument_name']:
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
 
-    if raw_sequencing_batch_info['flowcell_type'].strip() == '':
+    if not raw_sequencing_batch_info['flowcell_type']:
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
 
@@ -1267,14 +1267,14 @@ def check_readset_batches(readset_batch_info):
 
 
 def check_cultures(culture_info):
-    if (culture_info['culture_identifier'].strip() == '') and (culture_info['date_cultured'].strip() == ''):
+    if (not(culture_info['culture_identifier'])) and (not(culture_info['date_cultured'])):
         print(f'There is no culture information fo this sample - {culture_info["sample_identifier"]}. Continuing.')
         return False
-    elif (culture_info['culture_identifier'].strip() != '') and (culture_info['date_cultured'].strip() != ''):
+    elif (culture_info['culture_identifier']) and (culture_info['date_cultured']):
         return True
     else:
-        print(f'date_cultured and culture_identifier column should not both be empty. '
-              f'it is for \n{culture_info}\nExiting.')
+        print(f'date_cultured and culture_identifier column should either both be empty or both be filled in. '
+              f'This is not the case for \n{culture_info}\nExiting.')
         sys.exit()
     # we assert that the submitter plate is for cultures or, if the client submitted extracts from a culture,
     # that the extraction_from is cultured_isolate
@@ -1476,10 +1476,10 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
                 print(f'barcode column should not be empty. it is for \n{readset_info}\nExiting.')
                 sys.exit(1)
         else:
-            if readset_info['path_fastq'].strip() == '':
+            if not(readset_info['path_fastq']):
                 print(f'path_fastq column should not be empty. it is for \n{readset_info}\nExiting.')
                 sys.exit(1)
-            if readset_info['path_fast5'].strip() == '':
+            if not(readset_info['path_fast5']):
                 print(f'path_fast5 column should not be empty. it is for \n{readset_info}\nExiting.')
                 sys.exit(1)
     # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
@@ -1491,17 +1491,17 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
     #         print(f'path_r2 column should not be empty. it is for \n{readset_info}\nExiting.')
     #         sys.exit(1)
     if covid is True:
-        if readset_info['date_tiling_pcred'].strip() == '':
+        if not(readset_info['date_tiling_pcred']):
             print(f'date_tiling_pcred column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit(1)
-        if readset_info['tiling_pcr_identifier'].strip() == '':
+        if not(readset_info['tiling_pcr_identifier']):
             print(f'tiling_pcr_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit(1)
     else:
-        if readset_info['date_extracted'].strip() == '':
+        if not(readset_info['date_extracted']):
             print(f'date_extracted column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit(1)
-        if readset_info['extraction_identifier'].strip() == '':
+        if not(readset_info['extraction_identifier']):
             print(f'extraction_identifier column should not be empty. it is for \n{readset_info}\nExiting.')
             sys.exit(1)
 
