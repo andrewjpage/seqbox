@@ -407,7 +407,7 @@ def read_in_culture(culture_info):
     # if the submitter_plate_id starts with SAM, then the culture is a culture that was created in the lab
     # if the submitter_plate_id starts with OUT, then the culture is an externally sequenced culture and has no
     # submitter plate info
-    if culture_info['submitter_plate_id'].startswith('SAM'):
+    if culture_info['submitter_plate_id'].startswith('CUL'):
         culture.submitter_plate_id = culture_info['submitter_plate_id']
         culture.submitter_plate_well = culture_info['submitter_plate_well']
     elif culture_info['submitter_plate_id'].startswith('OUT'):
@@ -977,8 +977,7 @@ def get_readset(readset_info, covid):
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
             .join(RawSequencing) \
-            .join(Extraction).filter_by(
-                                        date_extracted=readset_info['date_extracted'],
+            .join(Extraction).filter_by(date_extracted=readset_info['date_extracted'],
                                         extraction_identifier=readset_info['extraction_identifier'])\
             .filter(Extraction.submitter_plate_id.is_not(None)) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
@@ -991,8 +990,7 @@ def get_readset(readset_info, covid):
                               .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name']) \
                               .join(RawSequencing)
                               .join(Extraction)
-                              .filter_by(
-                                         date_extracted=readset_info['date_extracted'],
+                              .filter_by(date_extracted=readset_info['date_extracted'],
                                          extraction_identifier=readset_info['extraction_identifier'])
                               .join(Culture).filter(Culture.submitter_plate_id.is_not(None)) \
                               .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
