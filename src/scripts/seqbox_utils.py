@@ -399,10 +399,13 @@ def read_in_extraction(extraction_info):
     
     if extraction_info['extraction_identifier']:
         extraction.extraction_identifier = extraction_info['extraction_identifier']
+    
     if extraction_info['extraction_machine']:
         extraction.extraction_machine = extraction_info['extraction_machine']
+    
     if extraction_info['extraction_kit']:
         extraction.extraction_kit = extraction_info['extraction_kit']
+    
     if extraction_info['what_was_extracted']:
         extraction.what_was_extracted = extraction_info['what_was_extracted']
     if extraction_info['date_extracted']:
