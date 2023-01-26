@@ -377,6 +377,7 @@ def read_in_sample_info(sample_info):
 def read_in_sample_source_info(sample_source_info):
     check_sample_sources(sample_source_info)
     sample_source = SampleSource(sample_source_identifier=sample_source_info['sample_source_identifier'])
+    
     if sample_source_info['sample_source_type'] != '':
         sample_source.sample_source_type = sample_source_info['sample_source_type']
     if sample_source_info['township'] != '':
@@ -389,6 +390,7 @@ def read_in_sample_source_info(sample_source_info):
         sample_source.latitude = sample_source_info['latitude']
     if sample_source_info['longitude'] != '':
         sample_source.longitude = sample_source_info['longitude']
+    
     return sample_source
 
 
@@ -471,6 +473,7 @@ def read_in_mykrobe(mykrobe_result_info):
     mykrobe.mykrobe_version = mykrobe_result_info['mykrobe_version']
     mykrobe.drug = mykrobe_result_info['drug']
     mykrobe.susceptibility = mykrobe_result_info['susceptibility']
+    
     if mykrobe_result_info['variants'] != '':
         mykrobe.variants = mykrobe_result_info['variants']
     if mykrobe_result_info['genes'] != '':
@@ -493,6 +496,7 @@ def read_in_mykrobe(mykrobe_result_info):
         mykrobe.species_depth = mykrobe_result_info['species_depth']
     if mykrobe_result_info['lineage_depth'] != '':
         mykrobe.lineage_depth = mykrobe_result_info['lineage_depth']
+    
     return mykrobe
 
 
