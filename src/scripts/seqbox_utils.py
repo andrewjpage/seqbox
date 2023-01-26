@@ -192,7 +192,6 @@ def get_extraction(readset_info):
     if readset_info['extraction_from'] == 'whole_sample':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                          date_extracted=readset_info['date_extracted']) \
-
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
             .join(SampleSource)\
             .join(SampleSource.projects) \
@@ -202,7 +201,6 @@ def get_extraction(readset_info):
     elif readset_info['extraction_from'] == 'cultured_isolate':
         matching_extraction = Extraction.query.filter_by(extraction_identifier=readset_info['extraction_identifier'],
                                                          date_extracted=readset_info['date_extracted']) \
-
             .join(Culture) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
             .join(SampleSource) \
@@ -385,25 +383,18 @@ def read_in_sample_info(sample_info):
 def read_in_sample_source_info(sample_source_info):
     check_sample_sources(sample_source_info)
     sample_source = SampleSource(sample_source_identifier=sample_source_info['sample_source_identifier'])
-
     if sample_source_info['sample_source_type']:
         sample_source.sample_source_type = sample_source_info['sample_source_type']
-
     if sample_source_info['township']:
         sample_source.location_third_level = sample_source_info['township']
-
     if sample_source_info['city']:
         sample_source.location_second_level = sample_source_info['city']
-
     if sample_source_info['country']:
         sample_source.country = sample_source_info['country']
-
     if sample_source_info['latitude']:
         sample_source.latitude = sample_source_info['latitude']
-
     if sample_source_info['longitude']:
         sample_source.longitude = sample_source_info['longitude']
-
     return sample_source
 
 
@@ -411,7 +402,6 @@ def read_in_culture(culture_info):
     if check_cultures(culture_info) is False:
         sys.exit(1)
     culture = Culture()
-
     culture.date_cultured = culture_info['date_cultured']
     culture.culture_identifier = culture_info['culture_identifier']
     # if the submitter_plate_id starts with SAM, then the culture is a culture that was created in the lab
@@ -429,31 +419,22 @@ def read_in_culture(culture_info):
 def read_in_extraction(extraction_info):
     extraction = Extraction()
     # Proposal: Get rid of the 'if checks' because by this time we have already checked the validity extraction_info fields
-
     if extraction_info['extraction_identifier']:
         extraction.extraction_identifier = extraction_info['extraction_identifier']
-
     if extraction_info['extraction_machine']:
         extraction.extraction_machine = extraction_info['extraction_machine']
-
     if extraction_info['extraction_kit']:
         extraction.extraction_kit = extraction_info['extraction_kit']
-
     if extraction_info['what_was_extracted']:
         extraction.what_was_extracted = extraction_info['what_was_extracted']
-
     if extraction_info['date_extracted']:
         extraction.date_extracted = extraction_info['date_extracted']
-
     if extraction_info['extraction_processing_institution']:
         extraction.processing_institution = extraction_info['extraction_processing_institution']
-
     if extraction_info['extraction_from']:
         extraction.extraction_from = extraction_info['extraction_from']
-
     if extraction_info['nucleic_acid_concentration']:
         extraction.nucleic_acid_concentration = extraction_info['nucleic_acid_concentration']
-
     if extraction_info['submitter_plate_id'].startswith('EXT'):
         extraction.submitter_plate_id = extraction_info['submitter_plate_id']
         extraction.submitter_plate_well = extraction_info['submitter_plate_well']
@@ -486,40 +467,28 @@ def read_in_mykrobe(mykrobe_result_info):
     mykrobe.mykrobe_version = mykrobe_result_info['mykrobe_version']
     mykrobe.drug = mykrobe_result_info['drug']
     mykrobe.susceptibility = mykrobe_result_info['susceptibility']
-
     if mykrobe_result_info['variants']:
         mykrobe.variants = mykrobe_result_info['variants']
-
     if mykrobe_result_info['genes']:
         mykrobe.genes = mykrobe_result_info['genes']
-
     if mykrobe_result_info['phylo_group']:
         mykrobe.phylo_grp = mykrobe_result_info['phylo_group']
-
     if mykrobe_result_info['species']:
         mykrobe.species = mykrobe_result_info['species']
-
     if mykrobe_result_info['lineage']:
         mykrobe.lineage = mykrobe_result_info['lineage']
-
     if mykrobe_result_info['phylo_group_per_covg']:
         mykrobe.phylo_grp_covg = mykrobe_result_info['phylo_group_per_covg']
-
     if mykrobe_result_info['species_per_covg']:
         mykrobe.species_covg = mykrobe_result_info['species_per_covg']
-
     if mykrobe_result_info['lineage_per_covg']:
         mykrobe.lineage_covg = mykrobe_result_info['lineage_per_covg']
-
     if mykrobe_result_info['phylo_group_depth']:
         mykrobe.phylo_grp_depth = mykrobe_result_info['phylo_group_depth']
-
     if mykrobe_result_info['species_depth']:
         mykrobe.species_depth = mykrobe_result_info['species_depth']
-
     if mykrobe_result_info['lineage_depth']:
         mykrobe.lineage_depth = mykrobe_result_info['lineage_depth']
-
     return mykrobe
 
 
@@ -527,7 +496,6 @@ def read_in_tiling_pcr(tiling_pcr_info):
     # doing this earlier in the process now
     # check_tiling_pcr(tiling_pcr_info)
     tiling_pcr = TilingPcr()
-
     if tiling_pcr_info['date_tiling_pcred']:
         tiling_pcr.date_pcred = tiling_pcr_info['date_tiling_pcred']
     if tiling_pcr_info['tiling_pcr_identifier']:
@@ -536,7 +504,6 @@ def read_in_tiling_pcr(tiling_pcr_info):
         tiling_pcr.protocol = tiling_pcr_info['tiling_pcr_protocol']
     if tiling_pcr_info['number_of_cycles'] != '':
         tiling_pcr.number_of_cycles = tiling_pcr_info['number_of_cycles']
-
     return tiling_pcr
 
 
@@ -593,27 +560,18 @@ def read_in_pangolin_result(pangolin_result_info):
         pangolin_result.conflict = None
     else:
         pangolin_result.conflict = pangolin_result_info['conflict']
-
-
-
     if not pangolin_result_info['ambiguity_score']:
         pangolin_result.ambiguity_score = None
     else:
         pangolin_result.ambiguity_score = pangolin_result_info['ambiguity_score']
-
-
     if not pangolin_result_info['scorpio_call']:
         pangolin_result.scorpio_call = None
     else:
         pangolin_result.scorpio_call = pangolin_result_info['scorpio_call']
-
-
     if not pangolin_result_info['scorpio_support']:
         pangolin_result.scorpio_support = None
     else:
         pangolin_result.scorpio_support = pangolin_result_info['scorpio_support']
-
-
     if not pangolin_result_info['scorpio_conflict']:
         pangolin_result.scorpio_conflict = None
     else:
@@ -635,16 +593,12 @@ def read_in_pangolin_result(pangolin_result_info):
 def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     check_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
     covid_confirmatory_pcr = CovidConfirmatoryPcr()
-
     if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']:
         covid_confirmatory_pcr.date_pcred = covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']
-
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']:
         covid_confirmatory_pcr.pcr_identifier = covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']
-
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']:
         covid_confirmatory_pcr.protocol = covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']
-
     if not covid_confirmatory_pcr_info['covid_confirmatory_pcr_ct']:
         covid_confirmatory_pcr.ct = None
     else:
@@ -658,18 +612,14 @@ def read_in_pcr_result(pcr_result_info):
     if check_pcr_result(pcr_result_info) is False:
         sys.exit(1)
     pcr_result = PcrResult()
-
     if pcr_result_info['date_pcred']:
         pcr_result.date_pcred = pcr_result_info['date_pcred']
-
     if pcr_result_info['pcr_identifier']:
         pcr_result.pcr_identifier = pcr_result_info['pcr_identifier']
-
     if not pcr_result_info['ct']:
         pcr_result.ct = None
     else:
         pcr_result.ct = pcr_result_info['ct']
-
     if pcr_result_info['pcr_result']:
         pcr_result.pcr_result = pcr_result_info['pcr_result']
     return pcr_result
@@ -1119,7 +1069,6 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
     if covid is True:
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
-
             .join(TilingPcr).filter_by(pcr_identifier=readset_info['tiling_pcr_identifier'],
                                        date_pcred=datetime.datetime \
                                        .strptime(readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
@@ -1134,7 +1083,6 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
             .join(Extraction)\
-
             .filter_by(date_extracted=readset_info['date_extracted'],
                        extraction_identifier=readset_info['extraction_identifier']) \
             .filter(Extraction.submitter_plate_id.is_not(None)) \
@@ -1242,8 +1190,9 @@ def query_info_on_all_samples(args):
         x = ['' if y is None else y for y in x]
         #print(type(x[9]))
         # want to get the date, not the datetime.
-        if not x[9] == '':
-            x[9] = x[9].date()
+        # print(x)
+        if not x[11] == '':
+            x[11] = x[11].date()
         print('\t'.join([str(y) for y in x[1:]]))
     s.close()
 
@@ -1349,66 +1298,42 @@ def check_extraction_fields(extraction_info):
      3. sys.exit if some extraction fields are not present
     """
 
-    extraction_info_values = extraction_info.values()
-    # Check if all columns are blank i.e contain None
-
-    extraction_info_blank = all(e_value is None for e_value in extraction_info_values)
-    if extraction_info_blank is True:
-        print("Warning:all columns are blank")
+    # Check if the extraction specific columns are blank
+    if (not extraction_info['date_extracted']) and (not extraction_info['extraction_identifier']):
+        # if so, return false
         return False
-
     # Check individual columns if they are blank
-
     if not extraction_info['sample_identifier']:
         print(f'sample_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-
-
     if not extraction_info['date_extracted']:
-
         print(f'date_extracted column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-
-
     if not (extraction_info['extraction_identifier']):
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-
-
     if not extraction_info['group_name']:
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-
-
     if not extraction_info['extraction_from']:
         print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-
-
     allowed_extraction_from = ['cultured_isolate', 'whole_sample']
     if extraction_info['extraction_from'] not in allowed_extraction_from:
         print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
             f'Exiting.')
         sys.exit(1)
-
-
     if not (extraction_info['nucleic_acid_concentration']):
         print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-
-
-    allowed_submitter_plate_prefixes = ('EXT', 'CUL')
+    allowed_submitter_plate_prefixes = ('EXT', 'CUL', 'SAM', 'OUT')
     if not extraction_info['submitter_plate_id'].startswith(allowed_submitter_plate_prefixes):
        print(f'submitter_plate_id column should start with one of {allowed_submitter_plate_prefixes}. it doesnt for \n{extraction_info}\nExiting.')
        sys.exit(1)
-
-
     if extraction_info['submitter_plate_well'] not in {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'H11', 'H12'}:
         sys.exit(1)
     return True
-
     # if the lab guys have done the extraction from a culture, there might not be an submitter
-
 
 
 def check_group(group_info):
