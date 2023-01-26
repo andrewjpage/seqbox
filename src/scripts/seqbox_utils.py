@@ -393,6 +393,7 @@ def read_in_extraction(extraction_info):
     By the time we read_in_extraction the extraction_info should be valid
     Coz the we already checked it when we queried the DB before adding it 
     """
+    
     extraction = Extraction()
     # Proposal: Get rid of the 'if checks' because by this time we have already checked the validity extraction_info fields
     if extraction_info['extraction_identifier']:
