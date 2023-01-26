@@ -219,6 +219,7 @@ def get_extraction(readset_info):
 
 
 def get_culture(culture_info):
+    
     matching_culture = Culture.query.filter_by(culture_identifier=culture_info['culture_identifier'],
                                                date_cultured=datetime.datetime.strptime(
                                                    culture_info['date_cultured'], '%d/%m/%Y')) \
