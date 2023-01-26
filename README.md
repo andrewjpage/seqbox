@@ -188,7 +188,6 @@ extraction, tiling pcr, readset.
 
 9. illumina, extract is from sample.
 
-<<<<<<< HEAD
 10. test for combined submission tracker input file.
 
     a. run setup.sh - wipes/makes the db, adds the group and project.
@@ -209,8 +208,6 @@ extraction, tiling pcr, readset.
 
 12. test for submitting reads generated elsewhere.
 
-=======
->>>>>>> tmp
 ## How to add a new table
 
 1. Commit to the flask migrate repo?

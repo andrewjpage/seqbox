@@ -343,44 +343,40 @@ def get_pangolin_result(pangolin_result_info):
         sys.exit(1)
 
 
-def read_in_sample_info(sample_info):
+def read_in_sample_info(sample_info, submitted_for_sequencing):
     check_samples(sample_info)
     sample = Sample(sample_identifier=sample_info['sample_identifier'])
     if sample_info['species'] != '':
         sample.species = sample_info['species']
-
     if sample_info['sample_type']:
         sample.sample_type = sample_info['sample_type']
-
     if sample_info['sample_source_identifier']:
         sample.sample_source_id = sample_info['sample_source_identifier']
-
     if sample_info['day_collected']:
         sample.day_collected = sample_info['day_collected']
-
     if sample_info['month_collected']:
         sample.month_collected = sample_info['month_collected']
-
     if sample_info['year_collected']:
         sample.year_collected = sample_info['year_collected']
-
     if sample_info['day_received']:
         sample.day_received = sample_info['day_received']
-
     if sample_info['month_received']:
         sample.month_received = sample_info['month_received']
-
     if sample_info['year_received']:
         sample.year_received = sample_info['year_received']
     if sample_info['sequencing_type_requested'] != '':
         sample.sequencing_type_requested = sample_info['sequencing_type_requested'].split(';')
-    if sample_info['submitter_plate_id'].startswith('SAM'):
-        sample.submitter_plate_id = sample_info['submitter_plate_id']
-        sample.submitter_plate_well = sample_info['submitter_plate_well']
-    # if the submitter_plate_id starts with OUT, then the sample is an externally sequenced sample and has no plate info
-    elif sample_info['submitter_plate_id'].startswith('OUT'):
-        sample.submitter_library_plate_id = sample_info['submitter_plate_id']
-        sample.submitter_library_plate_well = None
+    if submitted_for_sequencing is True:
+        if sample_info['submitter_plate_id'].startswith('SAM'):
+            sample.submitter_plate_id = sample_info['submitter_plate_id']
+            sample.submitter_plate_well = sample_info['submitter_plate_well']
+        # if the submitter_plate_id starts with OUT, then the sample is an externally sequenced sample and has no plate info
+        elif sample_info['submitter_plate_id'].startswith('OUT'):
+            sample.submitter_plate_id = sample_info['submitter_plate_id']
+            sample.submitter_plate_well = None
+    else:
+        sample.submitter_plate_id = None
+        sample.submitter_plate_well = None
     return sample
 
 
@@ -437,8 +433,10 @@ def read_in_extraction(extraction_info):
         extraction.processing_institution = extraction_info['extraction_processing_institution']
     if extraction_info['extraction_from']:
         extraction.extraction_from = extraction_info['extraction_from']
-    if extraction_info['nucleic_acid_concentration']:
-        extraction.nucleic_acid_concentration = extraction_info['nucleic_acid_concentration']
+    # we dont need the nuc acid conc when it is an externally sequenced sample (i.e. submitter_plate_id starts with OUT)
+    if not extraction_info['submitter_plate_id'].startswith('OUT'):
+        if extraction_info['nucleic_acid_concentration']:
+            extraction.nucleic_acid_concentration = extraction_info['nucleic_acid_concentration']
     if extraction_info['submitter_plate_id'].startswith('EXT'):
         extraction.submitter_plate_id = extraction_info['submitter_plate_id']
         extraction.submitter_plate_well = extraction_info['submitter_plate_well']
@@ -641,7 +639,7 @@ def add_sample(sample_info, submitted_for_sequencing):
               f"python seqbox_cmd.py add_sample_source and then re-run this command. Exiting.")
         sys.exit(1)
     # instantiate a new Sample
-    sample = read_in_sample_info(sample_info)
+    sample = read_in_sample_info(sample_info, submitted_for_sequencing)
     sample_source.samples.append(sample)
     sample.submitted_for_sequencing = submitted_for_sequencing
     db.session.add(sample)
@@ -1267,6 +1265,8 @@ def check_readset_batches(readset_batch_info):
 
 
 def check_cultures(culture_info):
+    # if culture identifier and culture date are not there, then we assume that the sample is not cultured
+    # and return False.
     if (not(culture_info['culture_identifier'])) and (not(culture_info['date_cultured'])):
         print(f'There is no culture information fo this sample - {culture_info["sample_identifier"]}. Continuing.')
         return False
@@ -1295,13 +1295,11 @@ def check_cultures(culture_info):
 
 
 def check_extraction_fields(extraction_info):
-
     """ This function should:
      1. return True if all extraction fields are present
      2. return False if all fields are blank
      3. sys.exit if some extraction fields are not present
     """
-
     # Check if the extraction specific columns are blank
     if (not extraction_info['date_extracted']) and (not extraction_info['extraction_identifier']):
         # if so, return false
@@ -1313,7 +1311,7 @@ def check_extraction_fields(extraction_info):
     if not extraction_info['date_extracted']:
         print(f'date_extracted column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not (extraction_info['extraction_identifier']):
+    if not extraction_info['extraction_identifier']:
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
     if not extraction_info['group_name']:
@@ -1327,15 +1325,23 @@ def check_extraction_fields(extraction_info):
         print(f'extraction_from column must be one of {allowed_extraction_from}, it is not for \n{extraction_info}\n. '
             f'Exiting.')
         sys.exit(1)
-    if not (extraction_info['nucleic_acid_concentration']):
-        print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
-        sys.exit(1)
+    # if it's submission of an external dataset (i.e. plate id starts with OUT), then we dont need nucleic_acid_concentration
+    # or submitter_plate_well
+    allowed_submitter_plate_well = {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'H11', 'H12'}
+    if not extraction_info['submitter_plate_id'].startswith('OUT'):
+        if not extraction_info['nucleic_acid_concentration']:
+            print(f'nucleic_acid_concentration column should not be empty. it is for \n{extraction_info}\nExiting.')
+            sys.exit(1)
+        if extraction_info['submitter_plate_well'] not in allowed_submitter_plate_well:
+            print(f'submitter_plate_well column should be one of {allowed_submitter_plate_well}. '
+                  f'it isnt for \n{extraction_info}\nExiting.')
+            sys.exit(1)
     allowed_submitter_plate_prefixes = ('EXT', 'CUL', 'SAM', 'OUT')
     if not extraction_info['submitter_plate_id'].startswith(allowed_submitter_plate_prefixes):
-       print(f'submitter_plate_id column should start with one of {allowed_submitter_plate_prefixes}. it doesnt for \n{extraction_info}\nExiting.')
-       sys.exit(1)
-    if extraction_info['submitter_plate_well'] not in {'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'H11', 'H12'}:
+        print(f'submitter_plate_id column should start with one of {allowed_submitter_plate_prefixes}. '
+             f'it doesnt for \n{extraction_info}\nExiting.')
         sys.exit(1)
+
     return True
     # if the lab guys have done the extraction from a culture, there might not be an submitter
 
@@ -1509,7 +1515,6 @@ def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, c
 def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readset_batch, covid):
     readset = ReadSet()
     check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid)
-
     readset.data_storage_device = readset_info['data_storage_device']
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         readset.readset_nanopore = ReadSetNanopore()
@@ -1530,11 +1535,12 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
                 sys.exit(1)
         return readset
     elif raw_sequencing_batch.sequencing_type == 'illumina':
+        # not taking the read paths from the input file anymore, will get them from the inbox_from_config/batch/sample_name
         readset.readset_illumina = ReadSetIllumina()
-        assert readset_info['path_r1'].endswith('fastq.gz')
-        assert readset_info['path_r2'].endswith('fastq.gz')
-        readset.readset_illumina.path_r1 = readset_info['path_r1']
-        readset.readset_illumina.path_r2 = readset_info['path_r2']
+        #assert readset_info['path_r1'].endswith('fastq.gz')
+        #assert readset_info['path_r2'].endswith('fastq.gz')
+        #readset.readset_illumina.path_r1 = readset_info['path_r1']
+        #readset.readset_illumina.path_r2 = readset_info['path_r2']
         return readset
 
 
