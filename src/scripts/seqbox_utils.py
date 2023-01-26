@@ -3,6 +3,8 @@ import csv
 import sys
 import glob
 import datetime
+import pandas as pd
+import numpy as np
 from app import db#, engine, conn
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -220,9 +222,9 @@ def get_extraction(readset_info):
 
 def get_culture(culture_info):
 
-    matching_culture = Culture.query.filter_by(culture_identifier=culture_info['culture_identifier'],
-                                               date_cultured=datetime.datetime.strptime(
-                                                   culture_info['date_cultured'], '%d/%m/%Y')) \
+    matching_culture = Culture.query.filter_by(
+            culture_identifier=culture_info['culture_identifier'],
+                                               date_cultured=culture_info['date_cultured']) \
         .join(Sample).filter_by(sample_identifier=culture_info['sample_identifier']) \
         .join(SampleSource) \
         .join(SampleSource.projects) \
@@ -394,6 +396,7 @@ def read_in_culture(culture_info):
     if check_cultures(culture_info) is False:
         sys.exit(1)
     culture = Culture()
+
     culture.date_cultured = culture_info['date_cultured']
     culture.culture_identifier = culture_info['culture_identifier']
     # if the submitter_plate_id starts with SAM, then the culture is a culture that was created in the lab
@@ -497,9 +500,10 @@ def read_in_tiling_pcr(tiling_pcr_info):
     # doing this earlier in the process now
     # check_tiling_pcr(tiling_pcr_info)
     tiling_pcr = TilingPcr()
-    if tiling_pcr_info['date_tiling_pcred'] != '':
-        tiling_pcr.date_pcred = datetime.datetime.strptime(tiling_pcr_info['date_tiling_pcred'], '%d/%m/%Y')
-    if tiling_pcr_info['tiling_pcr_identifier'] != '':
+
+    if tiling_pcr_info['date_tiling_pcred']:
+        tiling_pcr.date_pcred = tiling_pcr_info['date_tiling_pcred']
+    if tiling_pcr_info['tiling_pcr_identifier']:
         tiling_pcr.pcr_identifier = tiling_pcr_info['tiling_pcr_identifier']
     if tiling_pcr_info['tiling_pcr_protocol'] != '':
         tiling_pcr.protocol = tiling_pcr_info['tiling_pcr_protocol']
@@ -597,9 +601,10 @@ def read_in_pangolin_result(pangolin_result_info):
 def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     check_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
     covid_confirmatory_pcr = CovidConfirmatoryPcr()
-    if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'] != '':
-        covid_confirmatory_pcr.date_pcred = datetime.datetime.strptime(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'], '%d/%m/%Y')
-    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'] != '':
+
+    if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']:
+        covid_confirmatory_pcr.date_pcred = covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']
+    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']:
         covid_confirmatory_pcr.pcr_identifier = covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol'] != '':
         covid_confirmatory_pcr.protocol = covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']
@@ -614,9 +619,10 @@ def read_in_pcr_result(pcr_result_info):
     if check_pcr_result(pcr_result_info) is False:
         sys.exit(1)
     pcr_result = PcrResult()
-    if pcr_result_info['date_pcred'] != '':
-        pcr_result.date_pcred = datetime.datetime.strptime(pcr_result_info['date_pcred'], '%d/%m/%Y')
-    if pcr_result_info['pcr_identifier'] != '':
+
+    if pcr_result_info['date_pcred']:
+        pcr_result.date_pcred = pcr_result_info['date_pcred']
+    if pcr_result_info['pcr_identifier']:
         pcr_result.pcr_identifier = pcr_result_info['pcr_identifier']
     if pcr_result_info['ct'] == '':
         pcr_result.ct = None
@@ -821,7 +827,8 @@ def get_tiling_pcr(tiling_pcr_info):
     matching_tiling_pcr = TilingPcr.query\
         .filter_by(
             pcr_identifier=tiling_pcr_info['tiling_pcr_identifier'],
-            date_pcred=datetime.datetime.strptime(tiling_pcr_info['date_tiling_pcred'], '%d/%m/%Y'))\
+
+            date_pcred=tiling_pcr_info['date_tiling_pcred'])\
         .join(Extraction).join(Sample).filter_by(sample_identifier=tiling_pcr_info['sample_identifier']).all()
     if len(matching_tiling_pcr) == 1:
         return matching_tiling_pcr[0]
@@ -837,7 +844,8 @@ def get_tiling_pcr(tiling_pcr_info):
 def get_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
     matching_covid_confirmatory_pcr = CovidConfirmatoryPcr.query.filter_by(
         pcr_identifier=covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier'],
-        date_pcred=datetime.datetime.strptime(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'], '%d/%m/%Y'))\
+
+        date_pcred=covid_confirmatory_pcr_info['date_covid_confirmatory_pcred'] )\
         .join(Extraction).filter_by(extraction_identifier=covid_confirmatory_pcr_info['extraction_identifier'],
                                                      date_extracted=datetime.datetime.strptime(
                                                          covid_confirmatory_pcr_info['date_extracted'], '%d/%m/%Y')) \
@@ -875,7 +883,8 @@ def get_pcr_result(pcr_result_info):
         print(f"There is no pcr assay called {pcr_result_info['assay_name']} in the database, please add it and re-run. "
               f"Exiting.")
         sys.exit(1)
-    matching_pcr_result = PcrResult.query.filter_by(date_pcred=pcr_result_info['date_pcred'],
+    matching_pcr_result = PcrResult.query.filter_by(
+                                                    date_pcred=pcr_result_info['date_pcred'],
                                                     pcr_identifier=pcr_result_info['pcr_identifier'])\
         .join(PcrAssay).filter_by(assay_name=pcr_result_info['assay_name'])\
         .join(Sample).filter_by(sample_identifier=pcr_result_info['sample_identifier']).all()
@@ -974,7 +983,8 @@ def get_readset(readset_info, covid):
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name'])\
             .join(RawSequencing) \
-            .join(Extraction).filter_by(date_extracted=readset_info['date_extracted'],
+            .join(Extraction).filter_by(
+                                        date_extracted=readset_info['date_extracted'],
                                         extraction_identifier=readset_info['extraction_identifier'])\
             .filter(Extraction.submitter_plate_id.is_not(None)) \
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier'])\
@@ -987,7 +997,8 @@ def get_readset(readset_info, covid):
                               .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name']) \
                               .join(RawSequencing)
                               .join(Extraction)
-                              .filter_by(date_extracted=readset_info['date_extracted'],
+                              .filter_by(
+                                         date_extracted=readset_info['date_extracted'],
                                          extraction_identifier=readset_info['extraction_identifier'])
                               .join(Culture).filter(Culture.submitter_plate_id.is_not(None)) \
                               .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
@@ -999,7 +1010,8 @@ def get_readset(readset_info, covid):
         matching_readset = readset_type.query.join(ReadSet)\
             .join(ReadSetBatch).filter_by(name=readset_info['readset_batch_name']) \
             .join(RawSequencing) \
-            .join(TilingPcr).filter_by(date_pcred=readset_info['date_tiling_pcred'],
+            .join(TilingPcr).filter_by(
+                                        date_pcred=readset_info['date_tiling_pcred'],
                                        pcr_identifier=readset_info['tiling_pcr_identifier']) \
             .join(Extraction)\
             .join(Sample).filter_by(sample_identifier=readset_info['sample_identifier']) \
@@ -1023,7 +1035,8 @@ def read_in_raw_sequencing_batch_info(raw_sequencing_batch_info):
     check_raw_sequencing_batch(raw_sequencing_batch_info)
     raw_sequencing_batch = RawSequencingBatch()
     raw_sequencing_batch.name = raw_sequencing_batch_info['batch_name']
-    raw_sequencing_batch.date_run = datetime.datetime.strptime(raw_sequencing_batch_info['date_run'], '%d/%m/%Y')
+
+    raw_sequencing_batch.date_run = raw_sequencing_batch_info['date_run']
     raw_sequencing_batch.instrument_model = raw_sequencing_batch_info['instrument_model']
     raw_sequencing_batch.instrument_name = raw_sequencing_batch_info['instrument_name']
     raw_sequencing_batch.sequencing_centre = raw_sequencing_batch_info['sequencing_centre']
@@ -1064,6 +1077,7 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
     if covid is True:
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
+
             .join(TilingPcr).filter_by(pcr_identifier=readset_info['tiling_pcr_identifier'],
                                        date_pcred=datetime.datetime \
                                        .strptime(readset_info['date_tiling_pcred'], '%d/%m/%Y')) \
@@ -1078,6 +1092,7 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
         matching_raw_sequencing = RawSequencing.query \
             .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
             .join(Extraction)\
+
             .filter_by(date_extracted=readset_info['date_extracted'],
                        extraction_identifier=readset_info['extraction_identifier']) \
             .filter(Extraction.submitter_plate_id.is_not(None)) \
@@ -1089,6 +1104,7 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
             .distinct().union(RawSequencing.query
                               .join(RawSequencingBatch).filter_by(name=raw_sequencing_batch.name) \
                               .join(Extraction)
+
                               .filter_by(date_extracted=readset_info['date_extracted'],
                                          extraction_identifier=readset_info['extraction_identifier'])
                               .join(Culture).filter(Culture.submitter_plate_id.is_not(None)) \
