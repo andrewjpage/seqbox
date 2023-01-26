@@ -11,7 +11,26 @@ from app.models import Sample, Project, SampleSource, ReadSet, ReadSetIllumina, 
     ReadSetBatch, PcrResult, PcrAssay, ArticCovidResult, PangolinResult, Culture, Mykrobe
 
 
-def read_in_as_dict(inhandle):
+def replace_with_none(each_dict):
+    """
+    This func takes in a dict object & replaces the empty string values with None
+    """
+    return {k:None if not v else v for k,v in each_dict.items()}
+
+
+def convert_to_datetime_dict(each_dict):
+    """
+    This func takes in a dict & takes out keys containing 'date' &
+    convert their values to a datetime object
+    """
+    dated_entry = [ key for key in each_dict.keys() if 'date' in key]
+    for entry in dated_entry:
+        if each_dict[entry]:
+            each_dict[entry] = datetime.datetime.strptime(each_dict[entry],'%d/%m/%Y')
+    return each_dict
+
+
+def read_in_csv(file):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.
     info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
@@ -38,6 +57,41 @@ def read_in_as_dict(inhandle):
             pass
             # print(f'This line not being processed - {new_info}')
     return list_of_lines
+
+
+def convert_to_datetime_df(df):
+    """
+    This func takes in a dataframe & returns a dataframe with cols containing 'date'
+    in them properly converted to a datetime obj
+    """
+    # Get columns with date in them & convert them to datetime
+    dated_cols = df.filter(like='date').columns
+    convert_dict = {dated_col: 'datetime64[ns]' for dated_col in dated_cols}
+    return df.astype(convert_dict)
+
+
+def read_in_excel(file):
+    df = pd.read_excel(file)
+    df_len = len(df)
+
+    df = convert_to_datetime_df(df)
+    # convert both nans & NaT to None
+    df.replace({pd.NaT:None,np.nan:None},inplace=True)
+
+    list_of_lines = [df.iloc[i].to_dict() for i in range(df_len)]
+    return list_of_lines
+
+
+def read_in_as_dict(inhandle):
+    # Check file type i.e is it a csv or xls(x)? then proceed to read accordingly
+    if inhandle.endswith('.csv'):
+        data = read_in_csv(inhandle)
+    elif inhandle.endswith('.xlsx') or inhandle.endswith('.xlx'):
+        data = read_in_excel(inhandle)
+    else:
+        print("Invalid file format")
+        sys.exit(1)
+    return data
 
 
 def check_sample_source_associated_with_project(sample_source, sample_source_info):
@@ -1567,10 +1621,3 @@ def add_readset(readset_info, covid, nanopore_default):
     db.session.add(raw_sequencing)
     db.session.commit()
     print(f"Added readset {readset_info['sample_identifier']} to the database.")
-
-
-
-
-
-
-
