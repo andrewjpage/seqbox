@@ -30,7 +30,7 @@ def convert_to_datetime_dict(each_dict):
     return each_dict
 
 
-def read_in_csv(file):
+def read_in_csv(inhandle):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.
     info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))

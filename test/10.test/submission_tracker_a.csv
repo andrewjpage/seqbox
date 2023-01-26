@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿institution,group_name,projects,sample_source_identifier,sample_source_type,township,city,country,latitude,longitude,sample_identifier,species,sequencing_type_requested,sample_type,day_collected,month_collected,year_collected,day_received,month_received,year_received,date_cultured,culture_identifier,submitter_plate_id,submitter_plate_well,date_extracted,extraction_identifier,extraction_machine,extraction_kit,extraction_processing_institution,what_was_extracted,extraction_from,nucleic_acid_concentration,elution_plate_id,elution_plate_well
+institution,group_name,projects,sample_source_identifier,sample_source_type,township,city,country,latitude,longitude,sample_identifier,species,sequencing_type_requested,sample_type,day_collected,month_collected,year_collected,day_received,month_received,year_received,date_cultured,culture_identifier,submitter_plate_id,submitter_plate_well,date_extracted,extraction_identifier,extraction_machine,extraction_kit,extraction_processing_institution,what_was_extracted,extraction_from,nucleic_acid_concentration,elution_plate_id,elution_plate_well
 MLW,Core,PseudomonasSeq,PTS15G,patient,,,,,,PTS15G_sample1,Pseudomonas aeruginosa,Illumina WGS; Illumina 16S,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,A1,,,,,,,,,,
 MLW,Core,PseudomonasSeq,PTS67H,patient,,,,,,PTS67H_sample1,Pseudomonas aeruginosa,Illumina WGS,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,B1,,,,,,,,,,
 MLW,Core,PseudomonasSeq,PTS34D,patient,,,,,,PTS34D_sample1,Pseudomonas aeruginosa,Illumina WGS,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,C1,,,,,,,,,,
@@ -17,22 +16,3 @@ MLW,Core,AcinetobacterSeq,ABS15J,patient,,,,,,ABS15J_sample1,Acinetobacter bauma
 MLW,Core,AcinetobacterSeq,ABS15V,patient,,,,,,ABS15V_sample1,Acinetobacter baumanii,Illumina WGS,Skin biopsy,31,5,2021,,,,21/12/2022,1,CUL001,G2,,,,,,,,,,
 MLW,Core,AcinetobacterSeq,ABS15V,patient,,,,,,ABS15V_sample2,Acinetobacter baumanii,Illumina WGS,Skin biopsy,31,5,2021,,,,21/12/2022,1,CUL001,H2,,,,,,,,,,
 MLW,Core,AcinetobacterSeq,ABS27E,patient,,,,,,ABS27E_sample,Acinetobacter baumanii,Illumina metagenomics,Skin biopsy,31,5,2021,,,,,,SAM001,A1,,,,,,,,,,
-=======
-﻿institution,group_name,projects,sample_source_identifier,sample_source_type,township,city,country,latitude,longitude,sample_identifier,species,sample_type,day_collected,month_collected,year_collected,day_received,month_received,year_received,date_cultured,culture_identifier,submitter_plate_id,submitter_plate_well,date_extracted,extraction_identifier,extraction_machine,extraction_kit,extraction_processing_institution,what_was_extracted,extraction_from,nucleic_acid_concentration,elution_plate_id,elution_plate_well
-MLW,Core,PseudomonasSeq,PTS15G,patient,,,,,,PTS15G_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,A1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS67H,patient,,,,,,PTS67H_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,B1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS34D,patient,,,,,,PTS34D_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,C1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS65H,patient,,,,,,PTS65H_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,D1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS13P,patient,,,,,,PTS13P_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,E1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS74E,patient,,,,,,PTS74E_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,F1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS77C,patient,,,,,,PTS77C_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,G1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS33N,patient,,,,,,PTS33N_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,H1,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS70M,patient,,,,,,PTS70M_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,A2,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS89D,patient,,,,,,PTS89D_sample1,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,B2,,,,,,,,,,
-MLW,Core,PseudomonasSeq,PTS89D,patient,,,,,,PTS89D_sample2,Pseudomonas aeruginosa,Lung aspirate,31,5,2021,,,,21/12/2022,1,CUL001,C2,,,,,,,,,,
-MLW,Core,AcinetobacterSeq,ABS15I,patient,,,,,,ABS15I_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,21/12/2022,1,CUL001,D2,,,,,,,,,,
-MLW,Core,AcinetobacterSeq,ABS1XD,patient,,,,,,ABS1XD_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,21/12/2022,1,CUL001,E2,,,,,,,,,,
-MLW,Core,AcinetobacterSeq,ABS15J,patient,,,,,,ABS15J_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,21/12/2022,1,CUL001,F2,,,,,,,,,,
-MLW,Core,AcinetobacterSeq,ABS15V,patient,,,,,,ABS15V_sample1,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,21/12/2022,1,CUL001,G2,,,,,,,,,,
-MLW,Core,AcinetobacterSeq,ABS15V,patient,,,,,,ABS15V_sample2,Acinetobacter baumanii,Skin biopsy,31,5,2021,,,,21/12/2022,1,CUL001,H2,,,,,,,,,,
->>>>>>> tmp

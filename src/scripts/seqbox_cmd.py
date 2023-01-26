@@ -2,7 +2,7 @@ import sys
 import argparse
 from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     get_sample_source, add_sample_source, query_projects, \
-    get_extraction, add_extraction,check_extraction_fields, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
+    get_extraction, add_extraction, check_extraction_fields, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
     get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
     check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
@@ -94,7 +94,6 @@ def add_cultures(args):
                   f"culture.")
 
 
-
 def add_extractions(args):
     all_extractions_info = read_in_as_dict(args.extractions_inhandle)
     for extraction_info in all_extractions_info:
@@ -110,7 +109,6 @@ def add_extractions(args):
         else:
             print(f"Extraction information is not present for {extraction_info['sample_identifier']} from "
                 f"{extraction_info['group_name']}. Not adding to DB.")
-            
 
 
 def is_elution_info_present(elution_info):
