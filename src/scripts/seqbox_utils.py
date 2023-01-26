@@ -345,6 +345,7 @@ def get_pangolin_result(pangolin_result_info):
 def read_in_sample_info(sample_info):
     check_samples(sample_info)
     sample = Sample(sample_identifier=sample_info['sample_identifier'])
+    
     if sample_info['species']:
         sample.species = sample_info['species']
     if sample_info['sample_type']:
@@ -363,6 +364,7 @@ def read_in_sample_info(sample_info):
         sample.month_received = sample_info['month_received']
     if sample_info['year_received']:
         sample.year_received = sample_info['year_received']
+    
     return sample
 
 
