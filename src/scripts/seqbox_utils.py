@@ -1514,6 +1514,11 @@ def read_in_readset(readset_info, nanopore_default, raw_sequencing_batch, readse
     readset = ReadSet()
     check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid)
     readset.data_storage_device = readset_info['data_storage_device']
+    # usually there will be no sequencing_institution in the input file, but if there is, it will be used.
+    # the default in the database is MLW. so for externally sequenced things, we include sequencing_institution in the
+    # input file.
+    if 'sequencing_institution' in readset_info:
+        readset.sequencing_institution = readset_info['sequencing_institution']
     if raw_sequencing_batch.sequencing_type == 'nanopore':
         readset.readset_nanopore = ReadSetNanopore()
         if nanopore_default is False:
