@@ -346,21 +346,29 @@ def read_in_sample_info(sample_info):
     sample = Sample(sample_identifier=sample_info['sample_identifier'])
     if sample_info['species'] != '':
         sample.species = sample_info['species']
-    if sample_info['sample_type'] != '':
+
+    if sample_info['sample_type']:
         sample.sample_type = sample_info['sample_type']
-    if sample_info['sample_source_identifier'] != '':
+
+    if sample_info['sample_source_identifier']:
         sample.sample_source_id = sample_info['sample_source_identifier']
-    if sample_info['day_collected'] != '':
+
+    if sample_info['day_collected']:
         sample.day_collected = sample_info['day_collected']
-    if sample_info['month_collected'] != '':
+
+    if sample_info['month_collected']:
         sample.month_collected = sample_info['month_collected']
-    if sample_info['year_collected'] != '':
+
+    if sample_info['year_collected']:
         sample.year_collected = sample_info['year_collected']
-    if sample_info['day_received'] != '':
+
+    if sample_info['day_received']:
         sample.day_received = sample_info['day_received']
-    if sample_info['month_received'] != '':
+
+    if sample_info['month_received']:
         sample.month_received = sample_info['month_received']
-    if sample_info['year_received'] != '':
+
+    if sample_info['year_received']:
         sample.year_received = sample_info['year_received']
     if sample_info['sequencing_type_requested'] != '':
         sample.sequencing_type_requested = sample_info['sequencing_type_requested'].split(';')
@@ -378,17 +386,22 @@ def read_in_sample_source_info(sample_source_info):
     check_sample_sources(sample_source_info)
     sample_source = SampleSource(sample_source_identifier=sample_source_info['sample_source_identifier'])
 
-    if sample_source_info['sample_source_type'] != '':
+    if sample_source_info['sample_source_type']:
         sample_source.sample_source_type = sample_source_info['sample_source_type']
-    if sample_source_info['township'] != '':
+
+    if sample_source_info['township']:
         sample_source.location_third_level = sample_source_info['township']
-    if sample_source_info['city'] != '':
+
+    if sample_source_info['city']:
         sample_source.location_second_level = sample_source_info['city']
-    if sample_source_info['country'] != '':
+
+    if sample_source_info['country']:
         sample_source.country = sample_source_info['country']
-    if sample_source_info['latitude'] != '':
+
+    if sample_source_info['latitude']:
         sample_source.latitude = sample_source_info['latitude']
-    if sample_source_info['longitude'] != '':
+
+    if sample_source_info['longitude']:
         sample_source.longitude = sample_source_info['longitude']
 
     return sample_source
@@ -474,27 +487,37 @@ def read_in_mykrobe(mykrobe_result_info):
     mykrobe.drug = mykrobe_result_info['drug']
     mykrobe.susceptibility = mykrobe_result_info['susceptibility']
 
-    if mykrobe_result_info['variants'] != '':
+    if mykrobe_result_info['variants']:
         mykrobe.variants = mykrobe_result_info['variants']
-    if mykrobe_result_info['genes'] != '':
+
+    if mykrobe_result_info['genes']:
         mykrobe.genes = mykrobe_result_info['genes']
-    if mykrobe_result_info['phylo_group'] != '':
+
+    if mykrobe_result_info['phylo_group']:
         mykrobe.phylo_grp = mykrobe_result_info['phylo_group']
-    if mykrobe_result_info['species'] != '':
+
+    if mykrobe_result_info['species']:
         mykrobe.species = mykrobe_result_info['species']
-    if mykrobe_result_info['lineage'] != '':
+
+    if mykrobe_result_info['lineage']:
         mykrobe.lineage = mykrobe_result_info['lineage']
-    if mykrobe_result_info['phylo_group_per_covg'] != '':
+
+    if mykrobe_result_info['phylo_group_per_covg']:
         mykrobe.phylo_grp_covg = mykrobe_result_info['phylo_group_per_covg']
-    if mykrobe_result_info['species_per_covg'] != '':
+
+    if mykrobe_result_info['species_per_covg']:
         mykrobe.species_covg = mykrobe_result_info['species_per_covg']
-    if mykrobe_result_info['lineage_per_covg'] != '':
+
+    if mykrobe_result_info['lineage_per_covg']:
         mykrobe.lineage_covg = mykrobe_result_info['lineage_per_covg']
-    if mykrobe_result_info['phylo_group_depth'] != '':
+
+    if mykrobe_result_info['phylo_group_depth']:
         mykrobe.phylo_grp_depth = mykrobe_result_info['phylo_group_depth']
-    if mykrobe_result_info['species_depth'] != '':
+
+    if mykrobe_result_info['species_depth']:
         mykrobe.species_depth = mykrobe_result_info['species_depth']
-    if mykrobe_result_info['lineage_depth'] != '':
+
+    if mykrobe_result_info['lineage_depth']:
         mykrobe.lineage_depth = mykrobe_result_info['lineage_depth']
 
     return mykrobe
@@ -513,6 +536,7 @@ def read_in_tiling_pcr(tiling_pcr_info):
         tiling_pcr.protocol = tiling_pcr_info['tiling_pcr_protocol']
     if tiling_pcr_info['number_of_cycles'] != '':
         tiling_pcr.number_of_cycles = tiling_pcr_info['number_of_cycles']
+
     return tiling_pcr
 
 
@@ -564,27 +588,33 @@ def read_in_pangolin_result(pangolin_result_info):
     check_pangolin_result(pangolin_result_info)
     pangolin_result = PangolinResult()
     pangolin_result.lineage = pangolin_result_info['lineage']
-    if pangolin_result_info['conflict'] == '':
+
+    if not pangolin_result_info['conflict']:
         pangolin_result.conflict = None
     else:
         pangolin_result.conflict = pangolin_result_info['conflict']
 
-    if pangolin_result_info['ambiguity_score'] == '':
+
+
+    if not pangolin_result_info['ambiguity_score']:
         pangolin_result.ambiguity_score = None
     else:
         pangolin_result.ambiguity_score = pangolin_result_info['ambiguity_score']
 
-    if pangolin_result_info['scorpio_call'] == '':
+
+    if not pangolin_result_info['scorpio_call']:
         pangolin_result.scorpio_call = None
     else:
         pangolin_result.scorpio_call = pangolin_result_info['scorpio_call']
 
-    if pangolin_result_info['scorpio_support'] == '':
+
+    if not pangolin_result_info['scorpio_support']:
         pangolin_result.scorpio_support = None
     else:
         pangolin_result.scorpio_support = pangolin_result_info['scorpio_support']
 
-    if pangolin_result_info['scorpio_conflict'] == '':
+
+    if not pangolin_result_info['scorpio_conflict']:
         pangolin_result.scorpio_conflict = None
     else:
         pangolin_result.scorpio_conflict = pangolin_result_info['scorpio_conflict']
@@ -608,31 +638,39 @@ def read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
 
     if covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']:
         covid_confirmatory_pcr.date_pcred = covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']
+
     if covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']:
         covid_confirmatory_pcr.pcr_identifier = covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']
-    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol'] != '':
+
+    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']:
         covid_confirmatory_pcr.protocol = covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']
-    if covid_confirmatory_pcr_info['covid_confirmatory_pcr_ct'] == '':
+
+    if not covid_confirmatory_pcr_info['covid_confirmatory_pcr_ct']:
         covid_confirmatory_pcr.ct = None
     else:
         covid_confirmatory_pcr.ct = covid_confirmatory_pcr_info['covid_confirmatory_pcr_ct']
+
     return covid_confirmatory_pcr
 
 
 def read_in_pcr_result(pcr_result_info):
+
     if check_pcr_result(pcr_result_info) is False:
         sys.exit(1)
     pcr_result = PcrResult()
 
     if pcr_result_info['date_pcred']:
         pcr_result.date_pcred = pcr_result_info['date_pcred']
+
     if pcr_result_info['pcr_identifier']:
         pcr_result.pcr_identifier = pcr_result_info['pcr_identifier']
-    if pcr_result_info['ct'] == '':
+
+    if not pcr_result_info['ct']:
         pcr_result.ct = None
     else:
         pcr_result.ct = pcr_result_info['ct']
-    if pcr_result_info['pcr_result'] != '':
+
+    if pcr_result_info['pcr_result']:
         pcr_result.pcr_result = pcr_result_info['pcr_result']
     return pcr_result
 
