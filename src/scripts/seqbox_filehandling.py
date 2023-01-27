@@ -56,7 +56,9 @@ def get_input_fastq_path(readset, args_nanopore_default, config, sample_name):
     # note - this code is quite fragile, will need to see what happens in reality and make changes accordingly.
     # if it's nanopore default, then we need to get the fastq from the nanopore readset batchname and the barcode
     if args_nanopore_default is True:
-        input_fastq_path = glob.glob(os.path.join(config['sequencing_inbox'], readset.readset_batch.name, readset.readset_nanopore.barcode, "*.fastq.gz"))
+        #print(os.path.join(config['sequencing_inbox'], readset.readset_batch.name, 'fastq_pass', readset.readset_nanopore.barcode, "*.fastq.gz"))
+        input_fastq_path = glob.glob(os.path.join(config['sequencing_inbox'], readset.readset_batch.name, 'fastq_pass', readset.readset_nanopore.barcode, "*.fastq.gz"))
+        # print(ins)
         assert len(input_fastq_path) == 1
         return input_fastq_path[0]
     # otherwise, can either be illumina, or external nanopore (i.e. nanopore files named according to sample name)
@@ -98,7 +100,7 @@ def add_readset_to_filestructure(readset, config, extraction_from, args_nanopore
     # data is going to be stored in a directory with the group name, so need to get the group name of this readset.
     # adding to the fast directory
     group_name = get_group_name(extraction_from, readset)
-    group_dir = os.path.join(config['seqbox_directory_fast'], 'fast', group_name)
+    group_dir = os.path.join(config['seqbox_directory_fast'], group_name)
     if not os.path.isdir(group_dir):
         os.mkdir(group_dir)
 
@@ -120,6 +122,7 @@ def add_readset_to_filestructure(readset, config, extraction_from, args_nanopore
             # doing a copy instead of a symlink because we're going to have the dropbox always be on the fast/Core,
             # but the output for non-Core samples will be e.g. fast/Salmonella, which is a different volume so we need
             # to copy.
+            assert os.path.isfile(output_readset_fastq_path) is False
             shutil.copy(input_fastq_path, output_readset_fastq_path)
     elif readset.raw_sequencing.raw_sequencing_batch.sequencing_type == 'illumina':
         # get_input_fastq_path() will return one fastq path if the sequencing type is nanopore, or two if it's illumina
@@ -136,7 +139,7 @@ def add_readset_to_filestructure(readset, config, extraction_from, args_nanopore
     print(f"Added readset to fast filestructure {readset.readset_identifier}-{sample_name} to {group_dir}")
     # copy the readset to the slow directory
     # make the slow dir group path and readset dir.
-    slow_group_dir = os.path.join(config['seqbox_directory_fast'], 'slow', group_name)
+    slow_group_dir = os.path.join(config['seqbox_directory_slow'], group_name)
     if not os.path.isdir(slow_group_dir):
         os.mkdir(slow_group_dir)
     slow_readset_dir = os.path.join(slow_group_dir, f"{readset.readset_identifier}-{sample_name}")
@@ -196,11 +199,13 @@ def run_add_artic_consensus_to_filestructure(args):
     for rs in rsb[0].readsets:
         sample = rs.raw_sequencing.extraction.sample
         group_name = sample.sample_source.projects[0].groups.group_name
-        target_dir = os.path.join(config['seqbox_directory'], group_name, f"{rs.readset_identifier}-{sample.sample_identifier}", "artic_pipeline")
+        target_dir = os.path.join(config['seqbox_directory_fast'], group_name, f"{rs.readset_identifier}-{sample.sample_identifier}", "artic_pipeline")
+        if not os.path.isdir(target_dir):
+            os.mkdir(target_dir)
         target_consensus = os.path.join(target_dir, f"{rs.readset_identifier}-{sample.sample_identifier}.artic.consensus.fasta")
         if not os.path.isfile(target_consensus):
             source_consensus = glob.glob(
-                    f"{args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.consensus.fasta")
+                    f"{args.consensus_genomes_parent_dir}/{args.readset_batch_name}_{rs.readset_nanopore.barcode}.artic.consensus.fasta")
             if len(source_consensus) == 1:
                 if not os.path.isdir(target_dir):
                     os.mkdir(target_dir)

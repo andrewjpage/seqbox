@@ -1,0 +1,4 @@
+---
+seqbox_directory_fast: '/Users/flashton/Dropbox/non-project/test_seqbox_data/fast'
+seqbox_directory_slow: '/Users/flashton/Dropbox/non-project/test_seqbox_data/slow'
+sequencing_inbox: '/Users/flashton/Dropbox/non-project/test_seqbox_data/fast/inbox'
