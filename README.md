@@ -160,6 +160,18 @@ ii) end to end testing for covid workflow, nanopore default.
     
     g. run upload_e.sh - add sample sources, samples, cultures and extractions when the client submits extractions from culture (testing this logic, rather than submitting extractions from whole_sample or cultures)
  
+3. submitting samples only to keep track of, running query (which should be blank as these samples are not available for the lab guys to sequence) and then adding sample information and re-running query to check that the sample is now available for sequencing.
+
+    a. run setup.sh - wipes/makes the db, adds the group and project.
+ 
+    b. run upload_a.sh - adds sample sources, samples, and cultures.
+
+    c. run `python src/scripts/seqbox_cmd.py query_info_on_all_samples` - should return nothing
+
+    d. run upload_b.sh - adds extractions and elutions to the cultures from upload_a (models common lab flow)
+    
+    e. run `python src/scripts/seqbox_cmd.py query_info_on_all_samples` - should return one sample.
+
 
 ## How to add a new table
 
