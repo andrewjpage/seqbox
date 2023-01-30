@@ -391,9 +391,9 @@ def read_in_sample_info(sample_info, submitted_for_sequencing):
             sample.submitter_plate_id = sample_info['submitter_plate_id']
             sample.submitter_plate_well = sample_info['submitter_plate_well']
         # if the submitter_plate_id starts with OUT, then the sample is an externally sequenced sample and has no plate info
-        elif sample_info['submitter_plate_id'].startswith('OUT'):
-            sample.submitter_plate_id = sample_info['submitter_plate_id']
-            sample.submitter_plate_well = None
+        # elif sample_info['submitter_plate_id'].startswith('OUT'):
+        #     sample.submitter_plate_id = sample_info['submitter_plate_id']
+        #     sample.submitter_plate_well = None
     else:
         sample.submitter_plate_id = None
         sample.submitter_plate_well = None
@@ -1137,9 +1137,6 @@ def get_raw_sequencing(readset_info, raw_sequencing_batch, covid):
         print(f"Getting raw_sequencing, more than one match in {readset_info['batch']} for sample "
               f"{readset_info['sample_identifier']} from group {readset_info['group_name']}. This shouldn't happen.")
 
-# def find_submitter_plate(sample):
-#     if sample.
-
 
 def query_info_on_all_samples(args):
     # at the moment args just being passed through in case needs to be used in future
@@ -1156,13 +1153,19 @@ def query_info_on_all_samples(args):
     # the filter(Culture.submitter_plate_id.is_not(None)) and filter(Extraction.submitter_plate_id.is_not(None))
     # are to ensure that samples from the other path are not included in the results of the query (i.e. samples that are
     # None for Culture.submitter_plate_id will be ones where the submitter gave in extracts, and that hence so sample-extract).
-    sample_culture_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name, Sample.sample_identifier, Sample.species, Sample.sequencing_type_requested, Culture.submitter_plate_id, Culture.submitter_plate_well,
-                     Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted, Extraction.extraction_identifier, Extraction.nucleic_acid_concentration, ReadSet.readset_identifier) \
-        .join(SampleSource)\
-        .join(SampleSource.projects)\
+    sample_culture_extract = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name,
+                                     Sample.sample_identifier, Sample.species, Sample.sequencing_type_requested,
+                                     Culture.submitter_plate_id, Culture.submitter_plate_well,
+                                     Extraction.elution_plate_id, Extraction.elution_plate_well,
+                                     Extraction.date_extracted, Extraction.extraction_identifier,
+                                     Extraction.nucleic_acid_concentration, TilingPcr.date_pcred,
+                                     TilingPcr.pcr_identifier, ReadSet.readset_identifier) \
+        .join(SampleSource) \
+        .join(SampleSource.projects) \
         .join(Groups) \
         .join(Culture, isouter=True).filter(Culture.submitter_plate_id.is_not(None)) \
         .join(Extraction, isouter=True) \
+        .join(TilingPcr, isouter=True) \
         .join(RawSequencing, isouter=True) \
         .join(ReadSet, isouter=True)
     #samples = [r._asdict() for r in samples]
@@ -1171,11 +1174,12 @@ def query_info_on_all_samples(args):
                              Extraction.submitter_plate_id, Extraction.submitter_plate_well,
                              Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted,
                              Extraction.extraction_identifier, Extraction.nucleic_acid_concentration,
-                             ReadSet.readset_identifier)\
+                             TilingPcr.date_pcred, TilingPcr.pcr_identifier, ReadSet.readset_identifier) \
         .join(SampleSource)\
         .join(SampleSource.projects)\
         .join(Groups) \
         .join(Extraction, isouter=True).filter(Extraction.submitter_plate_id.is_not(None)) \
+        .join(TilingPcr, isouter=True) \
         .join(RawSequencing, isouter=True) \
         .join(ReadSet, isouter=True)
 
@@ -1184,18 +1188,26 @@ def query_info_on_all_samples(args):
                              Sample.submitter_plate_id, Sample.submitter_plate_well,
                              Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted,
                              Extraction.extraction_identifier, Extraction.nucleic_acid_concentration,
-                             ReadSet.readset_identifier) \
-        .filter(Sample.submitter_plate_id.is_not(None))        \
+                             TilingPcr.date_pcred, TilingPcr.pcr_identifier, ReadSet.readset_identifier) \
+        .filter(Sample.submitter_plate_id.is_not(None)) \
         .join(SampleSource) \
         .join(SampleSource.projects) \
         .join(Groups) \
         .join(Extraction, isouter=True) \
+        .join(TilingPcr, isouter=True) \
         .join(RawSequencing, isouter=True) \
         .join(ReadSet, isouter=True)
 
+    # print(sample_culture_extract.all())
+    # print(sample_extract.all())
+    # print('\t'.join(map(str, sample.all())))
+    # print(sample.all()[0], sep='\t')
     union_of_both = sample_culture_extract.union(sample_extract).union(sample).all()
 
-    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'species', 'sequencing_type_requested', 'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted', 'extraction_identifier', 'nucleic_acid_concentration', 'readset_identifier']
+    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'species', 'sequencing_type_requested',
+              'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted',
+              'extraction_identifier', 'nucleic_acid_concentration', 'date_tiling_pcred',
+              'tiling_pcr_identifier', 'readset_identifier']
     print('\t'.join(header))
     for x in union_of_both:
         # check that the header is the same length as each return of the query
