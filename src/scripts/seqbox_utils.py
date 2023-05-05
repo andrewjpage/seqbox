@@ -1205,16 +1205,16 @@ def query_info_on_all_samples(args):
     union_of_both = sample_culture_extract.union(sample_extract).union(sample).all()
 
     header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'species', 'sequencing_type_requested',
-              'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted',
-              'extraction_identifier', 'nucleic_acid_concentration', 'date_tiling_pcred',
-              'tiling_pcr_identifier', 'readset_identifier']
+                  'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted',
+                  'extraction_identifier', 'nucleic_acid_concentration', 'date_tiling_pcred',
+                  'tiling_pcr_identifier', 'readset_identifier']
     print('\t'.join(header))
     for x in union_of_both:
         # check that the header is the same length as each return of the query
         # this is in case we add something to the return, but forget to add it to the header
         # we add 1 to the length of the header return because the first element of x is the sample object, which we
         # don't print
-        assert len(header) + 1 == len(x)
+
         # replace the Nones with empty strings because want to use the output as the input for a future upload and the
         # Nones will cause problems
         x = ['' if y is None else y for y in x]
@@ -1223,8 +1223,59 @@ def query_info_on_all_samples(args):
         # print(x)
         if not x[11] == '':
             x[11] = x[11].date()
+        # todo - write to an outfile instead of printing to stdout
+        assert len(header) + 1 == len(x)
         print('\t'.join([str(y) for y in x[1:]]))
     s.close()
+
+
+def query_info_on_covid_samples(args):
+    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    # from here https://stackoverflow.com/questions/43459182/proper-sqlalchemy-use-in-flask
+    engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
+    Session = sessionmaker(bind=engine)
+    s = Session()
+    # we filder on Sample.submitter_plate_id because all the covid samples are submitted as samples, and then extracts
+    # are made, so the submitter plate is the sample plate.
+    query_output = s.query(Sample, Groups.group_name, Groups.institution, Project.project_name,
+                             Sample.sample_identifier, Sample.day_received, Sample.month_received, Sample.year_received,
+                             PcrResult.pcr_result, PcrResult.ct, Sample.species, Sample.sequencing_type_requested,
+                             Sample.submitter_plate_id, Sample.submitter_plate_well,
+                             Extraction.elution_plate_id, Extraction.elution_plate_well, Extraction.date_extracted,
+                             Extraction.extraction_identifier, Extraction.nucleic_acid_concentration,
+                             CovidConfirmatoryPcr.date_pcred, CovidConfirmatoryPcr.ct,
+                             TilingPcr.date_pcred, TilingPcr.pcr_identifier, ReadSet.readset_identifier, ArticCovidResult.pct_covered_bases)\
+        .filter(Sample.species == 'SARS-CoV-2').filter(Sample.submitter_plate_id.is_not(None)) \
+        .join(PcrResult, isouter=True).filter(PcrResult.pcr_result.startswith('Positive')) \
+        .join(SampleSource) \
+        .join(SampleSource.projects) \
+        .join(Groups) \
+        .join(Extraction, isouter=True) \
+        .join(CovidConfirmatoryPcr, isouter=True) \
+        .join(TilingPcr, isouter=True) \
+        .join(RawSequencing, isouter=True) \
+        .join(ReadSet, isouter=True) \
+        .join(ReadSetBatch, isouter=True) \
+        .join(ArticCovidResult, isouter=True) \
+        .order_by(Sample.year_received, Sample.month_received, Sample.day_received, Sample.sample_identifier).all()
+    # print(query_output)
+    allowed_project_names = {'ISARIC', 'COCOA', 'COCOSU', 'MARVELS'}
+    header = ['group_name', 'institution', 'project_name', 'sample_identifier', 'day_received', 'month_received',
+              'year_received', 'original_pcr_result', 'original_pcr_ct', 'species', 'sequencing_type_requested',
+              'submitter_plate_id', 'submitter_plate_well', 'elution_plate_id', 'elution_plate_well', 'date_extracted',
+              'extraction_identifier', 'nucleic_acid_concentration', 'confirmatory_pcr_date',
+              'confirmatory_pcr_ct', 'date_tiling_pcred', 'tiling_pcr_identifier', 'readset_identifier', 'pct_covered_bases']
+    print(*header, sep='\t')
+    for x in query_output:
+        # print(x)
+        # assert len(header) + 1 == len(x), f'header length is {len(header)} and x length is {len(x)}'
+        if x[3] in allowed_project_names:
+            print('\t'.join([str(y) for y in x[1:]]))
+
+
+
+
+    # todo - do the project name filtering in the query outcome parsing
 
 
 def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batch_directory):

@@ -8,8 +8,8 @@ from seqbox_utils import read_in_as_dict, add_sample, add_project,\
     add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
     add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result, \
     check_tiling_pcr, basic_check_readset_fields, check_pcr_result, add_culture, get_culture, \
-    add_elution_info_to_extraction, query_info_on_all_samples, get_mykrobe_result, add_mykrobe_result, update_sample, \
-    check_cultures
+    add_elution_info_to_extraction, query_info_on_all_samples, query_info_on_covid_samples, get_mykrobe_result, \
+    add_mykrobe_result, update_sample, check_cultures
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -304,6 +304,8 @@ def run_command(args):
     if args.command == 'query_info_on_all_samples':
         # get_info_on_all_samples is written in seqbox_utils directly because there is no pre-processing to do
         query_info_on_all_samples(args=args)
+    if args.command == 'query_info_on_covid_samples':
+        query_info_on_covid_samples(args=args)
     if args.command == 'add_mykrobes':
         add_mykrobes(args=args)
 
@@ -388,8 +390,16 @@ def main():
                                                                    help='Add elution info to extractions')
     parser_add_elution_info_to_extractions.add_argument('-i', dest='elution_info_inhandle', required=True,
                                                         help = 'A CSV containing elution info for extractions')
+
     parser_query_info_on_all_samples = subparsers.add_parser('query_info_on_all_samples', help='Get info on all the samples'
                                                                                            'in the database')
+    parser_query_info_on_all_samples.add_argument('-o', dest='outhandle', required=True,
+                                                  help='A CSV file to write the output to')
+
+    parser_query_info_on_covid_samples = subparsers.add_parser('query_info_on_covid_samples', help='Get info on all the covid samples')
+    parser_query_info_on_covid_samples.add_argument('-o', dest='outhandle', required=True,
+                                                    help='A CSV file to write the output to')
+
     parser_add_mykrobes = subparsers.add_parser('add_mykrobes', help='Add mykrobe results')
     parser_add_mykrobes.add_argument('-i', dest='mykrobes_inhandle', required=True,
                                      help='A CSV containing mykrobe results')
