@@ -103,7 +103,23 @@ needs the barcode.
 * sample name column has to have the barcode as the last element when split by 
 underscores
 
+# Running
+
+
+
 ## tests
+
+```
+conda activate seqbox
+export DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql/"
+sudo service postgresql start
+
+sudo -u postgres createuser a_page
+sudo -u postgres createdb test_seqbox
+sudo -u postgres psql -c "grant all privileges on database test_seqbox to a_page;"
+```
+
+
 
 Before running tests run `export DATABASE_URL="postgresql:///test_seqbox"`, and also run `conda activate seqbox`.
 
@@ -194,7 +210,7 @@ ii) end to end testing for covid workflow, nanopore default.
     b. 
     
 ## Dependencies
-
+* sudo apt-get install libxslt-dev libxml2-dev libpam-dev libedit-dev postgresql
 * pip install pyyaml - tested v5.4.1
 * pip install Flask - tested Flask-2.0.1
 * pip install SQLAlchemy - tested SQLAlchemy-1.4.21
@@ -206,8 +222,8 @@ ii) end to end testing for covid workflow, nanopore default.
 * email-validator-1.1.3
 * psycopg2==2.9.1
 
-* sudo apt-get install libxslt-dev libxml2-dev libpam-dev libedit-dev
- 
+conda env create --name seqbox --file seqbox_conda_env.yaml
+
 ## combined input sheet explainer
 
 We need information on four “classes” of thing – sample source, sample, extraction and tiling PCR. I’ve colour coded the attached template by these four classes.
