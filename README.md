@@ -103,20 +103,17 @@ needs the barcode.
 * sample name column has to have the barcode as the last element when split by 
 underscores
 
-# Running
-
-
-
 ## tests
 
 ```
 conda activate seqbox
 export DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql/"
 sudo service postgresql start
+export PYTHONPATH=~/code/seqbox/src/:$PYTHONPATH
 
-sudo -u postgres createuser a_page
+sudo -u postgres createuser username
 sudo -u postgres createdb test_seqbox
-sudo -u postgres psql -c "grant all privileges on database test_seqbox to a_page;"
+sudo -u postgres psql -c "grant all privileges on database test_seqbox to username;"
 ```
 
 
