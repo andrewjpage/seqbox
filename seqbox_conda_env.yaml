@@ -29,6 +29,7 @@ dependencies:
   - lz4-c=1.9.2
   - ncurses=6.2
   - openssl=1.1.1k
+  - openpyxl
   - pango=1.42.4
   - pandas
   - pcre=8.44
