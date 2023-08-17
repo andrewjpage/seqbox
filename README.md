@@ -374,3 +374,27 @@ extraction, tiling pcr, readset.
 11. test for submitting a sample in "dry" mode i.e. the sample isn't actually passed tp the sequencing service, we're just keeping track of it in the DB. and then at a later point it is submitted to the sequencing service.
 
 12. test for submitting reads generated elsewhere.
+
+# Unit Tests
+conda activate seqbox
+export DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql/"
+sudo service postgresql start
+export PYTHONPATH=~/code/seqbox/src/:$PYTHONPATH
+cd src/tests
+python -m unittest discover -s unit
+
+# Docker building
+Build the docker image with the currently checked out branch from the base of the seqbox repo:
+```docker build -t seqbox:latest .```
+
+Force the docker image to be rebuilt from scratch. Sometimes you make changes which arent picked up by the docker build process, so you need to force it to rebuild from scratch.
+```docker build --no-cache -t seqbox:latest .```
+
+Interactively run the docker image. Nothing is saved when you exit the container.
+```docker run -it seqbox:latest bash```
+
+Run the docker image, exposing the testing flask port. Don't use this in production and changes arent saved anywhere.
+```docker run -d -p 5000:5000 seqbox:latest```
+
+Run the docker image, exposing the testing flask port, and mounting the local seqbox repo to the docker container. This means that any changes made to the code in the local repo will be reflected in the docker container.
+```docker run -d -p 5000:5000 -v ~/code/seqbox:/seqbox seqbox:latest bash```
