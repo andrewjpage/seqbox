@@ -746,10 +746,15 @@ def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
 
 
 def add_group(group_info):
+    matching_group = get_group(group_info)
+    if matching_group is not False:
+        print(f"Not adding group {group_info['group_name']} from {group_info['institution']} to database as it already exists.")
+        return False
     group = read_in_group(group_info)
     db.session.add(group)
     db.session.commit()
     print(f"Adding group {group_info['group_name']} from {group_info['institution']} to database.")
+    return True
 
 
 def add_pcr_assay(pcr_assay_info):
@@ -1431,14 +1436,14 @@ def check_extraction_fields(extraction_info):
 
 
 def check_group(group_info):
+    if not(group_info['group_name']):
+        print(f'group_name column should not be empty. it is for \n{group_info}\nExiting.')
+        sys.exit(1)
     if ' ' in group_info['group_name']:
         print(f'group_name should not have any spaces in in. there is one for \n{group_info}\nExiting.')
         sys.exit(1)
     if '/' in group_info['group_name']:
         print(f'group_name should not have any backslashes in in. there is one for \n{group_info}\nExiting.')
-        sys.exit(1)
-    if not(group_info['group_name']):
-        print(f'group_name column should not be empty. it is for \n{group_info}\nExiting.')
         sys.exit(1)
     if not(group_info['institution']):
         print(f'institution column should not be empty. it is for \n{group_info}\nExiting.')

@@ -11,6 +11,7 @@ from seqbox_utils import check_plate_ids
 
 # Test methods that are standalone and dont need complex external libraries or inputs
 class TestUtilsStandaloneInputValidation(TestCase):
+
     def create_app(self):
         app.config['TESTING'] = True
         return app
