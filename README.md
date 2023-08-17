@@ -393,6 +393,9 @@ Force the docker image to be rebuilt from scratch. Sometimes you make changes wh
 Interactively run the docker image. Nothing is saved when you exit the container.
 ```docker run -it seqbox:latest bash```
 
+Interactively run the docker image, and mount the local seqbox repo to the docker container. This means that any changes made to the code in the local repo will be reflected in the docker container.
+```docker run -it -p 5000:5000 -v ~/code/seqbox:/app/seqbox seqbox:latest bash```
+
 Run the docker image, exposing the testing flask port. Don't use this in production and changes arent saved anywhere.
 ```docker run -d -p 5000:5000 seqbox:latest```
 
