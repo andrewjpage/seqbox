@@ -758,12 +758,16 @@ def add_group(group_info):
 
 
 def add_pcr_assay(pcr_assay_info):
+    if get_pcr_assay(pcr_assay_info) is not False:
+        print(f"Adding pcr_assay {pcr_assay_info['assay_name']} to database as it already exists.")
+        return False
     pcr_assay = PcrAssay()
     assert pcr_assay_info['assay_name'].strip() != ''
     pcr_assay.assay_name = pcr_assay_info['assay_name']
     db.session.add(pcr_assay)
     db.session.commit()
     print(f"Adding pcr_assay {pcr_assay_info['assay_name']} to database.")
+    return True
 
 
 def add_pcr_result(pcr_result_info):

@@ -1,16 +1,23 @@
 import sys
+import os
 from flask_testing import TestCase
 sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import SampleSource, Project
+from app.models import SampleSource, Project, PcrAssay
 
 # Test methods that are standalone and dont need complex external libraries or inputs
 class TestUtilsModels(TestCase):
     def create_app(self):
         app.config['TESTING'] = True
         return app
+
+    # reset the database before you start
+    def setUp(self):
+        assert os.environ['DATABASE_URL'].split('/')[3].startswith('test') # you really dont want to delete a production DB
+        db.drop_all()
+        db.create_all()
     
     def test_sample_source_creation(self):
         sample_source = SampleSource(
@@ -45,3 +52,10 @@ class TestUtilsModels(TestCase):
         self.assertEqual(project.project_name, 'Test Project')
         self.assertEqual(project.project_details, 'This is a test project')
         self.assertEqual(project.notes, 'This is a test note')
+
+    def test_pcr_assay_creation(self):
+        pcr_assay = PcrAssay(assay_name="SARS-CoV2-CDC-N1")
+        db.session.add(pcr_assay)
+        db.session.commit()
+        self.assertIsNotNone(pcr_assay.id)
+        self.assertEqual(pcr_assay.assay_name, "SARS-CoV2-CDC-N1")
