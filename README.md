@@ -107,7 +107,7 @@ underscores
 
 ```
 conda activate seqbox
-export DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql/"
+export DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql"
 sudo service postgresql start
 export PYTHONPATH=~/code/seqbox/src/:$PYTHONPATH
 

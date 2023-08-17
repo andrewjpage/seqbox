@@ -29,5 +29,5 @@ SHELL ["/bin/bash", "--login", "-c", "bash"]
 
 # Setup the database
 ENV PYTHONPATH=/app/seqbox/src:$PYTHONPATH
-ENV DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql/"
+ENV DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql"
 RUN service postgresql start && sudo -u postgres createuser root && sudo -u postgres createdb test_seqbox && sudo -u postgres psql -c "grant all privileges on database test_seqbox to root;"
