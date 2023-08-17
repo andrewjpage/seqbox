@@ -35,33 +35,36 @@ def convert_to_datetime_dict(each_dict):
 def read_in_csv(inhandle):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.
-    info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
-    # info is a list of ordered dicts, so convert each one to
-    list_of_lines = []
-    for each_dict in info:
-        # print(each_dict)
-        # delete data from columns with no header, usually just empty fields
-        if None in each_dict:
-            del each_dict[None]
-        
-        # composition: replace empty strings with nones & convert date keys values to datetime
-        each_dict = convert_to_datetime_dict(replace_with_none(each_dict))
+    with open(inhandle, encoding='utf-8-sig') as f:
+        info = csv.DictReader(f)
+        # info is a list of ordered dicts, so convert each one to
+        list_of_lines = []
+        for each_dict in info:
+            # print(each_dict)
+            # delete data from columns with no header, usually just empty fields
+            if None in each_dict:
+                del each_dict[None]
+            elif '' in each_dict:
+                del each_dict['']
+            
+            # composition: replace empty strings with nones & convert date keys values to datetime
+            each_dict = convert_to_datetime_dict(replace_with_none(each_dict))
 
-        new_info = {x: each_dict[x] for x in each_dict}
-        # print(new_info)
-        # sometimes excel saves blank lines, so only take lines where the lenght of the set of teh values is > 1
-        # it will be 1 where they are all blank i.e. ''
-        if len(set(new_info.values())) > 1:
-            list_of_lines.append(new_info)
-        # because pcr assay only has one value, need to add this check
-        elif len(set(new_info.values())) == 1:
-            if list(set(new_info.values()))[0] == '':
-                pass
-            else:
+            new_info = {x: each_dict[x] for x in each_dict}
+            # print(new_info)
+            # sometimes excel saves blank lines, so only take lines where the lenght of the set of teh values is > 1
+            # it will be 1 where they are all blank i.e. ''
+            if len(set(new_info.values())) > 1:
                 list_of_lines.append(new_info)
-        else:
-            pass
-            # print(f'This line not being processed - {new_info}')
+            # because pcr assay only has one value, need to add this check
+            elif len(set(new_info.values())) == 1:
+                if list(set(new_info.values()))[0] == '':
+                    pass
+                else:
+                    list_of_lines.append(new_info)
+            else:
+                pass
+                # print(f'This line not being processed - {new_info}')
     return list_of_lines
 
 
