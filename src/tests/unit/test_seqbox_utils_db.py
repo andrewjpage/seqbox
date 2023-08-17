@@ -6,7 +6,7 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import  Project, SampleSource
-from seqbox_utils import check_sample_source_associated_with_project
+from seqbox_utils import add_group, get_group
 
 class TestSeqboxUtilsDB(TestCase):
     def create_app(self):
@@ -14,31 +14,42 @@ class TestSeqboxUtilsDB(TestCase):
         return app
     
     def setUp(self):
-        self.test_sample_source = SampleSource(
-            sample_source_identifier='CMT15I',
-            sample_source_type='patient',
-            latitude=37.7749,
-            longitude=-122.4194,
-            country='USA',
-            location_first_level='California',
-            location_second_level='San Francisco',
-            location_third_level='Mission District',
-            notes='This is a test sample source'
-        )
-        self.test_sample_source_info = {'projects': 'test_project1; test_project2'}
-        self.test_sample_source.projects = [ Project(
-            groups_id=1,
-            project_name='Test Project',
-            project_details='This is a test project',
-            notes='This is a test note'
-        ), Project(
-            groups_id=2,
-            project_name='Test Project2',
-            project_details='This is a test project2',
-            notes='This is a test note2'
-        )]
+        assert os.environ['DATABASE_URL'].split('/')[-1].startswith('test') # you really dont want to delete a production DB
+        db.drop_all()
+        db.create_all()
 
-    # Come back to this code as the inputs are unclear.
-    #def test_check_sample_source_associated_with_project(self):
-    #    self.assertTrue(check_sample_source_associated_with_project(self.test_sample_source, self.test_sample_source_info))
+    def test_get_group_where_none_exist_already(self):
+        group_info = {'group_name': 'TestGroup', 'institution': 'Test Institution', 'pi': 'Test PI'}
+        matching_group = get_group(group_info)
+        self.assertFalse(matching_group)
 
+    def test_add_group(self):
+        group_info = {'group_name': 'TestGroup', 'institution': 'Test Institution', 'pi': 'Test PI'}
+        matching_group = get_group(group_info)
+        self.assertFalse(matching_group, msg="Group should not exist in the database already")
+
+        actual_group = add_group(group_info)
+        matching_group = get_group(group_info)
+        self.assertFalse(matching_group, msg="Group should now exist in the database")
+
+        self.assertEqual(actual_group.group_name, 'TestGroup')
+        self.assertEqual(actual_group.institution, 'Test Institution')
+        self.assertEqual(actual_group.pi, 'Test PI')
+    
+    def test_add_multiple_groups(self):
+        group_info_list = [
+            {'group_name': 'TestGroup', 'institution': 'Test Institution', 'pi': 'Test PI'},
+            {'group_name': 'AnotherGroup', 'institution': 'Another Institution', 'pi': 'Another PI'},
+            {'group_name': 'ThirdGroup', 'institution': 'Third Institution', 'pi': 'Third PI'}
+        ]
+        for group_info in group_info_list:
+            matching_group = get_group(group_info)
+            self.assertFalse(matching_group, msg="Group should not exist in the database already")
+
+            actual_group = add_group(group_info)
+            matching_group = get_group(group_info)
+            self.assertTrue(matching_group, msg="Group should now exist in the database")
+
+            self.assertEqual(actual_group.group_name, group_info['group_name'])
+            self.assertEqual(actual_group.institution, group_info['institution'])
+            self.assertEqual(actual_group.pi, group_info['pi'])
