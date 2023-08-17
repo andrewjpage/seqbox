@@ -16,16 +16,12 @@ class TestUtilsStandaloneInputValidation(TestCase):
         return app
     
     def test_check_plate_ids(self):
-        with self.assertWarns(None) as cm:
-            # Run the code here
-            data = [{'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate1'}, {'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate1'}, {'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate1'}]
-            check_plate_ids(data, 'elution_plate_id')
-            check_plate_ids(data, 'submitter_plate_id')
-        self.assertEqual(len(cm.warnings), 0)
+        data = [{'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate1'}, {'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate1'}, {'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate1'}]
+        self.assertTrue(check_plate_ids(data, 'elution_plate_id'))
+        self.assertTrue(check_plate_ids(data, 'submitter_plate_id'))
     
     # a warning should be triggered if there are
     def test_check_plate_ids_multiple(self):
         data = [{'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate2'}, {'elution_plate_id': 'plate1', 'submitter_plate_id': 'plate3'}, {'elution_plate_id': 'plate4', 'submitter_plate_id': 'plate5'}]
-        with self.assertWarns(UserWarning):
-            check_plate_ids(data, 'elution_plate_id')
-            check_plate_ids(data, 'submitter_plate_id')
+        self.assertFalse(check_plate_ids(data, 'elution_plate_id'))
+        self.assertFalse(check_plate_ids(data, 'submitter_plate_id'))

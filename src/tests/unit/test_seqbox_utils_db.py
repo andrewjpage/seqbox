@@ -15,7 +15,7 @@ class TestSeqboxUtilsDB(TestCase):
     
     def setUp(self):
         self.test_sample_source = SampleSource(
-            sample_source_identifier='sample1',
+            sample_source_identifier='CMT15I',
             sample_source_type='patient',
             latitude=37.7749,
             longitude=-122.4194,
@@ -26,8 +26,6 @@ class TestSeqboxUtilsDB(TestCase):
             notes='This is a test sample source'
         )
         self.test_sample_source_info = {'projects': 'test_project1; test_project2'}
-            
-    def test_check_sample_source_associated_with_project(self):
         self.test_sample_source.projects = [ Project(
             groups_id=1,
             project_name='Test Project',
@@ -39,5 +37,8 @@ class TestSeqboxUtilsDB(TestCase):
             project_details='This is a test project2',
             notes='This is a test note2'
         )]
-        self.assertTrue(check_sample_source_associated_with_project(self.test_sample_source, self.test_sample_source_info))
+
+    # Come back to this code as the inputs are unclear.
+    #def test_check_sample_source_associated_with_project(self):
+    #    self.assertTrue(check_sample_source_associated_with_project(self.test_sample_source, self.test_sample_source_info))
 

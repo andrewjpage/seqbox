@@ -4,7 +4,7 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import SampleSource
+from app.models import SampleSource, Project
 
 # Test methods that are standalone and dont need complex external libraries or inputs
 class TestUtilsModels(TestCase):
@@ -33,3 +33,15 @@ class TestUtilsModels(TestCase):
         self.assertEqual(sample_source.location_second_level, 'San Francisco')
         self.assertEqual(sample_source.location_third_level, 'Mission District')
         self.assertEqual(sample_source.notes, 'This is a test sample source')
+
+    def test_project_creation(self):
+        project = Project(
+            groups_id=1,
+            project_name='Test Project',
+            project_details='This is a test project',
+            notes='This is a test note'
+        )
+        self.assertEqual(project.groups_id, 1)
+        self.assertEqual(project.project_name, 'Test Project')
+        self.assertEqual(project.project_details, 'This is a test project')
+        self.assertEqual(project.notes, 'This is a test note')

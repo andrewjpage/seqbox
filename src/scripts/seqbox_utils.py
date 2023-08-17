@@ -103,6 +103,8 @@ def check_plate_ids(data, plate_id_type):
             print(f"Warning: multiple {plate_id_type} in file. Are there supposed to be {plate_ids} "
                   f"as {plate_id_type}? Progressing with upload, but if this was an error, you need to fix it (email"
                   f" bioinformatics team).")
+            return False
+    return True
 
 
 def read_in_as_dict(inhandle):
