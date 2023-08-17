@@ -9,7 +9,7 @@ from app import app, db
 from app.models import  Project, SampleSource
 from seqbox_utils import add_group, get_group
 
-class TestSeqboxUtilsDB(TestCase):
+class TestSeqboxUtilsGroups(TestCase):
     def create_app(self):
         app.config['TESTING'] = True
         return app

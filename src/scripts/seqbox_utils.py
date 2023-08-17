@@ -937,6 +937,9 @@ def get_readset_batch(readset_batch_info):
 
 
 def get_group(group_info):
+    if 'group_name' not in group_info or 'institution' not in group_info:
+        print(f"group_name and institution are reequired.")
+        sys.exit(1)
     matching_group = Groups.query.filter_by(group_name=group_info['group_name'], institution=group_info['institution'])\
         .all()
     if len(matching_group) == 0:
