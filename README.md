@@ -383,6 +383,14 @@ export PYTHONPATH=~/code/seqbox/src/:$PYTHONPATH
 cd src/tests
 python -m unittest discover -s unit
 
+## Code coverage
+To generate the code coverge for each file in the terminal run:
+```
+cd src/tests
+coverage run -m unittest discover -s unit -p test_*.py
+coverage report
+```
+
 # Docker building
 Build the docker image with the currently checked out branch from the base of the seqbox repo:
 ```docker build -t seqbox:latest .```
