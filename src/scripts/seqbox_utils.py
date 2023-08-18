@@ -1408,23 +1408,23 @@ def check_extraction_fields(extraction_info):
      3. sys.exit if some extraction fields are not present
     """
     # Check if the extraction specific columns are blank
-    if (not extraction_info['date_extracted']) and (not extraction_info['extraction_identifier']):
+    if ('date_extracted' not in extraction_info or not extraction_info['date_extracted']) and ('extraction_identifier' not in extraction_info or not extraction_info['extraction_identifier']):
         # if so, return false
         return False
     # Check individual columns if they are blank
-    if not extraction_info['sample_identifier']:
+    if 'sample_identifier' not in extraction_info or not extraction_info['sample_identifier']:
         print(f'sample_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['date_extracted']:
+    if 'date_extracted' not in extraction_info or not extraction_info['date_extracted']:
         print(f'date_extracted column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['extraction_identifier']:
+    if 'extraction_identifier' not in extraction_info or not extraction_info['extraction_identifier']:
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['group_name']:
+    if 'group_name' not in extraction_info or not extraction_info['group_name']:
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['extraction_from']:
+    if 'extraction_from' not in extraction_info or not extraction_info['extraction_from']:
         print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
     allowed_extraction_from = ['cultured_isolate', 'whole_sample']
