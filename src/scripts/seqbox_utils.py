@@ -782,6 +782,8 @@ def add_pcr_assay(pcr_assay_info):
 def add_pcr_result(pcr_result_info):
     if check_pcr_result(pcr_result_info) is False:
         sys.exit(1)
+    if get_pcr_result(pcr_result_info) is not False:
+        sys.exit(1)
     pcr_result = read_in_pcr_result(pcr_result_info)
     assay = get_pcr_assay(pcr_result_info)
     assay.pcr_results.append(pcr_result)
@@ -1550,7 +1552,7 @@ def check_tiling_pcr(tiling_pcr_info):
 def check_pcr_result(pcr_result_info):
     to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name']
     for r in to_check:
-        if not(pcr_result_info[r]):
+        if r not in pcr_result_info or not(pcr_result_info[r]):
             print(f'{r} column should not be empty. it is for \n{pcr_result_info}')
             return False
 
@@ -1560,6 +1562,7 @@ def check_pcr_result(pcr_result_info):
         print(f'result column should contain one of these results {allowable_results}. '
               f'it doesnt for \n{pcr_result_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def basic_check_readset_fields(readset_info):

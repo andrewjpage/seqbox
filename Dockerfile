@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 
 # Install base packages
 RUN apt-get update
-ENV TZ=America/New_York
+ENV TZ=Europe/London
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends  -y tzdata
 RUN apt-get install -y libxslt-dev libxml2-dev libpam-dev libedit-dev postgresql wget bzip2 ca-certificates curl git libarchive13 gcc python3-psycopg2 sudo nano
 
