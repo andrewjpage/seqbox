@@ -5,7 +5,7 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import SampleSource, Project, PcrAssay
+from app.models import SampleSource, Project, PcrAssay, Sample
 
 # Test methods that are standalone and dont need complex external libraries or inputs
 class TestUtilsModels(TestCase):
@@ -59,5 +59,27 @@ class TestUtilsModels(TestCase):
         db.session.commit()
         self.assertIsNotNone(pcr_assay.id)
         self.assertEqual(pcr_assay.assay_name, "SARS-CoV2-CDC-N1")
+
+    def test_sample_creation(self):
+        self.sample = Sample(sample_identifier="sample1", sample_type="isolate", species="Escherichia coli",
+                                     sequencing_type_requested=["illumina"], submitted_for_sequencing=True,
+                                     submitter_plate_id="plate1", submitter_plate_well="A1", day_collected=1,
+                                     month_collected=1, year_collected=2022, day_received=2, month_received=1,
+                                     year_received=2022, processing_institution="institution1")
+
+        self.assertEqual(self.sample.sample_identifier, "sample1")
+        self.assertEqual(self.sample.sample_type, "isolate")
+        self.assertEqual(self.sample.species, "Escherichia coli")
+        self.assertEqual(self.sample.sequencing_type_requested, ["illumina"])
+        self.assertTrue(self.sample.submitted_for_sequencing)
+        self.assertEqual(self.sample.submitter_plate_id, "plate1")
+        self.assertEqual(self.sample.submitter_plate_well, "A1")
+        self.assertEqual(self.sample.day_collected, 1)
+        self.assertEqual(self.sample.month_collected, 1)
+        self.assertEqual(self.sample.year_collected, 2022)
+        self.assertEqual(self.sample.day_received, 2)
+        self.assertEqual(self.sample.month_received, 1)
+        self.assertEqual(self.sample.year_received, 2022)
+        self.assertEqual(self.sample.processing_institution, "institution1")
 
     

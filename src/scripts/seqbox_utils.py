@@ -657,6 +657,7 @@ def add_sample(sample_info, submitted_for_sequencing):
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     # print(sample_info)
+    check_samples(sample_info)
     sample_source = get_sample_source(sample_info)
     if sample_source is False:
         print(f"Adding sample. There is no matching sample_source with the sample_source_identifier "
@@ -1496,16 +1497,16 @@ def check_sample_sources(sample_source_info):
 
 
 def check_samples(sample_info):
-    if not(sample_info['sample_source_identifier']):
+    if 'sample_source_identifier' not in sample_info or not(sample_info['sample_source_identifier']):
         print(f'sample_source_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if not(sample_info['sample_identifier']):
+    if 'sample_identifier' not in sample_info or not(sample_info['sample_identifier']):
         print(f'sample_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if not(sample_info['group_name']):
+    if 'group_name' not in sample_info or not(sample_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if not(sample_info['institution']):
+    if 'institution' not in sample_info or not(sample_info['institution']):
         print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
 
