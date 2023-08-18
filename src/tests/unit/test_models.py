@@ -59,3 +59,5 @@ class TestUtilsModels(TestCase):
         db.session.commit()
         self.assertIsNotNone(pcr_assay.id)
         self.assertEqual(pcr_assay.assay_name, "SARS-CoV2-CDC-N1")
+
+    

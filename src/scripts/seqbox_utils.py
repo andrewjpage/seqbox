@@ -702,6 +702,13 @@ def add_sample_source(sample_source_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
+    if 'sample_source_identifier' not in sample_source_info:
+        print(f"Adding sample_source. sample_source missing critical information.")
+        return False
+    if get_sample_source(sample_source_info) is not False:
+        print(f"Adding sample_source. sample_source {sample_source_info['sample_source_identifier']} already exists in the database.")
+        return False
+
     projects = get_projects(sample_source_info)
     # print(projects)
     # instantiate a new SampleSource
@@ -710,6 +717,7 @@ def add_sample_source(sample_source_info):
     db.session.add(sample_source)
     db.session.commit()
     print(f'Adding sample_source {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
+    return True
 
 
 def add_tiling_pcr(tiling_pcr_info):
