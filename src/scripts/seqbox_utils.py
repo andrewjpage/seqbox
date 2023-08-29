@@ -1516,29 +1516,30 @@ def check_samples(sample_info):
 
 
 def check_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
-    if not(covid_confirmatory_pcr_info['sample_identifier']):
+    if 'sample_identifier' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['sample_identifier']):
         print(f'sample_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['date_extracted']):
+    if 'date_extracted' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['date_extracted']):
         print(f'date_extracted column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['extraction_identifier']):
+    if 'extraction_identifier' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['extraction_identifier']):
         print(f'extraction_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']):
+    if 'date_covid_confirmatory_pcred' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']):
         print(f'date_covid_confirmatory_pcred column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']):
+    if 'covid_confirmatory_pcr_identifier' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']):
         print(f'covid_confirmatory_pcr_identifier column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['group_name']):
+    if 'group_name' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']):
+    if 'covid_confirmatory_pcr_protocol' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']):
         print(f'covid_confirmatory_pcr_protocol column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_tiling_pcr(tiling_pcr_info):
