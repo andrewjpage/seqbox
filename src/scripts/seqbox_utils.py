@@ -1337,25 +1337,26 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
 
 
 def check_raw_sequencing_batch(raw_sequencing_batch_info):
-    if not raw_sequencing_batch_info['batch_directory']:
+    if 'batch_directory' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['batch_directory']:
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['batch_name']:
+    if 'batch_name' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['batch_name']:
         print(f'batch_name column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['date_run']:
+    if 'date_run' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['date_run']:
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['sequencing_type']:
+    if 'sequencing_type' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['sequencing_type']:
         print(f'sequencing_type column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['instrument_name']:
+    if 'instrument_name' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['instrument_name']:
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
 
-    if not raw_sequencing_batch_info['flowcell_type']:
+    if 'flowcell_type' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['flowcell_type']:
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_readset_batches(readset_batch_info):
