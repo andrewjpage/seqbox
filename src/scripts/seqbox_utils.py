@@ -248,6 +248,8 @@ def get_extraction(readset_info):
 
 
 def get_culture(culture_info):
+    if 'culture_identifier' not in culture_info:
+        return False
 
     matching_culture = Culture.query.filter_by(
             culture_identifier=culture_info['culture_identifier'],

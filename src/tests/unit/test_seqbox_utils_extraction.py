@@ -6,8 +6,8 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import  Extraction
-from seqbox_utils import check_extraction_fields, get_extraction, add_extraction, add_group, add_project, add_sample_source, add_sample
+from app.models import  Extraction, Culture
+from seqbox_utils import check_extraction_fields, get_extraction, add_extraction, add_group, add_project, add_sample_source, add_culture, add_sample
 
 class TestSeqboxUtilsSample(TestCase):
     def create_app(self):
@@ -224,7 +224,7 @@ class TestSeqboxUtilsSample(TestCase):
             with self.assertRaises(SystemExit, msg="An invalid value for the submitter plate id should raise an error") as cm:
                 check_extraction_fields(extraction_info)
 
-    def test_get_extraction_from_empty_database(self):
+    def test_get_extraction_from_empty_database_whole_sample(self):
         self.setUp()
         self.populate_db_dependancies()
         extraction_info = { 'date_extracted': '1/2/2023',
@@ -241,7 +241,24 @@ class TestSeqboxUtilsSample(TestCase):
         result = get_extraction(extraction_info)
         self.assertFalse(result)
 
-    def test_add_extraction(self):
+    def test_get_extraction_from_empty_database_isolate(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        extraction_info = { 'date_extracted': '1/2/2023',
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'nucleic_acid_concentration': '1',
+                            'sample_identifier': 'sample1',
+                            'extraction_machine': 'KingFisher Flex'
+                            }
+        result = get_extraction(extraction_info)
+        self.assertFalse(result)
+
+    def test_add_extraction_whole_sample(self):
         self.setUp()
         self.populate_db_dependancies()
         extraction_info = { 'date_extracted': '01/01/2023',
@@ -257,6 +274,77 @@ class TestSeqboxUtilsSample(TestCase):
                             'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)',
                             'what_was_extracted': 'ABC',
                             'extraction_processing_institution': 'MLW',
+                            }
+        add_extraction(extraction_info)
+        result = get_extraction(extraction_info)
+        self.assertEqual(result.date_extracted.strftime('%d/%m/%Y') , extraction_info['date_extracted'])
+        self.assertEqual(result.extraction_identifier, int(extraction_info['extraction_identifier']))
+        self.assertEqual(result.extraction_from, extraction_info['extraction_from'])
+        self.assertEqual(float(result.nucleic_acid_concentration), float(extraction_info['nucleic_acid_concentration']))
+        self.assertEqual(result.extraction_machine, extraction_info['extraction_machine'])
+        self.assertEqual(result.extraction_kit, extraction_info['extraction_kit'])
+        self.assertEqual(result.what_was_extracted, extraction_info['what_was_extracted'])
+
+    def test_add_extraction_whole_sample_no_matching_sample(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        extraction_info = { 'date_extracted': '01/01/2023',
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1_doesnt_exist',
+                            'group_name': 'Group',
+                            'extraction_from':'whole_sample',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'nucleic_acid_concentration': '1',
+                            'sample_identifier': 'sample1_really_doesnt_exist',
+                            'extraction_machine': 'KingFisher Flex',
+                            'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)',
+                            'what_was_extracted': 'ABC',
+                            'extraction_processing_institution': 'MLW',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            add_extraction(extraction_info)
+
+    def test_add_extraction_isolate_without_culture(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        extraction_info = { 'date_extracted': '01/01/2023',
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'nucleic_acid_concentration': '1',
+                            'sample_identifier': 'sample1',
+                            'extraction_machine': 'KingFisher Flex',
+                            'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)',
+                            'what_was_extracted': 'ABC',
+                            'extraction_processing_institution': 'MLW',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            add_extraction(extraction_info)
+        
+    def test_add_extraction_isolate(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        add_culture({ 'group_name': 'Group','sample_identifier': 'sample1' , 'date_cultured': '01/01/2023', 'culture_identifier': '123', 'submitter_plate_id': 'CUL123', 'submitter_plate_well': 'A1'})
+
+        extraction_info = { 'date_extracted': '01/01/2023',
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'nucleic_acid_concentration': '1',
+                            'sample_identifier': 'sample1',
+                            'extraction_machine': 'KingFisher Flex',
+                            'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)',
+                            'what_was_extracted': 'ABC',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
                             }
         add_extraction(extraction_info)
         result = get_extraction(extraction_info)
