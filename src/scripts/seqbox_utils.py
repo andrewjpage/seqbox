@@ -1545,7 +1545,7 @@ def check_tiling_pcr(tiling_pcr_info):
     to_check = ['sample_identifier', 'date_extracted', 'extraction_identifier', 'date_tiling_pcred',
                 'tiling_pcr_identifier', 'group_name', 'tiling_pcr_protocol']
     for r in to_check:
-        if not(tiling_pcr_info[r]):
+        if r not in tiling_pcr_info or not(tiling_pcr_info[r]):
             print(f'Warning - {r} column should not be empty. it is for \n{tiling_pcr_info}. Not adding this tiling pcr record.')
             return False
     return True
