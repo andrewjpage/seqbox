@@ -1360,18 +1360,19 @@ def check_raw_sequencing_batch(raw_sequencing_batch_info):
 
 
 def check_readset_batches(readset_batch_info):
-    if not(readset_batch_info['raw_sequencing_batch_name']):
+    if 'raw_sequencing_batch_name' not in readset_batch_info or not(readset_batch_info['raw_sequencing_batch_name']):
         print(f'raw_sequencing_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if not(readset_batch_info['readset_batch_name']):
+    if 'readset_batch_name' not in readset_batch_info or not(readset_batch_info['readset_batch_name']):
         print(f'readset_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if not(readset_batch_info['readset_batch_dir']):
+    if 'readset_batch_dir' not in readset_batch_info or not(readset_batch_info['readset_batch_dir']):
         print(f'readset_batch_dir column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if not(readset_batch_info['basecaller']):
+    if 'basecaller' not in readset_batch_info or not(readset_batch_info['basecaller']):
         print(f'basecaller column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_cultures(culture_info):
