@@ -6,7 +6,8 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from seqbox_utils import add_raw_sequencing_batch,add_extraction, add_tiling_pcr, add_group, add_project, add_sample_source, add_sample, add_readset_batch, basic_check_readset_fields, get_readset, add_readset, read_in_readset
+from app.models import ReadSet
+from seqbox_utils import add_raw_sequencing_batch,add_extraction, get_readset_batch, get_raw_sequencing_batch, add_tiling_pcr, add_group, add_project, add_sample_source, add_sample, add_readset_batch, basic_check_readset_fields, get_readset, add_readset, read_in_readset
 
 class TestSeqboxUtilsReadset(TestCase):
     def create_app(self):
@@ -45,7 +46,7 @@ class TestSeqboxUtilsReadset(TestCase):
         with self.assertRaises(SystemExit) as cm:
             get_readset(readset_info, False)
 
-        # get readset where readset_batch is false
+    # get readset where readset_batch is false
     def test_get_readset_batch_name_illumina(self):
         self.setUp()
         add_group({'group_name': 'Group', 'institution': 'MLW', 'pi': 'PI'})
@@ -67,7 +68,7 @@ class TestSeqboxUtilsReadset(TestCase):
         self.assertFalse(get_readset(readset_info, False))
         self.assertFalse(get_readset(readset_info, True))
 
-            # get readset where readset_batch is false
+    # get readset where readset_batch is false
     def test_get_readset_batch_name_nanopore(self):
         self.setUp()
         self.populate_db()
@@ -83,17 +84,110 @@ class TestSeqboxUtilsReadset(TestCase):
         self.assertFalse(get_readset(readset_info, False))
         self.assertFalse(get_readset(readset_info, True))
     
-    
+    #add readset but no matching readset batch
+    def test_add_readset_with_missing_readset_batch(self):
+        self.setUp()
+        self.populate_db()
+        readset_info = {'data_storage_device': 'storage_device_1', 'readset_batch_name': 'doesnt_exist'}
+        with self.assertRaises(SystemExit) as cm:
+            add_readset(readset_info, False, False)
 
-    # get readset one matching
-    # get readset where duplicates have been added
     # read_in_readset provide sequencing institution
+    def test_read_in_readset_sequencing_institution_illumina(self):
+        self.setUp()
+        add_group({'group_name': 'Group', 'institution': 'MLW', 'pi': 'PI'})
+        add_project({'project_name': 'Project', 'group_name': 'Group', 'institution': 'MLW', 'project_details': 'seq'})
+        add_sample_source({'projects': 'Project', 'group_name': 'Group', 'institution': 'MLW', 'sample_source_identifier': 'sample_source_1', 'sample_source_type': 'patient', 'latitude': 1.23, 'longitude': -12.3, 'country': 'UK', 'location_first_level': 'Essex', 'city': 'London', 'township': 'Docklands', 'notes': 'note'})
+        add_sample({'sample_identifier': 'sample1', 'sample_source_identifier': 'sample_source_1', 'institution': 'MLW', 'group_name': 'Group', 'species': 'SARS-CoV-2', 'sample_type': 'Lung aspirate', 'day_collected': '31', 'month_collected': '5', 'year_collected': '2021', 'day_received': '1', 'month_received': '1', 'year_received': '2022', 'sequencing_type_requested':'MinION SARS-CoV-2'}, False)
+        add_extraction({ 'date_extracted': '01/01/2023','extraction_identifier': '1','sample_identifier': 'sample1','group_name': 'Group','extraction_from':'whole_sample','submitter_plate_id':'CUL','submitter_plate_well': 'A1','nucleic_acid_concentration': '1','sample_identifier': 'sample1','extraction_machine': 'KingFisher Flex','extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)','what_was_extracted': 'ABC','extraction_processing_institution': 'MLW' })
+        add_raw_sequencing_batch({'date_run': '01/01/2023', 'sequencing_type': 'illumina', 'batch_name': 'ABC', 'instrument_model': 'MinION', 'instrument_name': 'ABC123', 'sequencing_centre': 'MLW', 'flowcell_type': 'R12.3', 'batch_directory': '/path/to/dir' })
+        add_readset_batch( {'raw_sequencing_batch_name': 'ABC', 'readset_batch_name': 'EFG', 'readset_batch_dir': '/path/to/dir', 'basecaller': 'guppy' } )
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                        'readset_batch_name': 'EFG', 
+                        'date_extracted': '01/01/2023', 
+                        'extraction_identifier': '1',
+                        'sample_identifier': 'sample1',
+                        'group_name': 'Group',
+                        'date_tiling_pcred': '01/01/2023',
+                        'tiling_pcr_identifier':'5',
+                        'sequencing_institution': 'PHE'
+                        }
+        raw_sequencing_batch_result = get_raw_sequencing_batch('ABC')
+        readset_batch_result = get_readset_batch(readset_info)
+        result = read_in_readset(readset_info, False, raw_sequencing_batch_result , readset_batch_result, False)
+        self.assertIsInstance(result, ReadSet)
+        self.assertEqual(result.sequencing_institution, 'PHE')
+
+    # read_in_readset provide sequencing institution
+    def test_read_in_readset_sequencing_institution_nanopore(self):
+        self.setUp()
+        self.populate_db()
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                        'readset_batch_name': 'EFG', 
+                        'date_extracted': '01/01/2023', 
+                        'extraction_identifier': '1',
+                        'sample_identifier': 'sample1',
+                        'group_name': 'Group',
+                        'date_tiling_pcred': '01/01/2023',
+                        'tiling_pcr_identifier':'5',
+                        'sequencing_institution': 'PHE',
+                        'path_fastq': '/path/to/abc.fastq.gz',
+                        'path_fast5': '/path/to/abc.fast5'
+                        }
+        raw_sequencing_batch_result = get_raw_sequencing_batch('ABC')
+        readset_batch_result = get_readset_batch(readset_info)
+        result = read_in_readset(readset_info, False, raw_sequencing_batch_result , readset_batch_result, False)
+        self.assertIsInstance(result, ReadSet)
+        self.assertEqual(result.sequencing_institution, 'PHE')
+
     # read_in_readset no sequencing institution
-    # read_in_readset sequencing_type is nanopore and not barcoded?
+    def test_read_in_readset_no_sequencing_institution_nanopore(self):
+        self.setUp()
+        self.populate_db()
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                        'readset_batch_name': 'EFG', 
+                        'date_extracted': '01/01/2023', 
+                        'extraction_identifier': '1',
+                        'sample_identifier': 'sample1',
+                        'group_name': 'Group',
+                        'date_tiling_pcred': '01/01/2023',
+                        'tiling_pcr_identifier':'5',
+                        'path_fastq': '/path/to/abc.fastq.gz',
+                        'path_fast5': '/path/to/abc.fast5'
+                        }
+        raw_sequencing_batch_result = get_raw_sequencing_batch('ABC')
+        readset_batch_result = get_readset_batch(readset_info)
+        result = read_in_readset(readset_info, False, raw_sequencing_batch_result , readset_batch_result, False)
+        self.assertIsInstance(result, ReadSet)
+        self.assertEqual(result.sequencing_institution, None)
+
+    # read_in_readset sequencing_type is nanopore and barcoded and path not found /path/to/dir/fastq_pass/barcode01/*fastq.gz
+    def test_read_in_readset_no_sequencing_institution_nanopore(self):
+        self.setUp()
+        self.populate_db()
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                        'readset_batch_name': 'EFG', 
+                        'date_extracted': '01/01/2023', 
+                        'extraction_identifier': '1',
+                        'sample_identifier': 'sample1',
+                        'group_name': 'Group',
+                        'date_tiling_pcred': '01/01/2023',
+                        'tiling_pcr_identifier':'5',
+                        'path_fastq': '/path/to/abc.fastq.gz',
+                        'path_fast5': '/path/to/abc.fast5',
+                        'barcode': 'barcode01'
+                        }
+        raw_sequencing_batch_result = get_raw_sequencing_batch('ABC')
+        readset_batch_result = get_readset_batch(readset_info)
+        with self.assertRaises(SystemExit) as cm:
+            read_in_readset(readset_info, True, raw_sequencing_batch_result , readset_batch_result, False)
+    
     # read_in_readset sequencing_type is nanopore and is barcoded fastq found in path
     # read_in_readset sequencing_type is nanopore and is barcoded, no fastq found in path
     # read_in_readset sequencing_type is nanopore and is barcoded, more than one fastq found in path
     # read_in_readset sequencing_type is Illumina
+
+
     # add readset but no matching readset batch
     # add readset with no matching raw sequencing batch
     # add readset raw_sequencing is true so its a rebasecalled readset
@@ -103,4 +197,4 @@ class TestSeqboxUtilsReadset(TestCase):
     # add readset covid is false and there is an extraction
     # add readset read in readset -> sets paths of files
 
-
+    # get readset where duplicates have been added
