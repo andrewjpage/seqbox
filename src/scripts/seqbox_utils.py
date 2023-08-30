@@ -1576,9 +1576,10 @@ def basic_check_readset_fields(readset_info):
     # covid confirmatory pcr was negative.
     to_check = ['data_storage_device', 'readset_batch_name']
     for r in to_check:
-        if not(readset_info[r]):
+        if r not in readset_info or not(readset_info[r]):
             print(f'Warning - {r} column should not be empty. it is for \n{readset_info}.')
             return False
+    return True
 
 
 def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid):
