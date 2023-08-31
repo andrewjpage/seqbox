@@ -554,18 +554,19 @@ def check_pangolin_result(pangolin_result_info):
 
 
 def check_artic_covid_result(artic_covid_result_info):
-    if not(artic_covid_result_info['sample_name']):
+    if 'sample_name' not in artic_covid_result_info or not(artic_covid_result_info['sample_name']):
         print(f'sample_name column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if not(artic_covid_result_info['pct_N_bases']):
+    if 'pct_N_bases' not in artic_covid_result_info or not(artic_covid_result_info['pct_N_bases']):
         print(f'pct_N_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if not(artic_covid_result_info['pct_covered_bases']):
+    if 'pct_covered_bases' not in artic_covid_result_info or not(artic_covid_result_info['pct_covered_bases']):
         print(f'pct_covered_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if not(artic_covid_result_info['num_aligned_reads']):
+    if 'num_aligned_reads' not in artic_covid_result_info or not(artic_covid_result_info['num_aligned_reads']):
         print(f'num_aligned_reads column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def read_in_artic_covid_result(artic_covid_result_info):
