@@ -338,7 +338,6 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_id':'CUL',
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1',
-                            'sample_identifier': 'sample1',
                             'extraction_machine': 'KingFisher Flex',
                             'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)',
                             'what_was_extracted': 'ABC',
