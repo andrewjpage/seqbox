@@ -7,7 +7,7 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import  Project, SampleSource,Groups
-from seqbox_utils import get_sample_source, add_sample_source, check_sample_source_associated_with_project, add_group, add_project
+from seqbox_utils import get_sample_source, add_sample_source, check_sample_source_associated_with_project, add_group, add_project, check_sample_sources
 
 class TestSeqboxUtilsSampleSources(TestCase):
     def create_app(self):
@@ -113,3 +113,16 @@ class TestSeqboxUtilsSampleSources(TestCase):
 
         self.assertEqual([x.project_name for x in sample_source.projects], ['Testproject1','Testproject2'], msg='The sample source should now be assosiated with two projects')
 
+    def test_check_sample_sources(self):
+        self.assertEqual(None, check_sample_sources({'projects': 'Testproject', 'group_name': 'TestGroup', 'institution': 'Test Institution', 'sample_source_identifier': 'sample1', 'sample_source_type': 'patient'}))
+        #empty
+        with self.assertRaises(SystemExit) as cm:
+            check_sample_sources({'projects': '', 'group_name': 'TestGroup', 'institution': 'Test Institution', 'sample_source_identifier': 'sample1', 'sample_source_type': 'patient'})
+        with self.assertRaises(SystemExit) as cm:
+            check_sample_sources({'projects': 'Testproject', 'group_name': '', 'institution': 'Test Institution', 'sample_source_identifier': 'sample1', 'sample_source_type': 'patient'})
+        with self.assertRaises(SystemExit) as cm:
+            check_sample_sources({'projects': 'Testproject', 'group_name': 'TestGroup', 'institution': '', 'sample_source_identifier': 'sample1', 'sample_source_type': 'patient'})
+        with self.assertRaises(SystemExit) as cm:
+            check_sample_sources({'projects': 'Testproject', 'group_name': 'TestGroup', 'institution': 'Test Institution', 'sample_source_identifier': '', 'sample_source_type': 'patient'})
+        with self.assertRaises(SystemExit) as cm:
+            check_sample_sources({'projects': 'Testproject', 'group_name': 'TestGroup', 'institution': 'Test Institution', 'sample_source_identifier': 'sample1', 'sample_source_type': ''})
