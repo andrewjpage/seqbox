@@ -537,10 +537,10 @@ def read_in_tiling_pcr(tiling_pcr_info):
 
 
 def check_pangolin_result(pangolin_result_info):
-    if not(pangolin_result_info['taxon']):
+    if 'taxon' not in pangolin_result_info or not(pangolin_result_info['taxon']):
         print(f'taxon column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
-    if not(pangolin_result_info['lineage']):
+    if 'lineage' not in pangolin_result_info or not(pangolin_result_info['lineage']):
         print(f'lineage column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
     # the name of the output column changed from status to qc_status 2022-07-04
@@ -548,9 +548,10 @@ def check_pangolin_result(pangolin_result_info):
         if 'status' not in pangolin_result_info:
             pangolin_result_info['status'] = pangolin_result_info['qc_status']
 
-    if not(pangolin_result_info['status']):
+    if 'status' not in pangolin_result_info or not(pangolin_result_info['status']):
         print(f'status column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_artic_covid_result(artic_covid_result_info):
@@ -586,23 +587,23 @@ def read_in_pangolin_result(pangolin_result_info):
     pangolin_result = PangolinResult()
     pangolin_result.lineage = pangolin_result_info['lineage']
 
-    if not pangolin_result_info['conflict']:
+    if 'conflict' not in pangolin_result_info or not pangolin_result_info['conflict']:
         pangolin_result.conflict = None
     else:
         pangolin_result.conflict = pangolin_result_info['conflict']
-    if not pangolin_result_info['ambiguity_score']:
+    if 'ambiguity_score' not in pangolin_result_info or not pangolin_result_info['ambiguity_score']:
         pangolin_result.ambiguity_score = None
     else:
         pangolin_result.ambiguity_score = pangolin_result_info['ambiguity_score']
-    if not pangolin_result_info['scorpio_call']:
+    if 'scorpio_call' not in pangolin_result_info or not pangolin_result_info['scorpio_call']:
         pangolin_result.scorpio_call = None
     else:
         pangolin_result.scorpio_call = pangolin_result_info['scorpio_call']
-    if not pangolin_result_info['scorpio_support']:
+    if 'scorpio_support' not in pangolin_result_info or not pangolin_result_info['scorpio_support']:
         pangolin_result.scorpio_support = None
     else:
         pangolin_result.scorpio_support = pangolin_result_info['scorpio_support']
-    if not pangolin_result_info['scorpio_conflict']:
+    if 'scorpio_conflict' not in pangolin_result_info or not pangolin_result_info['scorpio_conflict']:
         pangolin_result.scorpio_conflict = None
     else:
         pangolin_result.scorpio_conflict = pangolin_result_info['scorpio_conflict']
