@@ -484,7 +484,7 @@ def read_in_group(group_info):
 
 def check_mykrobe_res(mykrobe_res_info):
     for field in ['sample', 'drug', 'susceptibility', 'mykrobe_version']:
-        if mykrobe_res_info[field] == '':
+        if field not in mykrobe_res_info or mykrobe_res_info[field] == '':
             print(f"Trying to read in mykrobe resistance. "
                   f"Field {field} should not be blank. Exiting.")
             sys.exit(1)

@@ -8,7 +8,7 @@ from app import app, db
 from app.models import  Culture
 from seqbox_utils import check_cultures, get_culture, add_culture, read_in_culture,add_group, add_project, add_sample_source, add_sample
 
-class TestSeqboxUtilsSample(TestCase):
+class TestSeqboxUtilsCulture(TestCase):
     def create_app(self):
         app.config['TESTING'] = True
         return app
