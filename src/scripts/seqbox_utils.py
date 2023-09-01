@@ -345,7 +345,7 @@ def get_artic_covid_result(artic_covid_result_info):
     else:
         print(f"Trying to get artic_covid_result. "
               f"More than one ArticCovidResult for barcode {artic_covid_result_info['barcode']} for "
-              f"readset batch {artic_covid_result_info['readset_batch_name']}, run with profile {artic_covid_result_info['profile']} "
+              f"readset batch {artic_covid_result_info['readset_batch_name']}, run with profile {artic_covid_result_info['artic_profile']} "
               f"and workflow {artic_covid_result_info['artic_workflow']}. Shouldn't happen, exiting.")
         sys.exit(1)
 
@@ -1679,7 +1679,7 @@ def add_artic_covid_result(artic_covid_result_info):
     if readset_nanopore is False:
         print(f"Warning - trying to add artic covid results. There is no readset for barcode {artic_covid_result_info['barcode']} from "
               f"read set batch {artic_covid_result_info['readset_batch_name']}.")
-        return
+        return False
         # sys.exit(1)
     artic_covid_result = read_in_artic_covid_result(artic_covid_result_info)
     readset_nanopore.readset.artic_covid_result.append(artic_covid_result)
