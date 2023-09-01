@@ -6,7 +6,7 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from seqbox_utils import add_project, query_projects, add_group
+from seqbox_utils import add_project, query_projects, add_group, check_project
 
 class TestSeqboxUtilsProjects(TestCase):
     def create_app(self):
@@ -75,3 +75,14 @@ class TestSeqboxUtilsProjects(TestCase):
         project_info = {'project_name': 'Testproject', 'group_name': 'TestGroup', 'institution': 'Test Institution'}
         with self.assertRaises(SystemExit, msg='Missing project_details') as cm:
             add_project(project_info)
+
+    def test_check_project(self):
+        self.assertEqual(None, check_project({'project_name': 'Testproject', 'group_name': 'TestGroup', 'institution': 'Test Institution', 'project_details': 'sequencing'}))
+
+        # empty
+        with self.assertRaises(SystemExit) as cm:
+            check_project({'project_name': '', 'group_name': 'TestGroup', 'institution': 'Test Institution', 'project_details': 'sequencing'})
+        with self.assertRaises(SystemExit) as cm:
+            check_project({'project_name': 'Testproject', 'group_name': '', 'institution': 'Test Institution', 'project_details': 'sequencing'})
+        with self.assertRaises(SystemExit) as cm:
+            check_project({'project_name': 'Testproject', 'group_name': 'TestGroup', 'institution': '', 'project_details': 'sequencing'})
