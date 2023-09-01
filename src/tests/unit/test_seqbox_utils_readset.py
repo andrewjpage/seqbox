@@ -8,7 +8,7 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import ReadSet, ReadSetNanopore
-from seqbox_utils import add_culture, add_raw_sequencing_batch,add_extraction, get_readset_batch, get_raw_sequencing_batch, add_tiling_pcr, add_group, add_project, add_sample_source, add_sample, add_readset_batch, basic_check_readset_fields, get_readset, add_readset, read_in_readset
+from seqbox_utils import add_culture, add_raw_sequencing_batch,add_extraction, get_readset_batch, get_raw_sequencing_batch, add_tiling_pcr, add_group, add_project, add_sample_source, add_sample, add_readset_batch, basic_check_readset_fields, get_readset, add_readset, read_in_readset, check_readset_fields
 
 class TestSeqboxUtilsReadset(TestCase):
     def create_app(self):
@@ -400,3 +400,179 @@ class TestSeqboxUtilsReadset(TestCase):
             add_readset(readset_info, False, False)
             result = get_readset(readset_info, False)
             self.assertIsInstance(result, ReadSetNanopore)
+
+    def test_check_readset_fields_missing_basic_fields(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        
+        with self.assertRaises(Exception) as cm:
+            check_readset_fields({'data_storage_device': 'storage_device_1', 'readset_batch_name': 'EFG', 'sample_identifier': 'sample1','group_name': 'Group'}, False, raw_sequencing_batch, False)
+
+    def test_check_readset_fields_nanopore_barcode_missing(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                            'readset_batch_name': 'EFG', 
+                            'date_extracted': '01/01/2023', 
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'date_tiling_pcred': '01/01/2023',
+                            'tiling_pcr_identifier':'5',
+                            'path_fastq': 'xxx.fastq.gz',
+                            'path_fast5': 'yyy.fast5',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
+                            }
+        with self.assertRaises(Exception) as cm:
+            check_readset_fields(readset_info, True, raw_sequencing_batch, False)
+
+    def test_check_readset_fields_nanopore_not_default_fastq_missing(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                            'readset_batch_name': 'EFG', 
+                            'date_extracted': '01/01/2023', 
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'date_tiling_pcred': '01/01/2023',
+                            'tiling_pcr_identifier':'5',
+                            'path_fastq': '',
+                            'path_fast5': 'yyy.fast5',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            check_readset_fields(readset_info, False, raw_sequencing_batch, False)
+
+    def test_check_readset_fields_nanopore_not_default_fast5_missing(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                            'readset_batch_name': 'EFG', 
+                            'date_extracted': '01/01/2023', 
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'date_tiling_pcred': '01/01/2023',
+                            'tiling_pcr_identifier':'5',
+                            'path_fastq': 'xxx.fastq.gz',
+                            'path_fast5': '',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            check_readset_fields(readset_info, False, raw_sequencing_batch, False)
+
+    def test_check_readset_fields_not_covid_date_extracted_missing(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                            'readset_batch_name': 'EFG', 
+                            'date_extracted': '', 
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'date_tiling_pcred': '01/01/2023',
+                            'tiling_pcr_identifier':'5',
+                            'path_fastq': 'xxx.fastq.gz',
+                            'path_fast5': 'yyy.fast5',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            check_readset_fields(readset_info, False, raw_sequencing_batch, False)
+
+    def test_check_readset_fields_not_covid_extraction_identifier_missing(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                            'readset_batch_name': 'EFG', 
+                            'date_extracted': '01/01/2023', 
+                            'extraction_identifier': '',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'date_tiling_pcred': '01/01/2023',
+                            'tiling_pcr_identifier':'5',
+                            'path_fastq': 'xxx.fastq.gz',
+                            'path_fast5': 'yyy.fast5',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            check_readset_fields(readset_info, False, raw_sequencing_batch, False)
+
+    def test_check_readset_fields_covid_date_tiling_pcred_missing(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                            'readset_batch_name': 'EFG', 
+                            'date_extracted': '01/01/2023', 
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'date_tiling_pcred': '',
+                            'tiling_pcr_identifier':'5',
+                            'path_fastq': 'xxx.fastq.gz',
+                            'path_fast5': 'yyy.fast5',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            check_readset_fields(readset_info, False, raw_sequencing_batch, True)
+
+    def test_check_readset_fields_covid_tiling_pcr_identifier_missing(self):
+        self.setUp()
+        self.populate_db()
+        raw_sequencing_batch = get_raw_sequencing_batch('ABC')
+        readset_info = {'data_storage_device': 'storage_device_1', 
+                            'readset_batch_name': 'EFG', 
+                            'date_extracted': '01/01/2023', 
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'date_tiling_pcred': '01/01/2023',
+                            'tiling_pcr_identifier':'',
+                            'path_fastq': 'xxx.fastq.gz',
+                            'path_fast5': 'yyy.fast5',
+                            'extraction_from':'cultured_isolate',
+                            'submitter_plate_id':'CUL',
+                            'submitter_plate_well': 'A1',
+                            'extraction_processing_institution': 'MLW',
+                            'culture_identifier': '123',
+                            'date_cultured': '01/01/2023',
+                            }
+        with self.assertRaises(SystemExit) as cm:
+            check_readset_fields(readset_info, False, raw_sequencing_batch, True)

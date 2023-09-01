@@ -80,6 +80,24 @@ class TestSeqboxUtilsArticWorkflows(TestCase):
         result = read_in_pangolin_result(pangolin_result_info)
         self.assertIsInstance(result, PangolinResult)
 
+    def test_read_in_pangolin_result_no_scorpio_conflict(self):
+        pangolin_result_info = {'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3',
+                                'lineage': 'B.1.351',
+                                'qc_status': 'passed_qc',
+                                'conflict': '0',
+                                'ambiguity_score': '0.933810738',
+                                'scorpio_call': 'Beta (B.1.351-like)',
+                                'scorpio_support':'0.8571',
+                                'scorpio_conflict':'',
+                                'version':'PLEARN-v1.2.13',
+                                'pangolin_version':'3.1.5',
+                                'pango_version':'15/06/2021',
+                                'status':'passed_qc',
+                                'note':'scorpio call: Alt alleles 12; Ref alleles 0; Amb alleles 0',
+                                }
+        result = read_in_pangolin_result(pangolin_result_info)
+        self.assertIsInstance(result, PangolinResult)
+
     # some fields can be missing
     def test_read_in_pangolin_result_missing(self):
         result = read_in_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3', 'lineage': 'B.1.351', 'qc_status': 'passed_qc',  'ambiguity_score': '0.933810738', 'scorpio_call': 'Beta (B.1.351-like)', 'scorpio_support':'0.8571', 'scorpio_conflict':'0', 'version':'PLEARN-v1.2.13', 'pangolin_version':'3.1.5', 'pango_version':'15/06/2021', 'status':'passed_qc', 'note':'scorpio call: Alt alleles 12; Ref alleles 0; Amb alleles 0', })

@@ -6,7 +6,7 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import  Extraction, Culture
+from app.models import  Extraction
 from seqbox_utils import check_extraction_fields, get_extraction, add_extraction, add_group, add_project, add_sample_source, add_culture, add_sample
 
 class TestSeqboxUtilsSample(TestCase):
@@ -354,4 +354,46 @@ class TestSeqboxUtilsSample(TestCase):
         self.assertEqual(result.extraction_machine, extraction_info['extraction_machine'])
         self.assertEqual(result.extraction_kit, extraction_info['extraction_kit'])
         self.assertEqual(result.what_was_extracted, extraction_info['what_was_extracted'])
+
+    def test_add_extraction_ext_plate(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        extraction_info = { 'date_extracted': '01/01/2023',
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'extraction_from':'whole_sample',
+                            'submitter_plate_id':'EXT',
+                            'submitter_plate_well': 'A1',
+                            'nucleic_acid_concentration': '1',
+                            'sample_identifier': 'sample1',
+                            'extraction_machine': 'KingFisher Flex',
+                            'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)',
+                            'what_was_extracted': 'ABC',
+                            'extraction_processing_institution': 'MLW',
+                            }
+        add_extraction(extraction_info)
+        result = get_extraction(extraction_info)
+        self.assertIsInstance(result, Extraction)
+
+    def test_add_extraction_out_plate(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        extraction_info = { 'date_extracted': '01/01/2023',
+                            'extraction_identifier': '1',
+                            'sample_identifier': 'sample1',
+                            'group_name': 'Group',
+                            'extraction_from':'whole_sample',
+                            'submitter_plate_id':'OUT',
+                            'submitter_plate_well': 'A1',
+                            'nucleic_acid_concentration': '1',
+                            'sample_identifier': 'sample1',
+                            'extraction_machine': 'KingFisher Flex',
+                            'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)',
+                            'what_was_extracted': 'ABC',
+                            'extraction_processing_institution': 'MLW',
+                            }
+        add_extraction(extraction_info)
+        result = get_extraction(extraction_info)
+        self.assertIsInstance(result, Extraction)
 

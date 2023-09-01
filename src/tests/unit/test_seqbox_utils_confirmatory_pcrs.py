@@ -5,6 +5,7 @@ import datetime
 sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
+from app.models import CovidConfirmatoryPcr
 from app import app, db
 from seqbox_utils import  add_extraction, add_group, add_project, add_sample_source, add_sample, read_in_covid_confirmatory_pcr, check_covid_confirmatory_pcr, add_covid_confirmatory_pcr, get_covid_confirmatory_pcr
 
@@ -87,6 +88,22 @@ class TestSeqboxUtilsConfirmatoryPCRs(TestCase):
                                        'extraction_from':'whole_sample'}
         add_covid_confirmatory_pcr(covid_confirmatory_pcr_info)
         self.assertTrue(get_covid_confirmatory_pcr(covid_confirmatory_pcr_info))
+
+    def test_add_covid_confirmatory_pcr(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        covid_confirmatory_pcr_info = {'sample_identifier': 'sample1', 
+                                       'date_extracted': '01/01/2023',
+                                       'extraction_identifier': '1',
+                                       'date_covid_confirmatory_pcred': '01/01/2023', 
+                                       'covid_confirmatory_pcr_identifier': '1', 
+                                       'group_name': 'Group', 
+                                       'covid_confirmatory_pcr_protocol': 'ABC',
+                                       'covid_confirmatory_pcr_ct': '',
+                                       'extraction_from':'whole_sample'}
+        
+        self.assertIsInstance(read_in_covid_confirmatory_pcr(covid_confirmatory_pcr_info), CovidConfirmatoryPcr)
+        
 
     def test_add_covid_confirmatory_pcr_no_matching_extraction(self):
         self.setUp()

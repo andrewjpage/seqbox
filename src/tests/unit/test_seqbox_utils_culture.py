@@ -84,3 +84,18 @@ class TestSeqboxUtilsCulture(TestCase):
 
         with self.assertRaises(SystemExit) as cm:
             add_culture(culture_info)
+
+    def test_read_in_culture_out(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        culture_info = { 'group_name': 'Group',
+                        'sample_identifier': 'sample1' , 
+                        'date_cultured': '01/01/2023', 
+                        'culture_identifier': '123', 
+                        'submitter_plate_id': 'OUT123', 
+                        'submitter_plate_well': 'A1'
+                        }
+
+        add_culture(culture_info)
+        result = get_culture(culture_info)
+        self.assertIsInstance(result, Culture)

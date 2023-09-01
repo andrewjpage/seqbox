@@ -6,8 +6,8 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import  PcrAssay, Sample
-from seqbox_utils import add_pcr_result, check_pcr_result, get_pcr_result, add_group, add_project, add_sample_source, add_sample, add_pcr_assay
+from app.models import  PcrAssay, Sample, PcrResult
+from seqbox_utils import add_pcr_result, check_pcr_result, get_pcr_result, add_group, add_project, add_sample_source, add_sample, add_pcr_assay, read_in_pcr_result
 
 class TestSeqboxUtilsSample(TestCase):
     def create_app(self):
@@ -196,3 +196,25 @@ class TestSeqboxUtilsSample(TestCase):
                            }
         with self.assertRaises(SystemExit) as cm:
             add_pcr_result(pcr_result_info)
+
+    def test_read_in_pcr_result_missing_ct(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        pcr_result_info = {'date_pcred': '01/06/2021',
+                           'pcr_identifier': '1',
+                           'assay_name': 'SARS-CoV2-CDC-N1',
+                           'sample_identifier': 'sample1',
+                           'pcr_result': 'Positive',
+                           'assay': 'xxxx',
+                           'group_name': 'Group',
+                           'ct': ''
+                           }
+        self.assertIsInstance(read_in_pcr_result(pcr_result_info), PcrResult)
+
+    def test_read_in_pcr_result_no_matching(self):
+        self.setUp()
+        self.populate_db_dependancies()
+        pcr_result_info = {'date_pcred': '01/06/2021', 'pcr_identifier': '1', 'assay_name': 'SARS-CoV2-CDC-N1', 'pcr_result': 'Positive', 'assay': 'xxxx', 'group_name': 'Group', 'ct': '20.1'}
+        with self.assertRaises(SystemExit) as cm:
+            read_in_pcr_result(pcr_result_info)
+            
