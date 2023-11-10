@@ -61,6 +61,8 @@ ENV DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql"
 ENV SECRET_KEY="you-will-never-guess"
 ENV FLASK_APP=/app/seqbox/src/main.py
 
-
 # Load a database dump for testing
-# RUN sudo -u postgres pg_restore -d test_seqbox /data/seqbox.tar
+RUN sudo -u postgres pg_restore -d test_seqbox /data/seqbox.tar && \
+    sudo -u postgres psql -d test_seqbox -c "DELETE FROM alembic_version;" && \
+    sudo -u postgres psql -d test_seqbox -c "INSERT INTO alembic_version (version_num) VALUES ('c48cdec0b1db');" 
+    
