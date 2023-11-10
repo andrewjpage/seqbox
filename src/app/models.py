@@ -483,3 +483,39 @@ class PangolinResult(db.Model):
     notes = db.Column(db.VARCHAR(256), comment="General comments.")
     artic_covid_result_id = db.Column(db.ForeignKey("artic_covid_result.id", ondelete="cascade", onupdate="cascade"))
 
+class Batch(db.Model):
+    __tablename__ = 'batch'
+
+    id_batch = db.Column(db.String(30), primary_key=True)
+    name_batch = db.Column(db.String(50), nullable=False)
+    date_batch = db.Column(db.Date, nullable=False)
+    instrument = db.Column(db.String(250), nullable=False)
+    primer = db.Column(db.String(100), nullable=False)
+
+class Location(db.Model):
+    __tablename__ = 'location'
+
+    id_location = db.Column(db.String(25), primary_key=True)
+    continent = db.Column(db.String(80), nullable=False)
+    country = db.Column(db.String(60), nullable=False)
+    province = db.Column(db.String(40), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+
+class Result1(db.Model):
+    __tablename__ = 'result1'
+
+    id_result1 = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    qc = db.Column(db.String(60), nullable=False)
+    ql = db.Column(db.String(60), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    snapper_variants = db.Column(db.Integer)
+    snapper_ignored = db.Column(db.Integer)
+    num_heterozygous = db.Column(db.Integer)
+    mean_depth = db.Column(db.Float)
+    coverage = db.Column(db.Float)
+
+class Sample_project(db.Model):
+    __tablename__ = 'sample_project'
+
+    id_sample = db.Column(db.String(40), primary_key=True)
+    id_project = db.Column(db.String(50), primary_key=True)

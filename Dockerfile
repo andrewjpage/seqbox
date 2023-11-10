@@ -11,14 +11,7 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main' > /etc/a
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN apt-get update && apt-get install -y postgresql-16
 
-# Download and install miniconda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b && \ 
-    rm Miniconda3-latest-Linux-x86_64.sh 
-ENV PATH="/root/miniconda3/bin:$PATH"
-# Install mamba
-RUN conda install -c conda-forge mamba --yes
-
+# Make the app directory
 RUN mkdir /app && cd /app
 WORKDIR /app
 
@@ -26,28 +19,48 @@ WORKDIR /app
 RUN mkdir /app/seqbox
 COPY . /app/seqbox
 
+# create seqbox user
+ENV SEQBOX_USER=phil
+RUN useradd -ms /bin/bash $SEQBOX_USER
+RUN usermod -aG sudo $SEQBOX_USER
+RUN echo "$SEQBOX_USER:you-will-never-guess" | chpasswd
+RUN echo '$SEQBOX_USER ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN chown -R $SEQBOX_USER:$SEQBOX_USER /app
+USER $SEQBOX_USER
+
+# Download and install miniconda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b && \ 
+    rm Miniconda3-latest-Linux-x86_64.sh 
+ENV PATH="/home/phil/miniconda3/bin:$PATH"
+# Install mamba
+RUN conda install -c conda-forge mamba --yes
+
 # Install the conda environment and activate it
 RUN cd /app/seqbox &&  mamba env create --name seqbox --file seqbox_conda_env.yaml
 RUN conda init
-RUN echo "conda activate seqbox" >> /root/.bashrc
+RUN echo "conda activate seqbox" >> /home/phil/.bashrc
 SHELL ["/bin/bash", "--login", "-c", "bash"]
 
 # Setup the database
-RUN service postgresql start && \
-    sudo -u postgres createuser root && \
-    sudo -u postgres createdb test_seqbox && \
-    sudo -u postgres psql -c "grant all privileges on database test_seqbox to root;" && \
-    sudo -u postgres pg_restore -d test_seqbox /data/seqbox.tar
-
-# Setup the database
+USER root
 ENV PYTHONPATH=/app/seqbox/src:$PYTHONPATH
 ENV DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql"
-RUN service postgresql start && \
+RUN sudo service postgresql start && \
     sudo -u postgres createuser root && \
-    sudo -u postgres createuser phil && \
+    sudo -u postgres createuser $SEQBOX_USER && \
     sudo -u postgres createuser cat && \
     sudo -u postgres createdb test_seqbox && \
-    sudo -u postgres psql -c "grant all privileges on database test_seqbox to root;"
+    sudo -u postgres psql -c "grant all privileges on database test_seqbox to root;" && \
+    sudo -u postgres psql -c "ALTER USER $SEQBOX_USER WITH PASSWORD 'you-will-never-guess';" && \
+    sudo service postgresql restart
+CMD ["service" "postgresql" "start"]
+
+USER $SEQBOX_USER
+ENV DATABASE_URL="postgresql:///test_seqbox?host=/var/run/postgresql"
+ENV SECRET_KEY="you-will-never-guess"
+ENV FLASK_APP=/app/seqbox/src/main.py
+
 
 # Load a database dump for testing
 # RUN sudo -u postgres pg_restore -d test_seqbox /data/seqbox.tar
