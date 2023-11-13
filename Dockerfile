@@ -24,7 +24,7 @@ ENV SEQBOX_USER=phil
 RUN useradd -ms /bin/bash $SEQBOX_USER
 RUN usermod -aG sudo $SEQBOX_USER
 RUN echo "$SEQBOX_USER:you-will-never-guess" | chpasswd
-RUN echo '$SEQBOX_USER ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN echo "${SEQBOX_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN chown -R $SEQBOX_USER:$SEQBOX_USER /app
 USER $SEQBOX_USER
 
