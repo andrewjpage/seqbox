@@ -35,33 +35,36 @@ def convert_to_datetime_dict(each_dict):
 def read_in_csv(inhandle):
     # since csv.DictReader returns a generator rather than an iterator, need to do this fancy business to
     # pull in everything from a generator into an honest to goodness iterable.
-    info = csv.DictReader(open(inhandle, encoding='utf-8-sig'))
-    # info is a list of ordered dicts, so convert each one to
-    list_of_lines = []
-    for each_dict in info:
-        # print(each_dict)
-        # delete data from columns with no header, usually just empty fields
-        if None in each_dict:
-            del each_dict[None]
-        
-        # composition: replace empty strings with nones & convert date keys values to datetime
-        each_dict = convert_to_datetime_dict(replace_with_none(each_dict))
+    with open(inhandle, encoding='utf-8-sig') as f:
+        info = csv.DictReader(f)
+        # info is a list of ordered dicts, so convert each one to
+        list_of_lines = []
+        for each_dict in info:
+            # print(each_dict)
+            # delete data from columns with no header, usually just empty fields
+            if None in each_dict:
+                del each_dict[None]
+            elif '' in each_dict:
+                del each_dict['']
+            
+            # composition: replace empty strings with nones & convert date keys values to datetime
+            each_dict = convert_to_datetime_dict(replace_with_none(each_dict))
 
-        new_info = {x: each_dict[x] for x in each_dict}
-        # print(new_info)
-        # sometimes excel saves blank lines, so only take lines where the lenght of the set of teh values is > 1
-        # it will be 1 where they are all blank i.e. ''
-        if len(set(new_info.values())) > 1:
-            list_of_lines.append(new_info)
-        # because pcr assay only has one value, need to add this check
-        elif len(set(new_info.values())) == 1:
-            if list(set(new_info.values()))[0] == '':
-                pass
-            else:
+            new_info = {x: each_dict[x] for x in each_dict}
+            # print(new_info)
+            # sometimes excel saves blank lines, so only take lines where the lenght of the set of teh values is > 1
+            # it will be 1 where they are all blank i.e. ''
+            if len(set(new_info.values())) > 1:
                 list_of_lines.append(new_info)
-        else:
-            pass
-            # print(f'This line not being processed - {new_info}')
+            # because pcr assay only has one value, need to add this check
+            elif len(set(new_info.values())) == 1:
+                if list(set(new_info.values()))[0] == '':
+                    pass
+                else:
+                    list_of_lines.append(new_info)
+            else:
+                pass
+                # print(f'This line not being processed - {new_info}')
     return list_of_lines
 
 
@@ -100,6 +103,8 @@ def check_plate_ids(data, plate_id_type):
             print(f"Warning: multiple {plate_id_type} in file. Are there supposed to be {plate_ids} "
                   f"as {plate_id_type}? Progressing with upload, but if this was an error, you need to fix it (email"
                   f" bioinformatics team).")
+            return False
+    return True
 
 
 def read_in_as_dict(inhandle):
@@ -243,6 +248,8 @@ def get_extraction(readset_info):
 
 
 def get_culture(culture_info):
+    if 'culture_identifier' not in culture_info:
+        return False
 
     matching_culture = Culture.query.filter_by(
             culture_identifier=culture_info['culture_identifier'],
@@ -338,7 +345,7 @@ def get_artic_covid_result(artic_covid_result_info):
     else:
         print(f"Trying to get artic_covid_result. "
               f"More than one ArticCovidResult for barcode {artic_covid_result_info['barcode']} for "
-              f"readset batch {artic_covid_result_info['readset_batch_name']}, run with profile {artic_covid_result_info['profile']} "
+              f"readset batch {artic_covid_result_info['readset_batch_name']}, run with profile {artic_covid_result_info['artic_profile']} "
               f"and workflow {artic_covid_result_info['artic_workflow']}. Shouldn't happen, exiting.")
         sys.exit(1)
 
@@ -477,7 +484,7 @@ def read_in_group(group_info):
 
 def check_mykrobe_res(mykrobe_res_info):
     for field in ['sample', 'drug', 'susceptibility', 'mykrobe_version']:
-        if mykrobe_res_info[field] == '':
+        if field not in mykrobe_res_info or mykrobe_res_info[field] == '':
             print(f"Trying to read in mykrobe resistance. "
                   f"Field {field} should not be blank. Exiting.")
             sys.exit(1)
@@ -530,10 +537,10 @@ def read_in_tiling_pcr(tiling_pcr_info):
 
 
 def check_pangolin_result(pangolin_result_info):
-    if not(pangolin_result_info['taxon']):
+    if 'taxon' not in pangolin_result_info or not(pangolin_result_info['taxon']):
         print(f'taxon column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
-    if not(pangolin_result_info['lineage']):
+    if 'lineage' not in pangolin_result_info or not(pangolin_result_info['lineage']):
         print(f'lineage column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
     # the name of the output column changed from status to qc_status 2022-07-04
@@ -541,24 +548,26 @@ def check_pangolin_result(pangolin_result_info):
         if 'status' not in pangolin_result_info:
             pangolin_result_info['status'] = pangolin_result_info['qc_status']
 
-    if not(pangolin_result_info['status']):
+    if 'status' not in pangolin_result_info or not(pangolin_result_info['status']):
         print(f'status column should not be empty. it is for \n{pangolin_result_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_artic_covid_result(artic_covid_result_info):
-    if not(artic_covid_result_info['sample_name']):
+    if 'sample_name' not in artic_covid_result_info or not(artic_covid_result_info['sample_name']):
         print(f'sample_name column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if not(artic_covid_result_info['pct_N_bases']):
+    if 'pct_N_bases' not in artic_covid_result_info or not(artic_covid_result_info['pct_N_bases']):
         print(f'pct_N_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if not(artic_covid_result_info['pct_covered_bases']):
+    if 'pct_covered_bases' not in artic_covid_result_info or not(artic_covid_result_info['pct_covered_bases']):
         print(f'pct_covered_bases column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
-    if not(artic_covid_result_info['num_aligned_reads']):
+    if 'num_aligned_reads' not in artic_covid_result_info or not(artic_covid_result_info['num_aligned_reads']):
         print(f'num_aligned_reads column should not be empty. it is for \n{artic_covid_result_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def read_in_artic_covid_result(artic_covid_result_info):
@@ -578,23 +587,23 @@ def read_in_pangolin_result(pangolin_result_info):
     pangolin_result = PangolinResult()
     pangolin_result.lineage = pangolin_result_info['lineage']
 
-    if not pangolin_result_info['conflict']:
+    if 'conflict' not in pangolin_result_info or not pangolin_result_info['conflict']:
         pangolin_result.conflict = None
     else:
         pangolin_result.conflict = pangolin_result_info['conflict']
-    if not pangolin_result_info['ambiguity_score']:
+    if 'ambiguity_score' not in pangolin_result_info or not pangolin_result_info['ambiguity_score']:
         pangolin_result.ambiguity_score = None
     else:
         pangolin_result.ambiguity_score = pangolin_result_info['ambiguity_score']
-    if not pangolin_result_info['scorpio_call']:
+    if 'scorpio_call' not in pangolin_result_info or not pangolin_result_info['scorpio_call']:
         pangolin_result.scorpio_call = None
     else:
         pangolin_result.scorpio_call = pangolin_result_info['scorpio_call']
-    if not pangolin_result_info['scorpio_support']:
+    if 'scorpio_support' not in pangolin_result_info or not pangolin_result_info['scorpio_support']:
         pangolin_result.scorpio_support = None
     else:
         pangolin_result.scorpio_support = pangolin_result_info['scorpio_support']
-    if not pangolin_result_info['scorpio_conflict']:
+    if 'scorpio_conflict' not in pangolin_result_info or not pangolin_result_info['scorpio_conflict']:
         pangolin_result.scorpio_conflict = None
     else:
         pangolin_result.scorpio_conflict = pangolin_result_info['scorpio_conflict']
@@ -652,6 +661,7 @@ def add_sample(sample_info, submitted_for_sequencing):
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
     # print(sample_info)
+    check_samples(sample_info)
     sample_source = get_sample_source(sample_info)
     if sample_source is False:
         print(f"Adding sample. There is no matching sample_source with the sample_source_identifier "
@@ -697,6 +707,13 @@ def add_sample_source(sample_source_info):
     # sample_info is a dict of one line of the input csv (keys from col header)
     # for the projects listed in the csv, check if they already exist for that group
     # if it does, return it, if it doesnt, instantiate a new Project and return it
+    if 'sample_source_identifier' not in sample_source_info:
+        print(f"Adding sample_source. sample_source missing critical information.")
+        return False
+    if get_sample_source(sample_source_info) is not False:
+        print(f"Adding sample_source. sample_source {sample_source_info['sample_source_identifier']} already exists in the database.")
+        return False
+
     projects = get_projects(sample_source_info)
     # print(projects)
     # instantiate a new SampleSource
@@ -705,6 +722,7 @@ def add_sample_source(sample_source_info):
     db.session.add(sample_source)
     db.session.commit()
     print(f'Adding sample_source {sample_source_info["sample_source_identifier"]} to project(s) {projects}')
+    return True
 
 
 def add_tiling_pcr(tiling_pcr_info):
@@ -741,23 +759,34 @@ def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
 
 
 def add_group(group_info):
+    matching_group = get_group(group_info)
+    if matching_group is not False:
+        print(f"Not adding group {group_info['group_name']} from {group_info['institution']} to database as it already exists.")
+        return False
     group = read_in_group(group_info)
     db.session.add(group)
     db.session.commit()
     print(f"Adding group {group_info['group_name']} from {group_info['institution']} to database.")
+    return True
 
 
 def add_pcr_assay(pcr_assay_info):
+    if get_pcr_assay(pcr_assay_info) is not False:
+        print(f"Adding pcr_assay {pcr_assay_info['assay_name']} to database as it already exists.")
+        return False
     pcr_assay = PcrAssay()
     assert pcr_assay_info['assay_name'].strip() != ''
     pcr_assay.assay_name = pcr_assay_info['assay_name']
     db.session.add(pcr_assay)
     db.session.commit()
     print(f"Adding pcr_assay {pcr_assay_info['assay_name']} to database.")
+    return True
 
 
 def add_pcr_result(pcr_result_info):
     if check_pcr_result(pcr_result_info) is False:
+        sys.exit(1)
+    if get_pcr_result(pcr_result_info) is not False:
         sys.exit(1)
     pcr_result = read_in_pcr_result(pcr_result_info)
     assay = get_pcr_assay(pcr_result_info)
@@ -927,6 +956,9 @@ def get_readset_batch(readset_batch_info):
 
 
 def get_group(group_info):
+    if 'group_name' not in group_info or 'institution' not in group_info:
+        print(f"group_name and institution are reequired.")
+        sys.exit(1)
     matching_group = Groups.query.filter_by(group_name=group_info['group_name'], institution=group_info['institution'])\
         .all()
     if len(matching_group) == 0:
@@ -1307,40 +1339,42 @@ def read_in_raw_sequencing(readset_info, nanopore_default, sequencing_type, batc
 
 
 def check_raw_sequencing_batch(raw_sequencing_batch_info):
-    if not raw_sequencing_batch_info['batch_directory']:
+    if 'batch_directory' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['batch_directory']:
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['batch_name']:
+    if 'batch_name' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['batch_name']:
         print(f'batch_name column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['date_run']:
+    if 'date_run' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['date_run']:
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['sequencing_type']:
+    if 'sequencing_type' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['sequencing_type']:
         print(f'sequencing_type column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
-    if not raw_sequencing_batch_info['instrument_name']:
+    if 'instrument_name' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['instrument_name']:
         print(f'batch_directory column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
 
-    if not raw_sequencing_batch_info['flowcell_type']:
+    if 'flowcell_type' not in raw_sequencing_batch_info or not raw_sequencing_batch_info['flowcell_type']:
         print(f'date_run column should not be empty. it is for \n{raw_sequencing_batch_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_readset_batches(readset_batch_info):
-    if not(readset_batch_info['raw_sequencing_batch_name']):
+    if 'raw_sequencing_batch_name' not in readset_batch_info or not(readset_batch_info['raw_sequencing_batch_name']):
         print(f'raw_sequencing_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if not(readset_batch_info['readset_batch_name']):
+    if 'readset_batch_name' not in readset_batch_info or not(readset_batch_info['readset_batch_name']):
         print(f'readset_batch_name column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if not(readset_batch_info['readset_batch_dir']):
+    if 'readset_batch_dir' not in readset_batch_info or not(readset_batch_info['readset_batch_dir']):
         print(f'readset_batch_dir column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
-    if not(readset_batch_info['basecaller']):
+    if 'basecaller' not in readset_batch_info or not(readset_batch_info['basecaller']):
         print(f'basecaller column should not be empty. it is for \n{readset_batch_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_cultures(culture_info):
@@ -1380,23 +1414,23 @@ def check_extraction_fields(extraction_info):
      3. sys.exit if some extraction fields are not present
     """
     # Check if the extraction specific columns are blank
-    if (not extraction_info['date_extracted']) and (not extraction_info['extraction_identifier']):
+    if ('date_extracted' not in extraction_info or not extraction_info['date_extracted']) and ('extraction_identifier' not in extraction_info or not extraction_info['extraction_identifier']):
         # if so, return false
         return False
     # Check individual columns if they are blank
-    if not extraction_info['sample_identifier']:
+    if 'sample_identifier' not in extraction_info or not extraction_info['sample_identifier']:
         print(f'sample_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['date_extracted']:
+    if 'date_extracted' not in extraction_info or not extraction_info['date_extracted']:
         print(f'date_extracted column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['extraction_identifier']:
+    if 'extraction_identifier' not in extraction_info or not extraction_info['extraction_identifier']:
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['group_name']:
+    if 'group_name' not in extraction_info or not extraction_info['group_name']:
         print(f'extraction_identifier column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
-    if not extraction_info['extraction_from']:
+    if 'extraction_from' not in extraction_info or not extraction_info['extraction_from']:
         print(f'extraction_from column should not be empty. it is for \n{extraction_info}\nExiting.')
         sys.exit(1)
     allowed_extraction_from = ['cultured_isolate', 'whole_sample']
@@ -1426,14 +1460,14 @@ def check_extraction_fields(extraction_info):
 
 
 def check_group(group_info):
+    if not(group_info['group_name']):
+        print(f'group_name column should not be empty. it is for \n{group_info}\nExiting.')
+        sys.exit(1)
     if ' ' in group_info['group_name']:
         print(f'group_name should not have any spaces in in. there is one for \n{group_info}\nExiting.')
         sys.exit(1)
     if '/' in group_info['group_name']:
         print(f'group_name should not have any backslashes in in. there is one for \n{group_info}\nExiting.')
-        sys.exit(1)
-    if not(group_info['group_name']):
-        print(f'group_name column should not be empty. it is for \n{group_info}\nExiting.')
         sys.exit(1)
     if not(group_info['institution']):
         print(f'institution column should not be empty. it is for \n{group_info}\nExiting.')
@@ -1471,51 +1505,52 @@ def check_sample_sources(sample_source_info):
 
 
 def check_samples(sample_info):
-    if not(sample_info['sample_source_identifier']):
+    if 'sample_source_identifier' not in sample_info or not(sample_info['sample_source_identifier']):
         print(f'sample_source_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if not(sample_info['sample_identifier']):
+    if 'sample_identifier' not in sample_info or not(sample_info['sample_identifier']):
         print(f'sample_identifier column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if not(sample_info['group_name']):
+    if 'group_name' not in sample_info or not(sample_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
-    if not(sample_info['institution']):
+    if 'institution' not in sample_info or not(sample_info['institution']):
         print(f'institution column should not be empty. it is for \n{sample_info}\nExiting.')
         sys.exit(1)
 
 
 def check_covid_confirmatory_pcr(covid_confirmatory_pcr_info):
-    if not(covid_confirmatory_pcr_info['sample_identifier']):
+    if 'sample_identifier' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['sample_identifier']):
         print(f'sample_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['date_extracted']):
+    if 'date_extracted' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['date_extracted']):
         print(f'date_extracted column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['extraction_identifier']):
+    if 'extraction_identifier' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['extraction_identifier']):
         print(f'extraction_identifier column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']):
+    if 'date_covid_confirmatory_pcred' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['date_covid_confirmatory_pcred']):
         print(f'date_covid_confirmatory_pcred column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']):
+    if 'covid_confirmatory_pcr_identifier' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_identifier']):
         print(f'covid_confirmatory_pcr_identifier column should not be empty. it is for '
               f'\n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['group_name']):
+    if 'group_name' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['group_name']):
         print(f'group_name column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
-    if not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']):
+    if 'covid_confirmatory_pcr_protocol' not in covid_confirmatory_pcr_info or not(covid_confirmatory_pcr_info['covid_confirmatory_pcr_protocol']):
         print(f'covid_confirmatory_pcr_protocol column should not be empty. it is for \n{covid_confirmatory_pcr_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def check_tiling_pcr(tiling_pcr_info):
     to_check = ['sample_identifier', 'date_extracted', 'extraction_identifier', 'date_tiling_pcred',
                 'tiling_pcr_identifier', 'group_name', 'tiling_pcr_protocol']
     for r in to_check:
-        if not(tiling_pcr_info[r]):
+        if r not in tiling_pcr_info or not(tiling_pcr_info[r]):
             print(f'Warning - {r} column should not be empty. it is for \n{tiling_pcr_info}. Not adding this tiling pcr record.')
             return False
     return True
@@ -1524,7 +1559,7 @@ def check_tiling_pcr(tiling_pcr_info):
 def check_pcr_result(pcr_result_info):
     to_check = ['sample_identifier', 'date_pcred', 'pcr_identifier', 'group_name', 'assay_name']
     for r in to_check:
-        if not(pcr_result_info[r]):
+        if r not in pcr_result_info or not(pcr_result_info[r]):
             print(f'{r} column should not be empty. it is for \n{pcr_result_info}')
             return False
 
@@ -1534,6 +1569,7 @@ def check_pcr_result(pcr_result_info):
         print(f'result column should contain one of these results {allowable_results}. '
               f'it doesnt for \n{pcr_result_info}\nExiting.')
         sys.exit(1)
+    return True
 
 
 def basic_check_readset_fields(readset_info):
@@ -1542,9 +1578,10 @@ def basic_check_readset_fields(readset_info):
     # covid confirmatory pcr was negative.
     to_check = ['data_storage_device', 'readset_batch_name']
     for r in to_check:
-        if not(readset_info[r]):
+        if r not in readset_info or not(readset_info[r]):
             print(f'Warning - {r} column should not be empty. it is for \n{readset_info}.')
             return False
+    return True
 
 
 def check_readset_fields(readset_info, nanopore_default, raw_sequencing_batch, covid):
@@ -1643,7 +1680,7 @@ def add_artic_covid_result(artic_covid_result_info):
     if readset_nanopore is False:
         print(f"Warning - trying to add artic covid results. There is no readset for barcode {artic_covid_result_info['barcode']} from "
               f"read set batch {artic_covid_result_info['readset_batch_name']}.")
-        return
+        return False
         # sys.exit(1)
     artic_covid_result = read_in_artic_covid_result(artic_covid_result_info)
     readset_nanopore.readset.artic_covid_result.append(artic_covid_result)

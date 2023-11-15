@@ -6,47 +6,51 @@ channels:
   - defaults
   - r
 dependencies:
-  - ca-certificates=2021.5.30=h033912b_0
-  - cairo=1.14.12=hc4e6be7_4
-  - certifi=2021.5.30=py39h6e9494a_0
-  - expat=2.2.10=hb1e8313_2
-  - fontconfig=2.13.0=h5d5b041_1
-  - freetype=2.10.4=ha233b18_0
-  - fribidi=1.0.10=haf1e3a3_0
-  - gettext=0.19.8.1=h15daf44_3
-  - glib=2.56.2=hd9629dc_0
-  - graphite2=1.3.14=h38d11af_0
-  - graphviz=2.40.1=hefbbd9a_2
-  - harfbuzz=1.8.8=hb8d4a28_0
-  - icu=58.2=h0a44026_3
-  - jpeg=9b=he5867d9_2
-  - libcxx=12.0.1=habf9029_0
-  - libffi=3.3=h046ec9c_2
-  - libiconv=1.16=h1de35cc_0
-  - libpng=1.6.37=ha441bb4_0
-  - libtiff=4.1.0=hcb84e12_1
-  - libxml2=2.9.10=h7cdb67c_3
-  - lz4-c=1.9.2=h79c402e_3
-  - ncurses=6.2=h2e338ed_4
-  - openssl=1.1.1k=h0d85af4_0
-  - pango=1.42.4=h060686c_0
-  - pcre=8.44=hb1e8313_0
-  - pip=21.1.3=pyhd8ed1ab_0
-  - pixman=0.40.0=haf1e3a3_0
-  - python=3.9.6=hd187cdc_1_cpython
-  - python_abi=3.9=2_cp39
-  - readline=8.1=h05e3726_0
-  - setuptools=49.6.0=py39h6e9494a_3
-  - sqlite=3.36.0=h23a322b_0
-  - tk=8.6.10=h0419947_1
-  - tzdata=2021a=he74cb21_1
-  - wheel=0.36.2=pyhd3deb0d_0
-  - xz=5.2.5=haf1e3a3_1
-  - zlib=1.2.11=h7795811_1010
-  - zstd=1.4.4=h1990bb4_3
+  - ca-certificates=2021.5.30
+  - cairo=1.14.12
+  - certifi=2021.5.30
+  - expat=2.2.10
+  - fontconfig=2.13.0
+  - freetype=2.10.4
+  - fribidi=1.0.10
+  - gettext=0.19.8.1
+  - glib=2.56.2
+  - graphite2=1.3.14
+  - graphviz=2.40.1
+  - harfbuzz=1.8.8
+  - icu=58.2
+  - jpeg=9b
+  - libcxx=12.0.1
+  - libffi=3.3
+  - libiconv=1.16
+  - libpng=1.6.37
+  - libtiff=4.1.0
+  - libxml2=2.9.10
+  - lz4-c=1.9.2
+  - ncurses=6.2
+  - openssl=1.1.1k
+  - openpyxl
+  - pango=1.42.4
+  - pandas
+  - pcre=8.44
+  - pip=21.1.3
+  - pixman=0.40.0
+  - python=3.9.6
+  - python_abi=3.9
+  - python-graphviz=0.20.1
+  - readline=8.1
+  - setuptools=49.6.0
+  - sqlite=3.36.0
+  - tk=8.6.10
+  - tzdata=2021a
+  - wheel=0.36.2
+  - xz=5.2.5
+  - zlib=1.2.11
+  - zstd=1.4.4
   - pip:
     - alembic==1.6.5
     - click==8.0.1
+    - coverage==7.3.0
     - dnspython==2.1.0
     - dominate==2.6.0
     - email-validator==1.1.3
@@ -55,6 +59,7 @@ dependencies:
     - flask-bootstrap==3.3.7.1
     - flask-login==0.5.0
     - flask-migrate==3.0.1
+    - flask-testing==0.8.1
     - flask-sqlalchemy==2.5.1
     - flask-wtf==0.15.1
     - greenlet==1.1.0
@@ -63,13 +68,12 @@ dependencies:
     - jinja2==3.0.1
     - mako==1.1.4
     - markupsafe==2.0.1
-    - psycopg2==2.9.1
+    - psycopg2-binary==2.9.7
     - pydot==1.4.2
     - pygraphviz==1.7
     - pyparsing==2.4.7
     - python-dateutil==2.8.2
     - python-editor==1.0.4
-    - python-graphviz==0.17
     - pyyaml==5.4.1
     - six==1.16.0
     - sqlalchemy==1.4.21
@@ -77,4 +81,3 @@ dependencies:
     - visitor==0.1.3
     - werkzeug==2.0.1
     - wtforms==2.3.3
-prefix: /Users/flashton/miniconda3/envs/seqbox
