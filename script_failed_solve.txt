@@ -1,0 +1,381 @@
+LInk to post:https://community.nanoporetech.com/posts/minknow-22-10-10-script-f
+Link to nano_community: https://community.nanoporetech.com/
+MinKNOW 22.10.10 'Script failed'    
+20th January 2023 16 Views 0 Reply 1 User
+
+Hi,
+Since updating MinKNOW to 22.10.10 I have been getting a 'script failed' error when trying to do a flow cell check.
+
+system: ubuntu 20.04
+Distribution: 22.10.10 (STABLE)
+MinKNOW Core: 5.3.1
+Bream: 7.3.5
+Protocol configuration: 5.3.8
+Guppy (build): 6.3.5+4a3c675
+Guppy (connected): 6.3.9+799d5bd
+
+Nvidia GPU, CUDA Version 11.4
+
+
+I have tried uninstalling MinKNOW:
+
+sudo apt purge minion-nc-gpu
+sudo apt autoremove
+
+and reinstalling with:
+
+sudo apt update
+sudo apt install minion-nc-gpu
+
+And I have edited minknow.service:
+
+sudo systemctl stop minknow
+sudo vim /lib/systemd/system/minknow.service
+
+edit:
+
+User=root
+Group=root
+
+reload and restart:
+
+sudo systemctl daemon-reload
+
+sudo systemctl start minknow 
+sudo systemctl status minknow
+
+
+Yet the same error occurs everytime.
+
+
+Minknow log files:
+
+2023-01-20 12:03:39.292306    INFO: mk_manager_starting (mk_manager)
+    hostname: powerpc-System-Product-Name
+    system: ubuntu 20.04
+            Distribution:           22.10.10 (STABLE)
+            MinKNOW Core:           5.3.1
+            Bream:                  7.3.5
+            Protocol configuration: 5.3.8
+            Guppy (build):          6.3.5+4a3c675
+            Guppy (connected):      6.3.9+799d5bd
+            
+2023-01-20 12:03:39.293020    INFO: ping_flusher_network_up (mk_manager)
+2023-01-20 12:03:39.294699    INFO: usb_device_with_firmware_found (host)
+    os_identifier: 2a1d:0001@004:005
+2023-01-20 12:03:39.294763    INFO: usb_device_with_firmware_being_reset (host)
+    device_type: MinION
+    os_identifier: 2a1d:0001@004:005
+2023-01-20 12:03:39.299468    INFO: using_existing_guppy_server (mk_manager)
+    guppy_version: 6.3.9+799d5bd
+2023-01-20 12:03:39.300718    INFO: local_auth_token (host)
+    path: /tmp/minknow-auth-token.json
+2023-01-20 12:03:39.300886    INFO: mk_manager_initialised (mk_manager)
+    pid: 4268
+2023-01-20 12:03:39.302158    INFO: common_process_started (host)
+    name: grpcwebproxy
+2023-01-20 12:03:39.303090    INFO: common_process_started (host)
+    name: basecall_manager
+2023-01-20 12:03:39.319457    INFO: rpc_delegate_is_listening (host)
+    executable: basecall_manager
+    port: 42817
+    security: tls
+2023-01-20 12:03:39.320677    INFO: common_process_started (host)
+    name: basecall_manager:grpcwebproxy
+2023-01-20 12:03:39.324727    INFO: usb_device_with_firmware_disconnected (host)
+    os_identifier: 2a1d:0001@004:005
+2023-01-20 12:03:39.326619    INFO: rpc_delegate_proxy_is_listening (host)
+    executable: basecall_manager
+    tls_port: 9505
+2023-01-20 12:03:39.721512    INFO: device_requiring_firmware_found (usb)
+    device_path: 2a1d:0000@003:008
+2023-01-20 12:03:40.106431    INFO: usb_device_with_firmware_found (host)
+    os_identifier: 2a1d:0001@004:006
+2023-01-20 12:03:40.818712    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: 2a1d:0001@004:006
+    state: initialising
+2023-01-20 12:03:47.751027    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: <unchanged>
+    state: ready
+2023-01-20 12:03:47.849528    INFO: instance_started (host)
+    grpc_secure_port: 8000
+    grpcweb_tls_port: 8001
+    instance: MN22853
+2023-01-20 12:04:32.602747    INFO: usb_device_with_firmware_disconnected (host)
+    os_identifier: 2a1d:0001@004:006
+2023-01-20 12:04:32.602902    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: <unchanged>
+    state: absent
+2023-01-20 12:04:34.997059    INFO: device_requiring_firmware_found (usb)
+    device_path: 2a1d:0000@003:009
+2023-01-20 12:04:35.414162    INFO: usb_device_with_firmware_found (host)
+    os_identifier: 2a1d:0001@004:007
+2023-01-20 12:04:36.092861    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: 2a1d:0001@004:007
+    state: initialising
+2023-01-20 12:04:43.015199    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: <unchanged>
+    state: ready
+2023-01-20 12:04:51.839822    INFO: usb_device_with_firmware_disconnected (host)
+    os_identifier: 2a1d:0001@004:007
+2023-01-20 12:04:51.839954    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: <unchanged>
+    state: absent
+2023-01-20 12:04:58.009072    INFO: device_requiring_firmware_found (usb)
+    device_path: 2a1d:0000@003:010
+2023-01-20 12:04:58.378343    INFO: usb_device_with_firmware_found (host)
+    os_identifier: 2a1d:0001@004:008
+2023-01-20 12:04:59.104583    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: 2a1d:0001@004:008
+    state: initialising
+2023-01-20 12:05:06.028076    INFO: hardware_state_changed (host)
+    name: MN22853
+    os_identifier: <unchanged>
+    state: ready
+
+
+cat /var/log/minknow/MN22853/control_server_log-0.txt 
+2023-01-20 12:03:47.771086    INFO: starting_up (control)
+    hostname: powerpc-System-Product-Name
+    system: ubuntu 20.04
+            Distribution:           22.10.10 (STABLE)
+            MinKNOW Core:           5.3.1
+            Bream:                  7.3.5
+            Protocol configuration: 5.3.8
+            Guppy (build):          6.3.5+4a3c675
+            Guppy (connected):      6.3.9+799d5bd
+            
+2023-01-20 12:03:47.792736    INFO: external_offload_service_not_configured (script)
+    auth_token_file: 
+    external_service_port: 0
+2023-01-20 12:03:47.823628    INFO: machine_description (control_server)
+    cpu_brand: AMD Ryzen 9 3950X 16-Core Processor            
+    cpu_has_avx: true
+    cpu_has_sse42: true
+    cpu_logical_core_count: 32
+    cpu_physical_core_count: 16
+    cpu_vendor: AuthenticAMD
+    memory_physical_bytes: 135055532032
+2023-01-20 12:03:47.823697    INFO: sending_telemetry_message (ping)
+    data: {"machine":{"arch":"x64","cpu":{"data":"100000004175746863414d44656e7469100f8700000820050b32d87efffb8b170000000000000000000000000000000000000000000...
+2023-01-20 12:03:47.840737    INFO: manager_notified_new_local_auth_token (util)
+    expires_in: 7549159409014058931ns
+    token_type: internal
+2023-01-20 12:03:47.841009    INFO: manager_notified_new_local_auth_token (util)
+    expires_in: 89991459731387ns
+    token_type: local
+2023-01-20 12:03:47.848536    INFO: minion_disconnected (engine)
+2023-01-20 12:03:48.069310    INFO: active_device_set (mgmt)
+    identifier: 2a1d:0001@004:006
+2023-01-20 12:03:48.098626    INFO: device_discovered (engine)
+    device_id: MN22853
+2023-01-20 12:03:48.538670    INFO: successfully_read_flow_cell_data (mgmt)
+    attempt: 1
+    flow_cell_data: V5{ minor_version = 0, wells_per_channel = 4, temperature_offset = 32767, flowcell_id = [ 46 41 56 38 33 30 36 30 00 00 00 00 00 00 00 00 ], product_code = [ 46 4c 4f 2d 4d 49 4e 31 31 34 00 00 00 00 00 00 ] }
+2023-01-20 12:03:49.585188    INFO: read_eeprom_id (mgmt)
+    eeprom_id: 8258776
+2023-01-20 12:03:49.600835    INFO: flowcell_discovered (engine)
+    asic_id: 0
+    asic_id_eeprom: 8258776
+    flow_cell_id: FAV83060
+2023-01-20 12:03:49.837540    INFO: firmware_component (rpc)
+    component_name: MinION FPGA
+    serial_number: 
+    version: 1.2.1
+2023-01-20 12:03:49.837587    INFO: firmware_component (rpc)
+    component_name: USB
+    serial_number: 
+    version: 1.2.5
+2023-01-20 12:04:24.631660    INFO: flowcell_disconnected (engine)
+2023-01-20 12:04:32.603035    INFO: manager_notified_hw_state_change (util)
+    new_identifier: 2a1d:0001@004:006
+    new_state: unavailable
+2023-01-20 12:04:32.637634    INFO: active_device_detached (mgmt)
+    identifier: 2a1d:0001@004:006
+2023-01-20 12:04:32.639319    INFO: minion_disconnected (engine)
+2023-01-20 12:04:36.092941    INFO: manager_notified_hw_state_change (util)
+    new_identifier: 2a1d:0001@004:007
+    new_state: initialising
+2023-01-20 12:04:43.015283    INFO: manager_notified_hw_state_change (util)
+    new_identifier: 2a1d:0001@004:007
+    new_state: ready
+2023-01-20 12:04:43.100979    INFO: active_device_set (mgmt)
+    identifier: 2a1d:0001@004:007
+2023-01-20 12:04:43.150489    INFO: device_discovered (engine)
+    device_id: MN22853
+2023-01-20 12:04:45.150657    INFO: device_without_flowcell_discovered (engine)
+    device_id: MN22853
+2023-01-20 12:04:51.840067    INFO: manager_notified_hw_state_change (util)
+    new_identifier: 2a1d:0001@004:007
+    new_state: unavailable
+2023-01-20 12:04:52.356273    INFO: active_device_detached (mgmt)
+    identifier: 2a1d:0001@004:007
+2023-01-20 12:04:52.406459    INFO: minion_disconnected (engine)
+2023-01-20 12:04:59.104663    INFO: manager_notified_hw_state_change (util)
+    new_identifier: 2a1d:0001@004:008
+    new_state: initialising
+2023-01-20 12:05:06.028182    INFO: manager_notified_hw_state_change (util)
+    new_identifier: 2a1d:0001@004:008
+    new_state: ready
+2023-01-20 12:05:06.112847    INFO: active_device_set (mgmt)
+    identifier: 2a1d:0001@004:008
+2023-01-20 12:05:06.118157    INFO: device_discovered (engine)
+    device_id: MN22853
+2023-01-20 12:05:08.118384    INFO: device_without_flowcell_discovered (engine)
+    device_id: MN22853
+2023-01-20 12:05:16.664565    INFO: successfully_read_flow_cell_data (mgmt)
+    attempt: 1
+    flow_cell_data: V5{ minor_version = 0, wells_per_channel = 4, temperature_offset = 32767, flowcell_id = [ 46 41 56 38 33 30 36 30 00 00 00 00 00 00 00 00 ], product_code = [ 46 4c 4f 2d 4d 49 4e 31 31 34 00 00 00 00 00 00 ] }
+2023-01-20 12:05:17.710313    INFO: read_eeprom_id (mgmt)
+    eeprom_id: 8258776
+2023-01-20 12:05:17.727886    INFO: flowcell_discovered (engine)
+    asic_id: 753807769
+    asic_id_eeprom: 8258776
+    flow_cell_id: FAV83060
+2023-01-20 12:05:17.874687    INFO: firmware_component (rpc)
+    component_name: MinION FPGA
+    serial_number: 
+    version: 1.2.1
+2023-01-20 12:05:17.874714    INFO: firmware_component (rpc)
+    component_name: USB
+    serial_number: 
+    version: 1.2.5
+2023-01-20 12:05:26.588445    INFO: create_request_for_disabling_OS_standby (util)
+2023-01-20 12:05:26.588772    INFO: sending_telemetry_message (ping)
+    data: {"monitor":"protocol_start","protocol_output_dir":"/var/lib/minknow/data/./no_group/no_sample/20230120_1205_MN22853_FAV83060_7477ab4c","script_argu...
+2023-01-20 12:05:26.593566    INFO: protocol_started (script)
+    output_path: /var/lib/minknow/data/./no_group/no_sample/20230120_1205_MN22853_FAV83060_7477ab4c
+    output_reads_dir: /var/lib/minknow/data/.
+    protocol_group_id: no_group
+    protocol_output_pattern: {protocol_group_id}/{sample_id}/{start_time}_{device_id}_{flow_cell_id}_{short_protocol_run_id}
+    run_id: 7477ab4c-da4d-4b55-b22e-b634b5d583fe
+    sample_id: no_sample
+    script_path: checks/flowcell_check/platform_qc_R10_4:FLO-MIN114
+2023-01-20 12:05:26.594281    INFO: disk_space_info_user (rpc)
+    filesystem_id: /
+    space_remaining: 1655
+    unit: GB
+2023-01-20 12:05:58.284266    INFO: base_device.wait_for_temperature (user_messages)
+    target: 37.0
+    timeout: 300
+2023-01-20 12:05:59.300065    INFO: asic_id_changed (mgmt)
+    new_asic_id: 754872729
+    old_asic_id: 753807769
+2023-01-20 12:05:59.587865    INFO: successfully_read_flow_cell_data (mgmt)
+    attempt: 1
+    flow_cell_data: V5{ minor_version = 0, wells_per_channel = 4, temperature_offset = 32767, flowcell_id = [ 46 41 56 38 33 30 36 30 00 00 00 00 00 00 00 00 ], product_code = [ 46 4c 4f 2d 4d 49 4e 31 31 34 00 00 00 00 00 00 ] }
+2023-01-20 12:06:02.588438    INFO: asic_id_changed (mgmt)
+    new_asic_id: 753807769
+    old_asic_id: 754872729
+2023-01-20 12:06:02.876519    INFO: successfully_read_flow_cell_data (mgmt)
+    attempt: 1
+    flow_cell_data: V5{ minor_version = 0, wells_per_channel = 4, temperature_offset = 32767, flowcell_id = [ 46 41 56 38 33 30 36 30 00 00 00 00 00 00 00 00 ], product_code = [ 46 4c 4f 2d 4d 49 4e 31 31 34 00 00 00 00 00 00 ] }
+2023-01-20 12:06:03.884138    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 2
+    total_good_frames: 6155
+    total_no_config_frames: 2840
+    total_undefined_frames: 0
+2023-01-20 12:10:58.349380    INFO: base_device.fail_to_reach_temperature (user_messages)
+    target: 37.0
+    timeout: 300
+    tolerance: 0.1
+2023-01-20 12:20:58.434747   ERROR: script_crashed (script)
+    exit_code: 1
+    run_id: 7477ab4c-da4d-4b55-b22e-b634b5d583fe
+    script_output: Traceback (most recent call last):
+                     File "shared/modular_qc/modular_qc_script.py", line 294, in <module>
+                       main(config=args.config)
+                     File "shared/modular_qc/modular_qc_script.py", line 121, in main
+                       calibrate(device, output_bulk=False, ping_data=True, purpose=device.get_exp_script_purpose())
+                     File "/opt/ont/minknow/ont-python/lib/python3.7/site-packages/bream4/toolkit/calibration/calibrate_device.py", line 105, in calibrate
+                       device.start_acquisition(purpose="calibration", file_output=file_output)
+                     File "/opt/ont/minknow/ont-python/lib/python3.7/site-packages/bream4/device_interfaces/devices/base_device.py", line 1339, in start_acquisition
+                       self.connection.acquisition.start(purpose=purposes[purpose], file_output=file_outputs[file_output])
+                     File "/opt/ont/minknow/ont-python/lib/python3.7/site-packages/minknow_api/acquisition_service.py", line 269, in start
+                       "minknow_api.acquisition.AcquisitionService")
+                     File "/opt/ont/minknow/ont-python/lib/python3.7/site-packages/minknow_api/acquisition_service.py", line 92, in run_with_retry
+                       result = MessageWrapper(method(message, timeout=timeout), unwraps=unwraps)
+                     File "/opt/ont/minknow/ont-python/lib/python3.7/site-packages/grpc/_channel.py", line 946, in __call__
+                       return _end_unary_response_blocking(state, call, False, None)
+                     File "/opt/ont/minknow/ont-python/lib/python3.7/site-packages/grpc/_channel.py", line 849, in _end_unary_response_blocking
+                       raise _InactiveRpcError(state)
+                   grpc._channel._InactiveRpcError: <_InactiveRpcError of RPC that terminated with:
+                       status = StatusCode.UNKNOWN
+                       details = "Failed to start run: "
+                       debug_error_string = "{"created":"@1674213658.354680473","description":"Error received from peer ipv4:127.0.0.1:8000","file":"src/core/lib/surface/call.cc","file_line":1069,"grpc_message":"Failed to start run: ","grpc_status":2}"
+                   >
+                   
+    script_path: checks/flowcell_check/platform_qc_R10_4:FLO-MIN114
+2023-01-20 12:20:58.436699    INFO: sending_telemetry_message (ping)
+    data: {"acquisitions":[],"monitor":"protocol_end","script_name":"checks/flowcell_check/platform_qc_R10_4:FLO-MIN114","stop_reason":"FINISHED_WITH_ERROR"}
+2023-01-20 12:20:58.436829    INFO: clear_request_for_disabling_OS_standby (util)
+2023-01-20 12:21:07.466158    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 42802
+2023-01-20 12:21:18.473781    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 98370
+2023-01-20 12:21:29.483264    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 152728
+2023-01-20 12:21:41.444449    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 213138
+2023-01-20 12:21:52.451901    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 267516
+2023-01-20 12:22:03.462948    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 323081
+2023-01-20 12:22:14.473627    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 377449
+2023-01-20 12:22:25.482186    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 433030
+2023-01-20 12:22:36.492419    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 487400
+2023-01-20 12:22:47.503357    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 541767
+2023-01-20 12:22:59.464952    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 602177
+2023-01-20 12:23:10.473561    INFO: bad_quality_asic_data (mgmt)
+    total_bad_frames: 4
+    total_good_frames: 4482636
+    total_no_config_frames: 5921
+    total_undefined_frames: 656547
+
+
+
