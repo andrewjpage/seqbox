@@ -161,8 +161,12 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
 
 def get_sample_source(sample_info):
     # want to find whether this sample_source is already part of this project
+    # ensure that sample_info['sample_source_identifier']) is always interpreted by the database as a char var, not an int
+    # this is because the sample_source_identifier is a char field in the db, and if you pass an int, it will try to
+    # convert it to a char, and then it will fail to find the sample_source.
+    sample_info['sample_source_identifier'] = str(sample_info['sample_source_identifier'])
     matching_sample_source = SampleSource.query.\
-        filter_by(sample_source_identifier=str(sample_info['sample_source_identifier']))\
+        filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
         .join(SampleSource.projects) \
         .join(Groups)\
         .filter_by(group_name=sample_info['group_name']).all()
@@ -184,7 +188,6 @@ def get_sample(readset_info):
         .join(SampleSource.projects) \
         .join(Groups) \
         .filter_by(group_name=readset_info['group_name']).distinct().all()
-
     if len(matching_sample) == 0:
         return False
     elif len(matching_sample) == 1:
