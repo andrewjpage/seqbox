@@ -164,10 +164,8 @@ def get_sample_source(sample_info):
     # ensure that sample_info['sample_source_identifier']) is always interpreted by the database as a char var, not an int
     # this is because the sample_source_identifier is a char field in the db, and if you pass an int, it will try to
     # convert it to a char, and then it will fail to find the sample_source.
-    sample_source_identifier_str = str(sample_info['sample_source_identifier'])
-    print(type(sample_source_identifier_str))
     matching_sample_source = SampleSource.query.\
-        filter_by(sample_source_identifier=sample_source_identifier_str)\
+        filter_by(sample_source_identifier=str(sample_info['sample_source_identifier']))\
         .join(SampleSource.projects) \
         .join(Groups)\
         .filter_by(group_name=sample_info['group_name']).all()
