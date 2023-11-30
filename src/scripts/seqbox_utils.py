@@ -162,7 +162,7 @@ def check_sample_source_associated_with_project(sample_source, sample_source_inf
 def get_sample_source(sample_info):
     # want to find whether this sample_source is already part of this project
     matching_sample_source = SampleSource.query.\
-        filter_by(sample_source_identifier=sample_info['sample_source_identifier'])\
+        filter_by(sample_source_identifier=str(sample_info['sample_source_identifier']))\
         .join(SampleSource.projects) \
         .join(Groups)\
         .filter_by(group_name=sample_info['group_name']).all()

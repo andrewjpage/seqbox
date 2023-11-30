@@ -3,6 +3,15 @@ local sequence management lightweight tools
 
 **this codebase is still in active development, breaking changes will occur**
 
+## Quickstart 
+
+This guide will be superceded once we have an image in dockerhub.
+
+1. Clone this github repo `git clone https://github.com/flashton2003/seqbox.git`
+2. Change into the directory `cd seqbox`
+3. Create a docker image `docker build -t seqbox .`
+4. 
+
 ## Database notes
 
 ### groups
