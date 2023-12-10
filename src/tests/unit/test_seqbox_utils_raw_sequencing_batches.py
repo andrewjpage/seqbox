@@ -6,7 +6,8 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from seqbox_utils import  get_raw_sequencing_batch, add_raw_sequencing_batch, check_raw_sequencing_batch
+from scripts.utils.check import check_raw_sequencing_batch
+from scripts.utils.db import get_raw_sequencing_batch, add_raw_sequencing_batch
 
 class TestSeqboxUtilsRawSequencingBatches(TestCase):
     def create_app(self):

@@ -6,7 +6,12 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from seqbox_utils import  get_readset_batch, add_readset_batch, check_readset_batches, add_raw_sequencing_batch
+from scripts.utils.check import check_readset_batches
+from scripts.utils.db import (
+    get_readset_batch,
+    add_readset_batch,
+    add_raw_sequencing_batch
+)
 
 class TestSeqboxUtilsReadSetBatches(TestCase):
     def create_app(self):

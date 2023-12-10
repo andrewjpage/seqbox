@@ -5,7 +5,7 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from seqbox_utils import get_pcr_assay, add_pcr_assay
+from scripts.utils.db import get_pcr_assay, add_pcr_assay
 
 class TestSeqboxUtilsProjects(TestCase):
     def create_app(self):

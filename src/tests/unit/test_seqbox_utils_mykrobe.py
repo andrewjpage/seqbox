@@ -8,7 +8,21 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import Mykrobe
-from seqbox_utils import read_in_mykrobe, check_mykrobe_res, get_readset_from_readset_identifier, rename_dodgy_mykrobe_variables, add_culture, add_mykrobe_result, get_mykrobe_result, add_raw_sequencing_batch,add_extraction, add_tiling_pcr, add_group, add_project, add_sample_source, add_sample, add_readset_batch, add_readset
+from scripts.utils.check import check_mykrobe_res
+from scripts.utils.db import (
+    read_in_mykrobe,
+    rename_dodgy_mykrobe_variables,
+    add_culture,
+    add_mykrobe_result,
+    get_mykrobe_result,
+    add_raw_sequencing_batch,add_extraction,
+    add_group,
+    add_project,
+    add_sample_source,
+    add_sample,
+    add_readset_batch,
+    add_readset
+)
 
 class TestSeqboxUtilsMykrobe(TestCase):
     def create_app(self):

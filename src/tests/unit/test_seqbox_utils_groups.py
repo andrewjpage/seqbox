@@ -7,7 +7,7 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import  Project, SampleSource
-from seqbox_utils import add_group, get_group
+from scripts.utils.db import add_group, get_group
 
 class TestSeqboxUtilsGroups(TestCase):
     def create_app(self):

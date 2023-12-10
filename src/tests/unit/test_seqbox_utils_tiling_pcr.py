@@ -6,8 +6,18 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import  TilingPcr
-from seqbox_utils import  add_extraction, add_group, add_project, add_sample_source, add_sample, check_tiling_pcr, get_tiling_pcr, add_tiling_pcr 
+from app.models import TilingPcr
+from scripts.utils.check import check_tiling_pcr
+from scripts.utils.db import (
+    add_extraction,
+    add_group,
+    add_project,
+    add_sample_source,
+    add_sample,
+    get_tiling_pcr,
+    add_tiling_pcr,
+)
+
 
 class TestSeqboxUtilsTilingPcr(TestCase):
     def create_app(self):

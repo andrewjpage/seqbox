@@ -8,7 +8,22 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import PangolinResult
-from seqbox_utils import  check_pangolin_result,read_in_pangolin_result,add_pangolin_result,get_pangolin_result,  add_artic_covid_result, get_artic_covid_result, add_raw_sequencing_batch,get_nanopore_readset_from_batch_and_barcode, add_extraction, add_tiling_pcr, add_group, add_project, add_sample_source, add_sample, add_readset_batch, add_readset
+from scripts.utils.check import check_pangolin_result
+from scripts.utils.db import (
+    read_in_pangolin_result,
+    add_pangolin_result,
+    get_pangolin_result,
+    add_artic_covid_result,
+    add_raw_sequencing_batch,
+    add_extraction,
+    add_tiling_pcr,
+    add_group,
+    add_project,
+    add_sample_source,
+    add_sample,
+    add_readset_batch,
+    add_readset
+)
 
 class TestSeqboxUtilsArticWorkflows(TestCase):
     def create_app(self):

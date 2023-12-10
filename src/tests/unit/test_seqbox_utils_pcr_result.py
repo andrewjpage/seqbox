@@ -7,7 +7,17 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import  PcrAssay, Sample, PcrResult
-from seqbox_utils import add_pcr_result, check_pcr_result, get_pcr_result, add_group, add_project, add_sample_source, add_sample, add_pcr_assay, read_in_pcr_result
+from scripts.utils.check import check_pcr_result
+from scripts.utils.db import (
+    add_pcr_result,
+    get_pcr_result,
+    add_group,
+    add_project,
+    add_sample_source,
+    add_sample,
+    add_pcr_assay,
+    read_in_pcr_result
+)
 
 class TestSeqboxUtilsSample(TestCase):
     def create_app(self):

@@ -7,7 +7,14 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from seqbox_utils import add_elution_info_to_extraction,add_extraction, add_group, add_project, add_sample_source, add_sample
+from scripts.utils.db import (
+    add_elution_info_to_extraction,
+    add_extraction,
+    add_group,
+    add_project,
+    add_sample_source,
+    add_sample
+)
 
 class TestSeqboxUtilsElution(TestCase):
     def create_app(self):

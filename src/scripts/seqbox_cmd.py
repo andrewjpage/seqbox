@@ -1,15 +1,56 @@
 import sys
 import argparse
-from seqbox_utils import read_in_as_dict, add_sample, add_project,\
-    get_sample_source, add_sample_source, query_projects, \
-    get_extraction, add_extraction, check_extraction_fields, add_readset, add_raw_sequencing_batch, get_raw_sequencing_batch, \
-    get_tiling_pcr, add_tiling_pcr, get_readset, get_sample, \
-    check_sample_source_associated_with_project, get_group, add_group, get_covid_confirmatory_pcr, \
-    add_covid_confirmatory_pcr, get_readset_batch, add_readset_batch, get_pcr_result, add_pcr_result, get_pcr_assay, \
-    add_pcr_assay, get_artic_covid_result, add_artic_covid_result, get_pangolin_result, add_pangolin_result, \
-    check_tiling_pcr, basic_check_readset_fields, check_pcr_result, add_culture, get_culture, \
-    add_elution_info_to_extraction, query_info_on_all_samples, query_info_on_covid_samples, get_mykrobe_result, \
-    add_mykrobe_result, update_sample, check_cultures
+from scripts.utils.check import (
+    check_basic_readset_fields,
+    check_cultures,
+    check_extraction_fields,
+    check_pcr_result,
+    check_sample_source_associated_with_project,
+    check_tiling_pcr,
+)
+
+from scripts.utils.generic import (
+    read_in_as_dict,
+)
+
+from scripts.utils.db import (
+    add_sample,
+    add_project,
+    add_sample_source,
+    get_sample_source,
+    query_projects,
+    add_extraction,
+    get_extraction,
+    add_readset,
+    add_raw_sequencing_batch,
+    get_raw_sequencing_batch,
+    get_tiling_pcr,
+    add_tiling_pcr,
+    get_readset,
+    get_sample,
+    get_group,
+    add_group,
+    get_covid_confirmatory_pcr,
+    add_covid_confirmatory_pcr,
+    get_readset_batch,
+    add_readset_batch,
+    get_pcr_result,
+    add_pcr_result,
+    get_pcr_assay,
+    add_pcr_assay,
+    get_artic_covid_result,
+    add_artic_covid_result,
+    get_pangolin_result,
+    add_pangolin_result,
+    add_culture,
+    get_culture,
+    add_elution_info_to_extraction,
+    query_info_on_all_samples,
+    query_info_on_covid_samples,
+    get_mykrobe_result,
+    add_mykrobe_result,
+    update_sample,
+)
 
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
@@ -64,7 +105,7 @@ def add_readset_batches(args):
 def add_readsets(args):
     all_readsets_info = read_in_as_dict(args.readsets_inhandle)
     for readset_info in all_readsets_info:
-        if basic_check_readset_fields(readset_info) is False:
+        if check_basic_readset_fields(readset_info) is False:
             continue
         if get_readset(readset_info, args.covid) is False:
             add_readset(readset_info=readset_info, covid=args.covid,

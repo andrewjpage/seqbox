@@ -7,7 +7,17 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app.models import CovidConfirmatoryPcr
 from app import app, db
-from seqbox_utils import  add_extraction, add_group, add_project, add_sample_source, add_sample, read_in_covid_confirmatory_pcr, check_covid_confirmatory_pcr, add_covid_confirmatory_pcr, get_covid_confirmatory_pcr
+from scripts.utils.db import (
+    add_extraction,
+    add_group,
+    add_project,
+    add_sample_source,
+    add_sample,
+    read_in_covid_confirmatory_pcr,
+    check_covid_confirmatory_pcr,
+    add_covid_confirmatory_pcr,
+    get_covid_confirmatory_pcr
+)
 
 class TestSeqboxUtilsConfirmatoryPCRs(TestCase):
     def create_app(self):

@@ -6,8 +6,14 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from app.models import  Project, SampleSource,Groups
-from seqbox_utils import get_sample_source, add_sample_source, check_sample_source_associated_with_project, add_group, add_project, check_sample_sources
+from app.models import Project, SampleSource,Groups
+from scripts.utils.check import check_sample_sources, check_sample_source_associated_with_project
+from scripts.utils.db import (
+    get_sample_source,
+    add_sample_source,
+    add_group,
+    add_project,
+)
 
 class TestSeqboxUtilsSampleSources(TestCase):
     def create_app(self):

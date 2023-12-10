@@ -8,7 +8,22 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import ReadSet, ReadSetNanopore
-from seqbox_utils import add_culture, add_raw_sequencing_batch,add_extraction, get_readset_batch, get_raw_sequencing_batch, add_tiling_pcr, add_group, add_project, add_sample_source, add_sample, add_readset_batch, basic_check_readset_fields, get_readset, add_readset, read_in_readset, check_readset_fields
+from scripts.utils.check import check_basic_readset_fields, check_readset_fields
+from scripts.utils.db import (
+    add_culture,
+    add_raw_sequencing_batch,add_extraction,
+    get_readset_batch,
+    get_raw_sequencing_batch,
+    add_tiling_pcr,
+    add_group,
+    add_project,
+    add_sample_source,
+    add_sample,
+    add_readset_batch,
+    get_readset,
+    add_readset,
+    read_in_readset,
+)
 
 class TestSeqboxUtilsReadset(TestCase):
     def create_app(self):
@@ -32,12 +47,12 @@ class TestSeqboxUtilsReadset(TestCase):
         add_tiling_pcr({'sample_identifier': 'sample1', 'date_extracted': '01/01/2023', 'extraction_identifier': '3', 'date_tiling_pcred': '01/01/2023', 'tiling_pcr_identifier': '5', 'group_name': 'Group', 'tiling_pcr_protocol': 'ABC','number_of_cycles': '38', 'extraction_identifier': '1', 'sample_identifier': 'sample1', 'group_name': 'Group', 'extraction_from':'whole_sample', 'submitter_plate_id':'CUL', 'submitter_plate_well': 'A1', 'nucleic_acid_concentration': '1', 'sample_identifier': 'sample1', 'extraction_machine': 'KingFisher Flex', 'extraction_kit': 'MagMAX Viral/Pathogen II (MAGMAX-96)', 'what_was_extracted': 'ABC', 'extraction_processing_institution': 'MLW'})
 
     # check readset fields for all values
-    def test_basic_check_readset_fields(self):
-        self.assertFalse(basic_check_readset_fields({'data_storage_device': '', 'readset_batch_name': 'EFG'}))
-        self.assertFalse(basic_check_readset_fields({'data_storage_device': 'storage_device_1', 'readset_batch_name': ''}))
-        self.assertFalse(basic_check_readset_fields({ 'readset_batch_name': 'EFG'}))
-        self.assertFalse(basic_check_readset_fields({'data_storage_device': 'storage_device_1'}))
-        self.assertTrue(basic_check_readset_fields({'data_storage_device': 'storage_device_1', 'readset_batch_name': 'EFG'}))
+    def test_check_basic_readset_fields(self):
+        self.assertFalse(check_basic_readset_fields({'data_storage_device': '', 'readset_batch_name': 'EFG'}))
+        self.assertFalse(check_basic_readset_fields({'data_storage_device': 'storage_device_1', 'readset_batch_name': ''}))
+        self.assertFalse(check_basic_readset_fields({ 'readset_batch_name': 'EFG'}))
+        self.assertFalse(check_basic_readset_fields({'data_storage_device': 'storage_device_1'}))
+        self.assertTrue(check_basic_readset_fields({'data_storage_device': 'storage_device_1', 'readset_batch_name': 'EFG'}))
 
     # get readset where readset_batch is false
     def test_get_readset_batch_name_doesnt_exist(self):

@@ -10,7 +10,7 @@ sys.path.append('../scripts')
 
 from app import app
 from app.models import Project, SampleSource
-from seqbox_utils import read_in_csv, read_in_excel, read_in_as_dict
+from scripts.utils.generic import read_in_csv, read_in_excel, read_in_as_dict
 
 test_modules_dir = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(test_modules_dir, 'data','utils_file_parsing')
