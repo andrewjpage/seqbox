@@ -50,7 +50,7 @@ def add_artic_covid_result(artic_covid_result_info: dict):
         artic_covid_result_info (dict): a dictionary containing the artic covid result information
     """
     readset_nanopore = get_nanopore_readset_from_batch_and_barcode(artic_covid_result_info)
-    if readset_nanopore is False:
+    if not readset_nanopore:
         print(f"Warning - trying to add artic covid results. There is no readset for barcode {artic_covid_result_info['barcode']} from "
               f"read set batch {artic_covid_result_info['readset_batch_name']}.")
         return False
@@ -132,7 +132,7 @@ def add_covid_confirmatory_pcr(covid_confirmatory_pcr_info: dict):
                                             result information
     """
     extraction = get_extraction(covid_confirmatory_pcr_info)
-    if extraction is False:
+    if not extraction:
         print(
             f"Adding covid confirmatory PCR. "
             f"No Extraction match for {covid_confirmatory_pcr_info['sample_identifier']}, "
@@ -661,11 +661,13 @@ def add_pangolin_result(pangolin_result_info: dict):
         pangolin_result_info (dict): a dictionary containing the pangolin result information
     """
     artic_covid_result = get_artic_covid_result(pangolin_result_info)
-    if artic_covid_result is False:
-        print(f"Warning - trying to add pangolin results. There is no readset for barcode "
-              f"{pangolin_result_info['barcode']} from "
-              f"read set batch {pangolin_result_info['readset_batch_name']}.")
-        return
+    if not artic_covid_result:
+        print(
+            f"Warning - trying to add pangolin results. There is no readset for barcode "
+            f"{pangolin_result_info['barcode']} from read set batch "
+            f"{pangolin_result_info['readset_batch_name']}."
+        )
+        return False
     pangolin_result = read_in_pangolin_result(pangolin_result_info)
     artic_covid_result.pangolin_results.append(pangolin_result)
     db.session.commit()
@@ -826,7 +828,7 @@ def add_pcr_result(pcr_result_info: dict):
     assay = get_pcr_assay(pcr_result_info)
     assay.pcr_results.append(pcr_result)
     sample = get_sample(pcr_result_info)
-    if sample is False:
+    if not sample:
         print(
             f"Adding pcr result, cant find sample for this result:\n{pcr_result_info}\nExiting."
         )
@@ -890,7 +892,7 @@ def read_in_pcr_result(pcr_result_info: dict) -> PcrResult:
     Returns:
         PcrResult: the pcr result object
     """
-    if check_pcr_result(pcr_result_info) is False:
+    if not check_pcr_result(pcr_result_info):
         sys.exit(1)
     pcr_result = PcrResult()
     if pcr_result_info['date_pcred']:
@@ -948,9 +950,9 @@ def get_projects(info: dict):
     projects = []
     for project_name in project_names:
         p = query_projects(info, project_name)
-        if p[0] is True:
+        if p[0]:
             projects.append(p[1])
-        elif p[0] is False:
+        elif not p[0]:
             print(
                 f"Getting projects. Project {project_name} from group {info['group_name']} "
                 f"does not exist in the db, you need to add it using the seqbox_cmd.py "
@@ -1148,7 +1150,7 @@ def read_in_raw_sequencing(
             fast5s = glob.glob(path)
             if len(fast5s) == 0:
                 print(f'Warning - No fast5 found in {path}. Continuing, but check this.')
-        elif nanopore_default is False:
+        elif not nanopore_default:
             assert readset_info['path_fast5'].endswith('fast5')
             assert os.path.isfile(readset_info['path_fast5'])
             raw_sequencing.raw_sequencing_nanopore.path_fast5 = readset_info['path_fast5']
@@ -1600,7 +1602,7 @@ def add_sample(sample_info: dict, submitted_for_sequencing: bool):
     # if it does, return it, if it does not, instantiate a new Project and return it
     check_samples(sample_info)
     sample_source = get_sample_source(sample_info)
-    if sample_source is False:
+    if not sample_source:
         print(
             f"Adding sample. \n"
             f"There is no matching sample_source with the sample_source_identifier "

@@ -363,7 +363,7 @@ def check_sample_source_associated_with_project(sample_source: dict, sample_sour
             # query projects, this will only return p[0] is True if the project name already
             # exists for this group otherwise, they need to add the project and re-run.
             p = query_projects(sample_source_info, project_name)
-            if p[0] is True:
+            if p[0]:
                 # add it to the projects associated with this sample source
                 sample_source.projects.append(p[1])
             else:
