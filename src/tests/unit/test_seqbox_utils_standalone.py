@@ -8,7 +8,6 @@ sys.path.append('./')
 sys.path.append('../scripts')
 
 from app import app, db
-from scripts.utils.check import check_plate_ids
 from scripts.utils.generic import replace_with_none, convert_to_datetime_dict, convert_to_datetime_df
 
 # Test methods that are standalone and dont need complex external libraries or inputs
