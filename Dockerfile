@@ -51,8 +51,15 @@ RUN sudo service postgresql start && \
     sudo -u postgres createuser $SEQBOX_USER && \
     sudo -u postgres createuser cat && \
     sudo -u postgres createdb test_seqbox && \
-    sudo -u postgres psql -c "grant all privileges on database test_seqbox to root;" && \
+    sudo -u postgres psql -c "ALTER SCHEMA public OWNER TO postgres;" && \
+    sudo -u postgres psql -c "grant all privileges on database test_seqbox to $SEQBOX_USER;" && \
     sudo -u postgres psql -c "ALTER USER $SEQBOX_USER WITH PASSWORD 'you-will-never-guess';" && \
+    sudo service postgresql restart
+
+RUN sudo -u postgres psql -c "grant all privileges on database test_seqbox to $SEQBOX_USER;" && \
+    sudo -u postgres psql -c "GRANT USAGE ON SCHEMA public TO $SEQBOX_USER;" && \
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $SEQBOX_USER;" && \
+    sudo -u postgres psql -c "GRANT CREATE ON SCHEMA public TO $SEQBOX_USER;" && \
     sudo service postgresql restart
 CMD ["service" "postgresql" "start"]
 
@@ -62,7 +69,7 @@ ENV SECRET_KEY="you-will-never-guess"
 ENV FLASK_APP=/app/seqbox/src/main.py
 
 # Load a database dump for testing
-RUN sudo -u postgres pg_restore -d test_seqbox /data/seqbox.tar && \
-    sudo -u postgres psql -d test_seqbox -c "DELETE FROM alembic_version;" && \
-    sudo -u postgres psql -d test_seqbox -c "INSERT INTO alembic_version (version_num) VALUES ('c48cdec0b1db');" 
+#RUN sudo -u postgres pg_restore -d test_seqbox /data/seqbox.tar && \
+#    sudo -u postgres psql -d test_seqbox -c "DELETE FROM alembic_version;" && \
+#    sudo -u postgres psql -d test_seqbox -c "INSERT INTO alembic_version (version_num) VALUES ('c48cdec0b1db');" 
     

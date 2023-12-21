@@ -5,7 +5,6 @@ from scripts.utils.check import (
     check_cultures,
     check_extraction_fields,
     check_pcr_result,
-    check_sample_source_associated_with_project,
     check_tiling_pcr,
 )
 
@@ -50,8 +49,8 @@ from scripts.utils.db import (
     get_mykrobe_result,
     add_mykrobe_result,
     update_sample,
+    check_sample_source_associated_with_project,
 )
-
 
 allowed_sequencing_types = {'nanopore', 'illumina'}
 permitted_artic_workflows = {'medaka'}

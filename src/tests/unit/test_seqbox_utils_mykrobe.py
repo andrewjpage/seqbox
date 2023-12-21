@@ -8,7 +8,6 @@ sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
 from app.models import Mykrobe
-from scripts.utils.check import check_mykrobe_res
 from scripts.utils.db import (
     read_in_mykrobe,
     rename_dodgy_mykrobe_variables,
@@ -74,29 +73,6 @@ class TestSeqboxUtilsMykrobe(TestCase):
                         'readset_identifier': '1',
                         }
         add_readset(readset_info, False, False)
-
-
-    def test_check_mykrobe_res(self):
-        self.assertEqual(None,check_mykrobe_res({'sample': 'sample1', 'drug': 'pen', 'susceptibility': 'resistant','mykrobe_version': '1.2.3' }))
-
-        #empty
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({'sample': '', 'drug': 'pen', 'susceptibility': 'resistant','mykrobe_version': '1.2.3' })
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({'sample': 'sample1', 'drug': '', 'susceptibility': 'resistant','mykrobe_version': '1.2.3' })
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({'sample': 'sample1', 'drug': 'pen', 'susceptibility': '','mykrobe_version': '1.2.3' })
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({'sample': 'sample1', 'drug': 'pen', 'susceptibility': 'resistant','mykrobe_version': '' })
-        #missing
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({ 'drug': 'pen', 'susceptibility': 'resistant','mykrobe_version': '1.2.3' })
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({'sample': 'sample1', 'susceptibility': 'resistant','mykrobe_version': '1.2.3' })
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({'sample': 'sample1', 'drug': 'pen','mykrobe_version': '1.2.3' })
-        with self.assertRaises(SystemExit) as cm:
-            check_mykrobe_res({'sample': 'sample1', 'drug': 'pen', 'susceptibility': 'resistant' })
 
     def test_read_in_mykrobe(self):
         mykrobe_result_info = {'sample': 'sample1', 

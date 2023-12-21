@@ -174,7 +174,7 @@ class TestSeqboxUtilsSample(TestCase):
 
         for invalid_result in [' Negative', ' Negative ', 'xNegative - Followup', 'Positive - xxxx', 'Possssitive', 'Indeterminate\n', 'not done']:
             pcr_result_info['pcr_result'] = invalid_result
-            with self.assertRaises(SystemExit) as cm:
+            with self.assertRaises(ValueError) as cm:
                 check_pcr_result(pcr_result_info)
 
     def test_add_result_sample_doesnt_exist(self):

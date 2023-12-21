@@ -6,7 +6,6 @@ sys.path.append('../')
 sys.path.append('./')
 sys.path.append('../scripts')
 from app import app, db
-from scripts.utils.check import check_readset_batches
 from scripts.utils.db import (
     get_readset_batch,
     add_readset_batch,
@@ -26,27 +25,6 @@ class TestSeqboxUtilsReadSetBatches(TestCase):
 
     def populate_db(self):
         add_raw_sequencing_batch({'date_run': '01/01/2023', 'sequencing_type': 'nanopore', 'batch_name': 'ABC', 'instrument_model': 'MinION', 'instrument_name': 'ABC123', 'sequencing_centre': 'MLW', 'flowcell_type': 'R12.3', 'sequencing_type': 'WGS', 'batch_directory': '/path/to/dir' })
-
-    def test_check_readset_batches(self):
-        self.assertTrue(check_readset_batches({'raw_sequencing_batch_name': 'ABC', 'readset_batch_name': 'EFG', 'readset_batch_dir': '/path/to/dir', 'basecaller': 'guppy' }))
-        # empty
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'raw_sequencing_batch_name': '', 'readset_batch_name': 'EFG', 'readset_batch_dir': '/path/to/dir', 'basecaller': 'guppy' })
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'raw_sequencing_batch_name': 'ABC', 'readset_batch_name': '', 'readset_batch_dir': '/path/to/dir', 'basecaller': 'guppy' })
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'raw_sequencing_batch_name': 'ABC', 'readset_batch_name': 'EFG', 'readset_batch_dir': '', 'basecaller': 'guppy' })
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'raw_sequencing_batch_name': 'ABC', 'readset_batch_name': 'EFG', 'readset_batch_dir': '/path/to/dir', 'basecaller': '' })
-        # missing
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'readset_batch_name': 'EFG', 'readset_batch_dir': '/path/to/dir', 'basecaller': 'guppy' })
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'raw_sequencing_batch_name': 'ABC',   'readset_batch_dir': '/path/to/dir', 'basecaller': 'guppy' })
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'raw_sequencing_batch_name': 'ABC', 'readset_batch_name': 'EFG',  'basecaller': 'guppy' })
-        with self.assertRaises(SystemExit) as cm:
-            check_readset_batches({'raw_sequencing_batch_name': 'ABC', 'readset_batch_name': 'EFG', 'readset_batch_dir': '/path/to/dir' })
 
     def test_get_readset_batch_empty_db(self):
         self.setUp()

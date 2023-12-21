@@ -112,7 +112,7 @@ class TestSeqboxUtilsSample(TestCase):
         self.populate_db_dependancies()
         sample_info = {'sample_identifier': 'sample1', 'institution': 'MLW', 'group_name': 'Group', 'species': 'SARS-CoV-2', 'sample_type': 'Lung aspirate', 'day_collected': '31', 'month_collected': '5', 'year_collected': '2021', 'day_received': '1', 'month_received': '1', 'year_received': '2022', 'sequencing_type_requested':'MinION SARS-CoV-2'}
 
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_sample(sample_info, False)
 
     def test_add_sample_with_missing_sample_identifier(self):
@@ -120,7 +120,7 @@ class TestSeqboxUtilsSample(TestCase):
         self.populate_db_dependancies()
         sample_info = {'sample_source_identifier': 'sample_source_1', 'institution': 'MLW', 'group_name': 'Group', 'species': 'SARS-CoV-2', 'sample_type': 'Lung aspirate', 'day_collected': '31', 'month_collected': '5', 'year_collected': '2021', 'day_received': '1', 'month_received': '1', 'year_received': '2022', 'sequencing_type_requested':'MinION SARS-CoV-2'}
 
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_sample(sample_info, False)
 
     def test_add_sample_with_missing_group_name(self):
@@ -128,7 +128,7 @@ class TestSeqboxUtilsSample(TestCase):
         self.populate_db_dependancies()
         sample_info = {'sample_identifier': 'sample1', 'sample_source_identifier': 'sample_source_1', 'institution': 'MLW', 'species': 'SARS-CoV-2', 'sample_type': 'Lung aspirate', 'day_collected': '31', 'month_collected': '5', 'year_collected': '2021', 'day_received': '1', 'month_received': '1', 'year_received': '2022', 'sequencing_type_requested':'MinION SARS-CoV-2'}
 
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_sample(sample_info, False)
 
     def test_add_sample_with_missing_institution(self):
@@ -136,7 +136,7 @@ class TestSeqboxUtilsSample(TestCase):
         self.populate_db_dependancies()
         sample_info = {'sample_identifier': 'sample1', 'sample_source_identifier': 'sample_source_1', 'group_name': 'Group', 'species': 'SARS-CoV-2', 'sample_type': 'Lung aspirate', 'day_collected': '31', 'month_collected': '5', 'year_collected': '2021', 'day_received': '1', 'month_received': '1', 'year_received': '2022', 'sequencing_type_requested':'MinION SARS-CoV-2'}
 
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_sample(sample_info, False)
 
     # TODO: check the institute exists

@@ -69,11 +69,11 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['sample_identifier'] = ''
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['sample_identifier'] = 'abc'
@@ -89,11 +89,11 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['date_extracted'] = ''
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['date_extracted'] = '1/1/2023'
@@ -108,11 +108,11 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['extraction_identifier'] = ''
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['extraction_identifier'] = '1'
@@ -127,11 +127,11 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['group_name'] = ''
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['group_name'] = 'abc'
@@ -146,11 +146,11 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['extraction_from'] = ''
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['extraction_from'] = 'cultured_isolate'
@@ -166,7 +166,7 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
     def test_nucleic_acid_concentration(self):
@@ -179,7 +179,7 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': None
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_extraction_fields(extraction_info)
 
         extraction_info['nucleic_acid_concentration'] = '1'
@@ -195,7 +195,7 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': None,
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit, msg="An empty value for the submitter plate well should raise an error") as cm:
+        with self.assertRaises(ValueError, msg="An empty value for the submitter plate well should raise an error") as cm:
             check_extraction_fields(extraction_info)
 
         valid_wells = {'A1', 'A2', 'A3', 'A4',  'B1', 'B2', 'B10', 'B11', 'B12', 'C1', 'C2', 'C11', 'C12', 'H8', 'H9', 'H10', 'H11', 'H12'}
@@ -206,7 +206,7 @@ class TestSeqboxUtilsSample(TestCase):
         invalid_wells = {'A0', 'A13', 'B0', 'B13', 'C0', 'C13', 'H0', 'H 1', 'H13', 'A', 'B', 'C', 'H ', '1', '2', '3', '4', '10', '11', '12', '13'}
         for well in invalid_wells:
             extraction_info['submitter_plate_well'] = well
-            with self.assertRaises(SystemExit, msg="An invalid value for the submitter plate well should raise an error") as cm:
+            with self.assertRaises(ValueError, msg="An invalid value for the submitter plate well should raise an error") as cm:
                 check_extraction_fields(extraction_info)
 
     def test_check_plate_prefixes(self):
@@ -219,7 +219,7 @@ class TestSeqboxUtilsSample(TestCase):
                             'submitter_plate_well': 'A1',
                             'nucleic_acid_concentration': '1'
                             }
-        with self.assertRaises(SystemExit, msg="An empty value for the submitter plate id should raise an error") as cm:
+        with self.assertRaises(ValueError, msg="An empty value for the submitter plate id should raise an error") as cm:
             check_extraction_fields(extraction_info)
 
         valid_plate_prefixes = ['EXT', 'CUL', 'SAM', 'OUT']
@@ -230,7 +230,7 @@ class TestSeqboxUtilsSample(TestCase):
         invalid_plate_prefixes = ['ext', 'cul', 'sam', 'out',  ' EXT', '123EXT', 'xxxx', '1234']
         for prefix in invalid_plate_prefixes:
             extraction_info['submitter_plate_id'] = prefix
-            with self.assertRaises(SystemExit, msg="An invalid value for the submitter plate id should raise an error") as cm:
+            with self.assertRaises(ValueError, msg="An invalid value for the submitter plate id should raise an error") as cm:
                 check_extraction_fields(extraction_info)
 
     def test_get_extraction_from_empty_database_whole_sample(self):

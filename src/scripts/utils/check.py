@@ -1,7 +1,6 @@
 import sys
 
 from app import db
-from scripts.utils.db import query_projects
 
 VALID_PLATE_WELLS = {
     'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12',
@@ -151,7 +150,7 @@ def check_extraction_fields(extraction_info: dict) -> bool:
     # need nucleic_acid_concentration or submitter_plate_well
     if not extraction_info['submitter_plate_id'].startswith('OUT'):
         check_empty_field(extraction_info, 'nucleic_acid_concentration')
-        allowed_submitter_plate_well = {**VALID_PLATE_WELLS, **{'N/A'}}
+        allowed_submitter_plate_well = VALID_PLATE_WELLS.union({'N/A'})
         if extraction_info['submitter_plate_well'] not in allowed_submitter_plate_well:
             raise ValueError(
                 f'submitter_plate_well column should be one of {allowed_submitter_plate_well}, '
@@ -332,48 +331,6 @@ def check_readset_fields(
     return True
 
 
-def check_sample_source_associated_with_project(sample_source: dict, sample_source_info: dict):
-    """
-    This func checks if the sample_source is associated with the project is available in the
-    database. If not, it raises a ValueError.
-
-    Args:
-        sample_source (dict): The sample_sources available in the db
-        sample_source_info (dict): The dictionary of sample_source info to check
-    
-    Raises:
-        ValueError: If the sample_source is not associated with the project in the input file
-    """
-    # TODO: maybe just get rid of this pathway, and have a different Seqbox_cmd function for
-    #       if you want to add a new relationship between an existing sample source and project
-    # get the projects from the input file as set
-    projects_from_input_file = sample_source_info['projects'].split(';')
-    projects_from_input_file = set([x.strip() for x in projects_from_input_file])
-    # get the projects from the db for this sample_source
-    projects_from_db = set([x.project_name for x in sample_source.projects])
-    # are there any sample_source to project relationships in the file which aren't
-    # represented in the db?
-    new_projects_from_file = projects_from_input_file - projects_from_db
-    # if there are any
-    if len(new_projects_from_file) > 0:
-        # then, for each one
-        for project_name in new_projects_from_file:
-            print(f"Adding existing sample_source {sample_source_info['sample_source_identifier']} to project "
-                  f"{project_name}")
-            # query projects, this will only return p[0] is True if the project name already
-            # exists for this group otherwise, they need to add the project and re-run.
-            p = query_projects(sample_source_info, project_name)
-            if p[0]:
-                # add it to the projects associated with this sample source
-                sample_source.projects.append(p[1])
-            else:
-                print(f"Checking that sample source is associated with project. "
-                      f"Project {project_name} from group {sample_source_info['group_name']} "
-                      f"does not exist in the db, you need to add it using the seqbox_cmd.py "
-                      f"add_projects function.\nExiting now.")
-                sys.exit(1)
-    # and update the database.
-    db.session.commit()
 
 
 def check_samples(sample_info: dict) -> bool:

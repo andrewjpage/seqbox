@@ -38,9 +38,9 @@ class TestSeqboxUtilsCulture(TestCase):
         self.assertTrue(check_cultures({ 'group_name': 'Group','sample_identifier': 'sample1' , 'date_cultured': '01/01/2023', 'culture_identifier': '123', 'submitter_plate_id': 'CUL123', 'submitter_plate_well': 'A1'}))
         self.assertFalse(check_cultures({ 'group_name': 'Group','sample_identifier': 'sample1' , 'date_cultured': '', 'culture_identifier': '', 'submitter_plate_id': 'CUL123', 'submitter_plate_well': 'A1'}))
         # empty
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             self.assertFalse(check_cultures({ 'group_name': 'Group','sample_identifier': 'sample1' , 'date_cultured': '', 'culture_identifier': '123', 'submitter_plate_id': 'CUL123', 'submitter_plate_well': 'A1'}))
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             self.assertFalse(check_cultures({ 'group_name': 'Group','sample_identifier': 'sample1' , 'date_cultured': '01/01/2023', 'culture_identifier': '', 'submitter_plate_id': 'CUL123', 'submitter_plate_well': 'A1'}))
         
     def test_get_culture_empty_db(self):

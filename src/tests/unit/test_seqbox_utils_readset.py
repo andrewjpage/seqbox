@@ -469,7 +469,7 @@ class TestSeqboxUtilsReadset(TestCase):
                             'culture_identifier': '123',
                             'date_cultured': '01/01/2023',
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_readset_fields(readset_info, False, raw_sequencing_batch, False)
 
     def test_check_readset_fields_nanopore_not_default_fast5_missing(self):
@@ -493,7 +493,7 @@ class TestSeqboxUtilsReadset(TestCase):
                             'culture_identifier': '123',
                             'date_cultured': '01/01/2023',
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_readset_fields(readset_info, False, raw_sequencing_batch, False)
 
     def test_check_readset_fields_not_covid_date_extracted_missing(self):
@@ -517,7 +517,7 @@ class TestSeqboxUtilsReadset(TestCase):
                             'culture_identifier': '123',
                             'date_cultured': '01/01/2023',
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_readset_fields(readset_info, False, raw_sequencing_batch, False)
 
     def test_check_readset_fields_not_covid_extraction_identifier_missing(self):
@@ -541,7 +541,7 @@ class TestSeqboxUtilsReadset(TestCase):
                             'culture_identifier': '123',
                             'date_cultured': '01/01/2023',
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_readset_fields(readset_info, False, raw_sequencing_batch, False)
 
     def test_check_readset_fields_covid_date_tiling_pcred_missing(self):
@@ -565,7 +565,7 @@ class TestSeqboxUtilsReadset(TestCase):
                             'culture_identifier': '123',
                             'date_cultured': '01/01/2023',
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_readset_fields(readset_info, False, raw_sequencing_batch, True)
 
     def test_check_readset_fields_covid_tiling_pcr_identifier_missing(self):
@@ -589,5 +589,5 @@ class TestSeqboxUtilsReadset(TestCase):
                             'culture_identifier': '123',
                             'date_cultured': '01/01/2023',
                             }
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_readset_fields(readset_info, False, raw_sequencing_batch, True)

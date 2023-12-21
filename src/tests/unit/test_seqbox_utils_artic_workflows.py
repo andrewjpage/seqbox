@@ -10,7 +10,6 @@ from app import app, db
 from app.models import ArticCovidResult, ReadSetNanopore
 from scripts.utils.db import (
     read_in_artic_covid_result,
-    check_artic_covid_result,
     get_readset,
     add_artic_covid_result,
     get_artic_covid_result,
@@ -76,27 +75,6 @@ class TestSeqboxUtilsArticWorkflows(TestCase):
                                        'barcode': 'barcode01'
                                     }
             self.assertFalse(get_artic_covid_result(artic_covid_result_info))
-
-    def test_check_artic_covid_result(self):
-        self.assertTrue(check_artic_covid_result({'sample_name': 'sample1', 'pct_N_bases': '19.9', 'pct_covered_bases': '80.1', 'num_aligned_reads': '43649'}))
-        # empty
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'sample_name': '', 'pct_N_bases': '19.9', 'pct_covered_bases': '80.1', 'num_aligned_reads': '43649'})
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'sample_name': 'sample1', 'pct_N_bases': '', 'pct_covered_bases': '80.1', 'num_aligned_reads': '43649'})
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'sample_name': 'sample1', 'pct_N_bases': '19.9', 'pct_covered_bases': '', 'num_aligned_reads': '43649'})
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'sample_name': 'sample1', 'pct_N_bases': '19.9', 'pct_covered_bases': '80.1', 'num_aligned_reads': ''})
-        # missing
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'pct_N_bases': '19.9', 'pct_covered_bases': '80.1', 'num_aligned_reads': '43649'})
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'sample_name': 'sample1', 'pct_covered_bases': '80.1', 'num_aligned_reads': '43649'})
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'sample_name': 'sample1', 'pct_N_bases': '19.9', 'num_aligned_reads': '43649'})
-        with self.assertRaises(SystemExit) as cm:
-            check_artic_covid_result({'sample_name': 'sample1', 'pct_N_bases': '19.9', 'pct_covered_bases': '80.1'})
 
     def test_read_in_artic_covid_result(self):
         artic_covid_result_info = {'sample_name': 'sample1', 'pct_N_bases': '19.9', 'pct_covered_bases': '80.1', 'num_aligned_reads': '43649', 'artic_workflow':'medaka','artic_profile':'docker' }

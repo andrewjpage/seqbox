@@ -61,20 +61,20 @@ class TestSeqboxUtilsArticWorkflows(TestCase):
     def test_check_pangolin_result(self):
         self.assertTrue(check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','lineage': 'B.1.351','qc_status': 'passed_qc', 'status': 'passed_qc'}))
         # status renamed
-        self.assertTrue(check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','lineage': 'B.1.351','qc_status': 'passed_qc'}))
+        self.assertTrue(check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','lineage': 'B.1.351','qc_status': 'passed_qc', 'status': 'xx'}))
         self.assertTrue(check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','lineage': 'B.1.351', 'status': 'passed_qc'}))
         self.assertTrue(check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','lineage': 'B.1.351','qc_status': '', 'status': 'passed_qc'}))
         # empty
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_pangolin_result({'taxon': '','lineage': 'B.1.351','qc_status': 'passed_qc', 'status': 'passed_qc'})
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','lineage': '','qc_status': 'passed_qc', 'status': 'passed_qc'})
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','lineage': 'B.1.351','qc_status': 'passed_qc', 'status': ''})
         # missing
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_pangolin_result({'lineage': 'B.1.351','qc_status': 'passed_qc', 'status': 'passed_qc'})
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             check_pangolin_result({'taxon': '20200101_123_MN1234_FAO1234_123_barcode01/ARTIC/medaka_MN908947.3','qc_status': 'passed_qc', 'status': 'passed_qc'})
 
     def test_read_in_pangolin_result(self):

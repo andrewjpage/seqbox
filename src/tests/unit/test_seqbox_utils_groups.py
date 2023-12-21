@@ -59,23 +59,23 @@ class TestSeqboxUtilsGroups(TestCase):
         self.setUp()
         # Groups cant have spaces in their names
         group_info = {'group_name': 'Test Group', 'institution': 'Test Institution', 'pi': 'Test PI'}
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_group(group_info)
 
         # groups cant have backsalshes in their names
         group_info['group_name'] = 'Test/Group'
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_group(group_info)
 
         # groups cant be empty
         group_info['group_name'] = None
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_group(group_info)
 
     def test_add_group_with_invalid_intitute(self):
         self.setUp()
         group_info = {'group_name': 'TestGroup', 'institution': None, 'pi': 'Test PI'}
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             add_group(group_info)
 
     def test_add_same_group_twice(self):
